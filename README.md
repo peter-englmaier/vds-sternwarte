@@ -16,24 +16,34 @@ Grundlage dieser Software ist das Schulungsmaterial von [Corey Schafer](https://
 
 ## Anleitung für MacOS
 
-Nachdem man dieses Repository 'geforked' hat, kann man seine Version in ein lokales Verzeichnis clonen:
+Nachdem man dieses Repository 'geforked' hat, kann man seine Version in ein lokales Verzeichnis clonen (bitte `GITHUBUSER` durch euren github User ersetzen!):
 
 ```
-  cd work
-  git clone vds-sternwarte ppe$ git clone git@github.com:peter-englmaier/vds-sternwarte.git
-  cd vds-sternwarte
-  python3 -m venv venv
-  source venv/bin/activate
-  pip3 install --upgrade pip
-  pip3 install -r requirements.txt
+  $ cd work
+  $ git clone vds-sternwarte ppe$ git clone git@github.com:GITHUBUSER/vds-sternwarte.git
+  $ cd vds-sternwarte
+  $ python3 -m venv venv
+  $ source venv/bin/activate
+  (venv) $ pip3 install --upgrade pip
+  (venv) $ pip3 install -r requirements.txt
 ```
+
+Mit dem Befehl `source venv/bin/activate` begibt man sich in das Python Environment der Applikation. Man sieht das im Prompt (oder so ähnlich):
+
+```bash
+(venv) $
+```
+
+**WICHTIG:**
+Alle `python3` und `pip3` müssen in diesem Environment ausgeführt werden. Falls ihr den Prompt nicht mehr seht, einfach erneut `cd vds-sternwarte` und `source venv/bin/activate` ausführen!
+
 
 Konfiguration anpassen: die Datei config.json-dist nach config.json kopieren und ggf. entsprechend der eigenen Wünsche anpassen.
 
 Datenbank initialisieren (eine leere Datenbank anlegen)
 
 ```
-  $ python3
+  (venv) $ python3
   Python 3.7.5 (v3.7.5:5c02a39a0b, Oct 14 2019, 18:49:57)
   [Clang 6.0 (clang-600.0.57)] on darwin
   Type "help", "copyright", "credits" or "license" for more information.
@@ -48,7 +58,9 @@ Datenbank initialisieren (eine leere Datenbank anlegen)
 
 Anschliessend kann der Development Server lokal gestartet werden
 
-  python3 run.py
+```
+  (venv) $ python3 run.py
+```
 
 Der Server ist dann mit diesem Link erreichbar: http://localhost:5000/
 
