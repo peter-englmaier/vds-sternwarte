@@ -1,0 +1,7 @@
+*.db
+.obsidian
+webapp/static/profile_pics/*.jpg
+webapp/static/profile_pics/*.png
+**/__pycache__/
+venv/
+config.json

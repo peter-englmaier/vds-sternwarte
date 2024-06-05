@@ -1,0 +1,7 @@
+{
+	"SECRET_KEY": "changeme",
+	"SQLALCHEMY_DATABASE_URI": "sqlite:///site.db",
+	"EMAIL_USERS": "EMAIL_USER",
+	"EMAIL_PASS": "EMAI_PASS"
+}
+
