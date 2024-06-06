@@ -9,6 +9,8 @@ Gewünschte Funktionen (noch nicht im Detail besprochen/beschlossen):
 * Email Erinnerungen
 * Ankündigungen / Infos
 
+Das konkrete [Pflichtenheft](docs/pflichtenheft.md) befindet sich noch im Aufbau.
+
 Grundlage dieser Software ist das Schulungsmaterial von [Corey Schafer](https://github.com/CoreyMSchafer/code_snippets/tree/master/Python/Flask_Blog) zu seiner [YouTube Flask Tutorial](https://www.youtube.com/@coreyms/playlists).
 
 
