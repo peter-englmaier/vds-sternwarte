@@ -21,11 +21,21 @@ Python kann man hier lernen:
 
 # Entwicklungsumgebung einrichten
 
-Um zum Source Code beitragen zu können, muss man zunächst einen Github Account anlegen, seinen public SSH key in github hinterlegen und das Repository in Github "Forken". Dadurch erhält man einen eigenen Arbeitsbereich bei Github, in dem man den Sourcecode munter anpassen und Änderungen später per "Pull Request" in das Haupt-Repository einfügen kann. Wahrscheinlich brauchst du dafür eine kleine Einführung in Git. Die folgende Anleitung setzt voraus, dass ein solcher Fork bereits angelegt wurde.
+Zunächst sollte die aktuelle Version von Python installiert sein (Version 3.12.4). Das in der Regel ebenfalls vorhandene Python 2.x.x kann man ignorieren und man sollte es auch nicht aus dem System verwenden. Download von Python von: [www.python.org](https://www.python.org/downloads/release/python-3124/).
 
-Hat man jetzt nur 5% verstanden, wäre ein weiteres [Video](https://www.youtube.com/watch?v=HVsySz-h9r4) von Corey Schafer ein guter Startpunkt. 
+Um zum Source Code beitragen zu können, muss man zunächst einen Github Account anlegen, seinen public SSH key in github hinterlegen und das Repository in Github "Forken". Dadurch erhält man einen eigenen Arbeitsbereich bei Github, in dem man den Sourcecode munter anpassen und Änderungen später per "Pull Request" in das Haupt-Repository einfügen kann.
 
-Zudem sollte die aktuelle Version von Python installiert sein (Version 3.12.4). Das in der Regel ebenfalls vorhandene Python 2.x.x kann man ignorieren und man sollte es auch nicht aus dem System verwenden. Download von Python von: [www.python.org](https://www.python.org/downloads/release/python-3124/).
+Hier ein paar Links dazu:
+* [Gtihub Accountanlegen]
+* [SSH Key anlegen, falls noch nicht vorhanden](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+* [Public SSH key in github hinterlegen](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+* [Fork erstellen])(https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+
+Wahrscheinlich brauchst du auch eine kleine Einführung in Git:
+* [Tutorial](https://git-scm.com/docs/gittutorial)
+* [Git Buch](https://git-scm.com/book/de/v2)
+
+Die folgende Anleitung setzt voraus, dass du einen solchen Fork bereits angelegt hast.
 
 ## Anleitung für MacOS
 
@@ -116,11 +126,8 @@ Hat man Änderungen gemacht, kann man diese mit folgenden Befehl auflisten
   (venv) $ git status
 ```
 
+Es empfiehlt sich in einem eigenen "Branch" zu arbeiten, aber es ist kein Muss. Wer will kann mit der [git flow Erweiterung installieren](https://skoch.github.io/Git-Workflow/) und damit arbeiten. Die [Anleitung von Atlassian](https://www.atlassian.com/de/git/tutorials/comparing-workflows/gitflow-workflow) ist ganz gut.
+
 Nachdem man lokal einen 'git commit' gemacht hat, kann man diesen in sein eigenes Repository mit 'git push' hochladen. Dann auf github.com einen 'Pull Request' (PR) einreichen. In der Regel werde ich eine Korrektur vorschlagen oder ihr habt selbst noch etwas "vergessen". Ihr könnt dann den Commit lokal noch ergänzen. Mit `git push --force-with-lease` könnt ihr diese Ergänzungen hochladen. Sie sind dann automatisch im Pull Request inkludiert.
 
-Erklärungen zu diesem Prozess findet man [hier](https://blog.adamspiers.org/2015/03/24/why-and-how-to-correctly-amend-github-pull-requests/).
-
-
-
-TODO
-
+Erklärungen zu diesem `--force-with-lease` findet man [hier](https://blog.adamspiers.org/2015/03/24/why-and-how-to-correctly-amend-github-pull-requests/).
