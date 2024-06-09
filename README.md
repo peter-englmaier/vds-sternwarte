@@ -26,10 +26,10 @@ Zunächst sollte die aktuelle Version von Python installiert sein (Version 3.12.
 Um zum Source Code beitragen zu können, muss man zunächst einen Github Account anlegen, seinen public SSH key in github hinterlegen und das Repository in Github "Forken". Dadurch erhält man einen eigenen Arbeitsbereich bei Github, in dem man den Sourcecode munter anpassen und Änderungen später per "Pull Request" in das Haupt-Repository einfügen kann.
 
 Hier ein paar Links dazu:
-* [Gtihub Accountanlegen]
+* [Gtihub Account anlegen](https://github.com/signup)
 * [SSH Key anlegen, falls noch nicht vorhanden](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 * [Public SSH key in github hinterlegen](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
-* [Fork erstellen])(https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+* [Fork erstellen](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
 
 Wahrscheinlich brauchst du auch eine kleine Einführung in Git:
 * [Tutorial](https://git-scm.com/docs/gittutorial)
