@@ -79,7 +79,7 @@ Fork (Name Repository unverändert) erstellen wie s.o.
 (venv)...>pip list
 ```
 
-Update pip nur wenn nötig (pip list zeigt eine entsprechende Meldung). Danach weiter in VSCode, die PowerShell zeigt allerdings kein "(venv)" im Prompt. Am besten mit pip list testen, dass das venv tatsächlich aktiviert ist.
+Update pip nur wenn nötig (pip list zeigt eine entsprechende Meldung). Danach weiter in VSCode, die PowerShell zeigt allerdings kein "(venv)" im Prompt. Am besten mit pip list testen, dass das venv tatsächlich aktiviert ist. Dann weiter mit den folgenden Schritten.
 
 
 
