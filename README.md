@@ -65,6 +65,24 @@ Mit dem Befehl `source venv/bin/activate` begibt man sich in das Python Environm
 Alle `python3` und `pip3` müssen immer in diesem Environment ausgeführt werden. Falls ihr den Prompt nicht mehr seht, einfach erneut `cd vds-sternwarte` und `source venv/bin/activate` ausführen!
 
 
+## Anleitung für Windows
+
+Fork (Name Repository unverändert) erstellen wie s.o.
+
+```
+>git clone https://github.com/GITHUBUSER/vds-sternwarte.git
+>cd vds-sternwarte
+>python -m venv venv
+(venv)...>venv\Scripts\activate
+(venv)...>python.exe -m pip install --upgrade pip
+(venv)...>pip install -r requirements.txt
+(venv)...>pip list
+```
+
+Update pip nur wenn nötig (pip list zeigt eine entsprechende Meldung). Danach weiter in VSCode, die PowerShell zeigt allerdings kein "(venv)" im Prompt. Am besten mit pip list testen, dass das venv tatsächlich aktiviert ist.
+
+
+
 Konfiguration anpassen: die Datei config.json-dist nach config.json kopieren und ggf. entsprechend der eigenen Wünsche anpassen.
 
 Datenbank initialisieren (eine leere Datenbank anlegen)
