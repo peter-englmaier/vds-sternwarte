@@ -14,4 +14,6 @@ def home():
 
 @main.route("/about")
 def about():
-    return render_template('about.html', title='About')
+    softwareId = "$Id$"
+    version = "0.1-rc"
+    return render_template('about.html', title='About', version=version, commitId=softwareId)
