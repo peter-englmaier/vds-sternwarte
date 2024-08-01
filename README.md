@@ -84,6 +84,9 @@ Update pip nur wenn nötig (pip list zeigt eine entsprechende Meldung). Danach w
 
 ## Anleitung für Linux
 
+Die Ausführung unter den verschiedenen Linux Distrubutionen ist ähnlich wie bei MAC. Im folgenden Beispiel wurde Debian verwendet:
+
+
 ... 
 Dann weiter mit den folgenden Schritten [Datenbank initialisieren](#datenbank-initialisieren).
 
