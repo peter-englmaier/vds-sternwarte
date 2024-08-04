@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -19,6 +20,7 @@ def create_app(config_class=Config):
     app.config.from_object(Config)
 
     db.init_app(app)
+    migrate = Migrate(app, db)
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
@@ -35,11 +37,14 @@ def create_app(config_class=Config):
     # setup admin user, if user name and password are set
     # always reset password to configured password
     try:
-        upper = sum(c.isupper() for c in config_class.ADMIN_PASSWORD)
-        lower = sum(c.islower() for c in config_class.ADMIN_PASSWORD)
-        digit = sum(c.isdigit() for c in config_class.ADMIN_PASSWORD)
-        if len(config_class.ADMIN_USER) > 3 and len(config_class.ADMIN_PASSWORD) > 10 and upper>0 and lower>0 and digit>0:
-            from webapp.models import User
+        pwdComplex = len(config_class.ADMIN_USER) > 3 \
+            and len(config_class.ADMIN_USER) > 3 \
+            and sum(c.isupper() for c in config_class.ADMIN_PASSWORD) > 0 \
+            and sum(c.islower() for c in config_class.ADMIN_PASSWORD) > 0 \
+            and sum(c.isdigit() for c in config_class.ADMIN_PASSWORD) > 0
+
+        if pwdComplex:
+            from webapp.models import User, Group
             ctx=app.app_context()
             ctx.push()
             admin=User.query.filter_by(username=config_class.ADMIN_USER).first()
@@ -54,6 +59,24 @@ def create_app(config_class=Config):
                 admin = User(username=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
                 db.session.add(admin)
                 db.session.commit()
+
+            # add admin group, if not present, and assign to admin user
+            print('Try to create admin group')
+            group=Group.query.filter_by(groupname="admin").first()
+            if not group:
+                print('create new group')
+                group = Group(groupname="admin")
+                admin.group.append(group)
+                db.session.add(group)
+                db.session.add(admin)
+                db.session.commit()
+            else:
+                print('add to existing group')
+                admin.group.append(group)
+                db.session.add(admin)
+                db.session.commit()
+
+            db.session.commit()
             ctx.pop()
         else:
             print("WARNING: password is not complex enough, not setting up admin user")
