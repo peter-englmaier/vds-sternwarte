@@ -40,6 +40,7 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     groupname = db.Column(db.String(20), unique=True, nullable=False)
     user = db.relationship('User', secondary = 'user_group', back_populates = 'group')
+    role = db.relationship('Role', secondary = 'role_group', back_populates = 'group')
 
     def __repr__(self):
         return f"Group('{self.groupname}')"
@@ -50,6 +51,27 @@ user_group = db.Table(
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
 )
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rolename = db.Column(db.String(20), unique=True, nullable=False)
+    role = db.relationship('Group', secondary = 'role_group', back_populates = 'role')
+    isAdmin = db.Column(db.Boolean, default=False, nullable=False)
+    isPowerUser = db.Column(db.Boolean, default=False, nullable=False)
+    isApprover = db.Column(db.Boolean, default=False, nullable=False)
+
+    def __repr__(self):
+        return f"Role('{self.rolename}, admin: {self.isAdmin}, PU: {self.isPowerUser}, " + \
+        "Approver: {isApprover}')"
+
+
+role_group = db.Table(
+    'role_group',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
+    db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
+)
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
