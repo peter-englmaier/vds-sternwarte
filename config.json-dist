@@ -6,6 +6,9 @@
 	"MAIL_USE_TLS": True,
 	"MAIL_USER": "MAIL_USER",
 	"MAIL_PASS": "MAIL_PASS",
-	"MAIL_REPLYTO": "MAIL_USER"
+	"MAIL_REPLYTO": "MAIL_USER",
+	"ADMIN_USER": "admin",
+	"ADMIN_EMAIL": "admin@example.org",
+	"ADMIN_PASSWORD": "changeme"
 }
 

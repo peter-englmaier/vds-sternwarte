@@ -1,7 +1,14 @@
+# local database and config files
+config.json
 *.db
-.obsidian
+# profile pictures
 webapp/static/profile_pics/*.jpg
 webapp/static/profile_pics/*.png
+# editor files: 
+*.swp
+.obsidian
+# local python files
 **/__pycache__/
 venv/
-config.json
+# macos specific
+.DS_Store

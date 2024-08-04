@@ -13,3 +13,6 @@ class Config:
     MAIL_USERNAME = config.get('MAIL_USER')
     MAIL_PASSWORD = config.get('MAIL_PASS')
     MAIL_REPLYTO = config.get('MAIL_REPLYTO')
+    ADMIN_USER = config.get('ADMIN_USER')
+    ADMIN_EMAIL = config.get('ADMIN_EMAIL')
+    ADMIN_PASSWORD = config.get('ADMIN_PASSWORD')
