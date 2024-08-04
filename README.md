@@ -100,7 +100,7 @@ Datenbank initialisieren (eine leere Datenbank anlegen)
 Anschliessend kann der Development Server lokal gestartet werden:
 
 ```
-  (venv) $ python3 run.py
+  (venv) $ python3 app.py
 ```
 
 Der Server ist dann mit diesem Link erreichbar: http://localhost:5000/
@@ -119,6 +119,12 @@ Eventuell muss man dann auch die requirements updaten
   (venv) $ pip install --upgrade -r requirements.txt
 ```
 
+Auch die Datenbank muss u.U. dem neuen Code angepasst werden:
+
+```
+  (venv) $ flask db upgrade
+```
+
 Hat man python aktualisiert oder funktioniert der Update der Requirements nicht, kann man das Verzeichnis venv löschen und die Installation wiederholen (aber ohne sein git Verzeichnis komplett zu löschen):
 
 ```
@@ -129,6 +135,7 @@ Hat man python aktualisiert oder funktioniert der Update der Requirements nicht,
   (venv) $ pip3 install -r requirements.txt
 ```
 
+Ist die lokale Entwicklungs-Datenbank (Sqlite) kaputt, muss man sie löschen und neu initialisieren. In der Produktion sollte man das natürlich verhindern, indem man vorher Backups erstellt.
 
 ## Änderungen einreichen (Pull Request, kurz: PR)
 
@@ -148,10 +155,9 @@ Erklärungen zu diesem `--force-with-lease` findet man [hier](https://blog.adams
 
 ## Flask Befehl
 
-Flask wird mit einem Befehl ausgeliefert, der für die Fehlersuche nützlich ist. Damit er funktioniert, muss die Environment Variable `FLASK_APP=run.py` gesetzt werden.Es wird wie folgt verwendet:
+Flask wird mit einem Befehl ausgeliefert, der für die Fehlersuche nützlich ist. Es wird wie folgt verwendet:
 
 ```
-$ export FLASK_APP=run.py
 $ flask routes
 INFO: User admin already exists - reset password and email
 Endpoint             Methods    Rule
@@ -178,12 +184,23 @@ User('admin', 'admin@example.org', 'default.jpg')
 >>> 
 ```
 
-## Datenbank Migrationen
+## Datenbank Änderungen und Migrationen
 
-Die Datenbank Struktur wird sich während der Entwicklung immer wieder verändern. Nach einem Update der Applikation (git pull), ist es ratsam die Migration durchzuführen mit:
+Die Datenbank Struktur wird sich während der Entwicklung immer wieder verändern. Hat man z.B. im Code weitere Datenbank Element hinzugefügt (Spalten/Tabellen), dann muss man ein Migrationsskript erzeugen und mit der Änderung einchecken. Ausserdem muss man die lokale Datenbank auch anpassen, indem man dieses Skript ausführt. Das geht wie folgt:
 
+Stand der Datenbank aktualiseren (zur Sicherheit)
+```
+$ flask db upgrade
+```
+Migrationsscript erzeugen:
+```
+$ flask db migrate -m "Sinnvolle/knappe Beschreibung"
+```
+Das erzegute Skript anwenden:
 ```
 $ flask db upgrade
 ```
 
-Weitere technische Informationen zur Migration findet man [in der Flask Migrate Dokumentation](https://flask-migrate.readthedocs.io/en/latest/index.html).
+Weitere technische Informationen zur Migration findet man [in der Flask Migrate Dokumentation](https://flask-migrate.readthedocs.io/en/latest/index.html). Benötigt wird insbesondere `flask db migrate` um Änderunngen an der Struktur automatisiert zu erkennen.
+
+Wichtig ist, dass nicht mehrere Anpassung gleichzeitig passieren, deshalb sollten alle Änderungen **vorher** mit Peter abgesprochen werden.
