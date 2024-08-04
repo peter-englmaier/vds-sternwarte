@@ -34,28 +34,30 @@ def create_app(config_class=Config):
 
     # setup admin user, if user name and password are set
     # always reset password to configured password
-    upper = sum(c.isupper() for c in config_class.ADMIN_PASSWORD)
-    lower = sum(c.islower() for c in config_class.ADMIN_PASSWORD)
-    digit = sum(c.isdigit() for c in config_class.ADMIN_PASSWORD)
-    if len(config_class.ADMIN_USER) > 3 and len(config_class.ADMIN_PASSWORD) > 10 and upper>0 and lower>0 and digit>0:
-        from webapp.models import User
-        ctx=app.app_context()
-        ctx.push()
-        admin=User.query.filter_by(username=config_class.ADMIN_USER).first()
-        hashed_password = bcrypt.generate_password_hash(config_class.ADMIN_PASSWORD).decode('utf-8')
-        if admin:
-            print(f"INFO: User {config_class.ADMIN_USER} already exists - reset password and email")
-            admin.password = hashed_password
-            admin.email = config_class.ADMIN_EMAIL
-            db.session.commit()
+    try:
+        upper = sum(c.isupper() for c in config_class.ADMIN_PASSWORD)
+        lower = sum(c.islower() for c in config_class.ADMIN_PASSWORD)
+        digit = sum(c.isdigit() for c in config_class.ADMIN_PASSWORD)
+        if len(config_class.ADMIN_USER) > 3 and len(config_class.ADMIN_PASSWORD) > 10 and upper>0 and lower>0 and digit>0:
+            from webapp.models import User
+            ctx=app.app_context()
+            ctx.push()
+            admin=User.query.filter_by(username=config_class.ADMIN_USER).first()
+            hashed_password = bcrypt.generate_password_hash(config_class.ADMIN_PASSWORD).decode('utf-8')
+            if admin:
+                print(f"INFO: User {config_class.ADMIN_USER} already exists - reset password and email")
+                admin.password = hashed_password
+                admin.email = config_class.ADMIN_EMAIL
+                db.session.commit()
+            else:
+                print(f"INFO: Create new admin user {config_class.ADMIN_USER}")
+                admin = User(username=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
+                db.session.add(admin)
+                db.session.commit()
+            ctx.pop()
         else:
-            print(f"INFO: Create new admin user {config_class.ADMIN_USER}")
-            admin = User(username=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
-            db.session.add(admin)
-            db.session.commit()
-        ctx.pop()
-    else:
-        print("WARNING: password is not complex enough, not setting up admin user")
-
+            print("WARNING: password is not complex enough, not setting up admin user")
+    except:
+        print("WARNING: Database not initialized")
 
     return app
