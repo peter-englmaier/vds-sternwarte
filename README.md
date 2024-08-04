@@ -145,3 +145,34 @@ Es empfiehlt sich in einem eigenen "Branch" zu arbeiten, aber es ist kein Muss. 
 Nachdem man lokal einen 'git commit' gemacht hat, kann man diesen in sein eigenes Repository mit 'git push' hochladen. Dann auf github.com einen 'Pull Request' (PR) einreichen. In der Regel werde ich eine Korrektur vorschlagen oder ihr habt selbst noch etwas "vergessen". Ihr könnt dann den Commit lokal noch ergänzen. Mit `git push --force-with-lease` könnt ihr diese Ergänzungen hochladen. Sie sind dann automatisch im Pull Request inkludiert.
 
 Erklärungen zu diesem `--force-with-lease` findet man [hier](https://blog.adamspiers.org/2015/03/24/why-and-how-to-correctly-amend-github-pull-requests/).
+
+## Flask Befehl
+
+Flask wird mit einem Befehl ausgeliefert, der für die Fehlersuche nützlich ist. Damit er funktioniert, muss aber die Flask Applikation konfiguriert sein, was etwas mühsam ist. Aus diesem Grund habe ich das Skript `flash.sh` geschrieben. Es wird wie folgt verwendet:
+
+```
+$ ./flask.sh routes
+INFO: User admin already exists - reset password and email
+Endpoint             Methods    Rule
+-------------------  ---------  --------------------------
+main.about           GET        /about
+main.home            GET        /home
+main.home            GET        /
+posts.delete_post    POST       /post/<int:post_id>/delete
+...
+```
+
+Man sieht eine Liste von URL's und den dafür zuständigen Methoden. Z.B. 'main.abort' ist im Modul `main` mit der Methode `about()` realisiert. 
+
+Noch nützlicher ist die Shell Funktion:
+
+```
+$ ./flask.sh shell
+INFO: User admin already exists - reset password and email
+Python 3.12.4 (v3.12.4:8e8a4baf65, Jun  6 2024, 17:33:18) [Clang 13.0.0 (clang-1300.0.29.30)] on darwin
+App: webapp
+Instance: /Users/ppe/work/vds-sternwarte/instance
+>>> User.query.get(1)
+User('admin', 'admin@example.org', 'default.jpg')
+>>> 
+```
