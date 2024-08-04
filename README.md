@@ -94,20 +94,10 @@ Konfiguration anpassen: die Datei config.json-dist nach config.json kopieren und
 Datenbank initialisieren (eine leere Datenbank anlegen)
 
 ```
-  (venv) $ python3
-  Python 3.7.5 (v3.7.5:5c02a39a0b, Oct 14 2019, 18:49:57)
-  [Clang 6.0 (clang-600.0.57)] on darwin
-  Type "help", "copyright", "credits" or "license" for more information.
-  >>> from webapp import create_app,db
-  >>> app=create_app()
-  >>> ctx=app.app_context()
-  >>> ctx.push()
-  >>> db.create_all()
-  >>> ctx.pop()
-  >>> exit()
+  (venv) $ python3 init-db.py
 ```
 
-Anschliessend kann der Development Server lokal gestartet werden
+Anschliessend kann der Development Server lokal gestartet werden:
 
 ```
   (venv) $ python3 run.py
