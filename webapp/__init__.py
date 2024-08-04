@@ -81,6 +81,6 @@ def create_app(config_class=Config):
         else:
             print("WARNING: password is not complex enough, not setting up admin user")
     except:
-        print("WARNING: Database not initialized")
+        pass
 
     return app

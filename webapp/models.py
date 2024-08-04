@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
-    group = db.relationship('Group', secondary = 'user_group', back_populates = 'user')
+    groups = db.relationship('Group', secondary = 'user_group', back_populates = 'users')
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -39,7 +39,8 @@ class User(db.Model, UserMixin):
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     groupname = db.Column(db.String(20), unique=True, nullable=False)
-    user = db.relationship('User', secondary = 'user_group', back_populates = 'group')
+    users = db.relationship('User', secondary = 'user_group', back_populates = 'groups')
+    roles = db.relationship('Role', secondary = 'role_group', back_populates = 'groups')
 
     def __repr__(self):
         return f"Group('{self.groupname}')"
@@ -50,6 +51,23 @@ user_group = db.Table(
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
 )
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rolename = db.Column(db.String(20), unique=True, nullable=False)
+    groups = db.relationship('Group', secondary = 'role_group', back_populates = 'roles')
+
+    def __repr__(self):
+        return f"Role('{self.rolename}')"
+
+
+role_group = db.Table(
+    'role_group',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
+    db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
+)
+
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
