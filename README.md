@@ -148,10 +148,11 @@ Erklärungen zu diesem `--force-with-lease` findet man [hier](https://blog.adams
 
 ## Flask Befehl
 
-Flask wird mit einem Befehl ausgeliefert, der für die Fehlersuche nützlich ist. Damit er funktioniert, muss aber die Flask Applikation konfiguriert sein, was etwas mühsam ist. Aus diesem Grund habe ich das Skript `flash.sh` geschrieben. Es wird wie folgt verwendet:
+Flask wird mit einem Befehl ausgeliefert, der für die Fehlersuche nützlich ist. Damit er funktioniert, muss die Environment Variable `FLASK_APP=run.py` gesetzt werden.Es wird wie folgt verwendet:
 
 ```
-$ ./flask.sh routes
+$ export FLASK_APP=run.py
+$ flask routes
 INFO: User admin already exists - reset password and email
 Endpoint             Methods    Rule
 -------------------  ---------  --------------------------
@@ -167,7 +168,7 @@ Man sieht eine Liste von URL's und den dafür zuständigen Methoden. Z.B. 'main.
 Noch nützlicher ist die Shell Funktion:
 
 ```
-$ ./flask.sh shell
+$ flask shell
 INFO: User admin already exists - reset password and email
 Python 3.12.4 (v3.12.4:8e8a4baf65, Jun  6 2024, 17:33:18) [Clang 13.0.0 (clang-1300.0.29.30)] on darwin
 App: webapp
@@ -176,3 +177,13 @@ Instance: /Users/ppe/work/vds-sternwarte/instance
 User('admin', 'admin@example.org', 'default.jpg')
 >>> 
 ```
+
+## Datenbank Migrationen
+
+Die Datenbank Struktur wird sich während der Entwicklung immer wieder verändern. Nach einem Update der Applikation (git pull), ist es ratsam die Migration durchzuführen mit:
+
+```
+$ flask db upgrade
+```
+
+Weitere technische Informationen zur Migration findet man [in der Flask Migrate Dokumentation](https://flask-migrate.readthedocs.io/en/latest/index.html).
