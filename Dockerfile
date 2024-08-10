@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
 FROM python:3.12
+ENV FLASK_APP=prod.py
 
 WORKDIR /vds
 
@@ -9,6 +10,8 @@ RUN pip3 install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 COPY webapp webapp/
+COPY migrations migrations/
 COPY prod.py ./
+COPY docker-startup.sh ./
 
-CMD ["gunicorn", "prod:app", "-b", "0.0.0.0:5000", "-w", "4"]
+CMD [ "./docker-startup.sh" ]
