@@ -2,11 +2,11 @@
 
 UML Diagram:
 
-![uml diagram](docs/uml-diagram.svg)
+![uml diagram](uml-diagram.svg)
 
 Datenbank Schema
 
-![model-diagram](docs/model-diagram.svg)
+![model-diagram](model-diagram.svg)
 
 ## Diagramme aktualisieren
 
