@@ -84,7 +84,21 @@ Update pip nur wenn nötig (pip list zeigt eine entsprechende Meldung). Danach w
 
 ## Anleitung für Linux
 
-... 
+Die Anleitung für Linux ist ähnlich der bereits o. g. Anleitung für MacOS.
+
+Voraussetzung ist dabei, dass git, github und pyphon bereits installiert sind.
+
+cd savefolder
+mkdir workspace
+cd workspace
+git clone git@github.com:GITHUBUSER/vds-sternwarte.git
+cd vds-sternwarte
+# Neue Datei erstellen oder vorhandene bearbeiten ... danach muss diese Online gestellt werden
+git add filename
+git commit -m "Kommentar"
+# Übergabe der eigenen bearbeiteten / erstellten Datei an ursprünglichen Ersteller
+git push origin 
+
 Dann weiter mit den folgenden Schritten [Datenbank initialisieren](#datenbank-initialisieren).
 
 ## Datenbank initialisieren
