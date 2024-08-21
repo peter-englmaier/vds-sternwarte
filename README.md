@@ -88,6 +88,7 @@ Die Anleitung für Linux ist ähnlich der bereits o. g. Anleitung für MacOS.
 
 Voraussetzung ist dabei, dass git, github und pyphon bereits installiert sind.
 
+```
 cd savefolder
 mkdir workspace
 cd workspace
@@ -98,6 +99,7 @@ git add filename
 git commit -m "Kommentar"
 # Übergabe der eigenen bearbeiteten / erstellten Datei an ursprünglichen Ersteller
 git push origin 
+```
 
 Dann weiter mit den folgenden Schritten [Datenbank initialisieren](#datenbank-initialisieren).
 
