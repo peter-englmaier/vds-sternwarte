@@ -25,11 +25,24 @@ Zunächst sollte die aktuelle Version von Python installiert sein (Version 3.12.
 
 Um zum Source Code beitragen zu können, muss man zunächst einen Github Account anlegen, seinen public SSH key in github hinterlegen und das Repository in Github "Forken". Dadurch erhält man einen eigenen Arbeitsbereich bei Github, in dem man den Sourcecode munter anpassen und Änderungen später per "Pull Request" in das Haupt-Repository einfügen kann.
 
-Hier ein paar Links dazu:
-* [Gtihub Account anlegen](https://github.com/signup)
-* [SSH Key anlegen, falls noch nicht vorhanden](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
-* [Public SSH key in github hinterlegen](https://docs.github.com/de/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
-* [Fork erstellen](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+
+# Github Account erstellen
+
+Zunächst erstellt man sich auf seinem Entwicklungs-PC einen ssh Key. Das geht unter Windows, Linux und MacOS ganz gleich. Zuerst öffnet man ein Terminal Fenster (in Windows Powershell) und gibt folgenden Befehl ein:
+
+```
+$ ssh-keygen -t ed25519
+```
+Ich empfehle keine Passphrase einzugeben, ausser man kann die Sicherheit des Entwickler-PCs nicht garantieren.
+
+Anschliessend befindet sich im `.ssh` Verzeichnis der öffentliche Schlussel in der Datei `id_ed25519.pub`. Die gleichnamige Datei ohne `.pub` extension ist der private Schlüssel.
+
+[Jetzt einen Github Account anlegen](https://github.com/signup) und dann [hier](https://github.com/settings/key/new) den **öffentlichen** Schlüssel als `Authentication Key`  in euren Github Account hochladen. 
+
+Hat das geklappt, muss man später bei der Arbeit mit dem Repository niemals sein Passwort eingeben.
+
+Als nächstes könnt ihr einen [Fork erstellen](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo). 
+Dazu einfach oben auf den Knopf "Fork" klicken. 
 
 Wahrscheinlich brauchst du auch eine kleine Einführung in Git:
 * [Tutorial](https://git-scm.com/docs/gittutorial)
