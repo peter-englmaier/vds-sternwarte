@@ -25,9 +25,11 @@ packaging==24.0
 pillow==10.3.0
 pydot==3.0.1
 pyparsing==3.1.2
+setuptools==72.2.0
 SQLAlchemy==2.0.30
 sqlalchemy_schemadisplay==2.0
 typing_extensions==4.7.1
+waitress==3.0.0
 Werkzeug==3.0.3
 WTForms==3.0.1
 zipp==3.19.2
