@@ -5,6 +5,7 @@ from webapp.models import User, Post
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
 from webapp.users.utils import save_picture, send_reset_email
+from .http import url_has_allowed_host_and_scheme
 
 users = Blueprint('users', __name__)
 
@@ -31,14 +32,22 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+        print(f"DEBUG: First try: {user=}")
         if not user:
             user = User.query.filter_by(username=form.email.data).first()
+            print(f"DEBUG: Second try: {user=}")
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            print("DEBUG: Password OK")
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.home'))
+            print(f"DEBUG: {next_page=}")
+            if next_page and url_has_allowed_host_and_scheme(next_page, request.host):
+                return redirect(next_page)
+            else:
+                return redirect(url_for('main.home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
+    print("Redirect to login")
     return render_template('login.html', title='Login', form=form)
 
 

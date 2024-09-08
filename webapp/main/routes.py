@@ -1,4 +1,5 @@
 from flask import render_template, request, Blueprint
+from flask_login import login_required
 from webapp.models import Post
 
 main = Blueprint('main', __name__)
@@ -13,7 +14,14 @@ def home():
 
 
 @main.route("/about")
+@login_required
 def about():
     softwareId = "$Id$"
     version = "0.1-rc"
     return render_template('about.html', title='About', version=version, commitId=softwareId)
+
+@main.route("/status")
+def status():
+    from flask import session
+    print(session)
+    return home()
