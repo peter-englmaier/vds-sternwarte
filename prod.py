@@ -1,10 +1,19 @@
+#!/usr/bin/env python
+
 from webapp import create_app
-from werkzeug.middleware.proxy_fix import ProxyFix
+import os
 
 print("STARTING PRODUCTION SERVER")
 
 app = create_app()
 
-app.wsgi_app = ProxyFix(
-    app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
-)
+from waitress import serve
+from paste.translogger import TransLogger
+# see: https://docs.pylonsproject.org/projects/waitress/en/stable/arguments.html
+serve(TransLogger(app, setup_console_handler=False), 
+    listen='*:5000', 
+    url_scheme='https',
+    threads=4,
+    trusted_proxy=os.environ.get('TRUSTED_PROXY'),
+    log_untrusted_proxy_headers=True
+    )
