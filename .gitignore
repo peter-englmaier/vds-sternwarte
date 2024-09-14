@@ -7,6 +7,8 @@ webapp/static/profile_pics/*.png
 # editor files: 
 *.swp
 .obsidian
+# IDE files:
+.idea/
 # local python files
 **/__pycache__/
 venv/
