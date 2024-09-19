@@ -12,12 +12,18 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'users.login'
 login_manager.login_message_category = 'info'
+login_manager.session_protection = "strong"
 mail = Mail()
 
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config.update(
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
+    )
 
     db.init_app(app)
     migrate = Migrate(app, db)
@@ -34,16 +40,16 @@ def create_app(config_class=Config):
     app.register_blueprint(main)
     app.register_blueprint(errors)
 
-    # setup admin user, if user name and password are set
+    # setup admin user, if username and password are set
     # always reset password to configured password
     try:
-        pwdComplex = len(config_class.ADMIN_USER) > 3 \
+        pwd_complex = len(config_class.ADMIN_USER) > 3 \
             and len(config_class.ADMIN_USER) > 3 \
             and sum(c.isupper() for c in config_class.ADMIN_PASSWORD) > 0 \
             and sum(c.islower() for c in config_class.ADMIN_PASSWORD) > 0 \
             and sum(c.isdigit() for c in config_class.ADMIN_PASSWORD) > 0
 
-        if pwdComplex:
+        if pwd_complex:
             from webapp.models import User, Group
             ctx=app.app_context()
             ctx.push()
@@ -61,7 +67,6 @@ def create_app(config_class=Config):
                 db.session.commit()
 
             # add admin group, if not present, and assign to admin user
-            print('Try to create admin group')
             group=Group.query.filter_by(groupname="admin").first()
             if not group:
                 print('create new group')
@@ -70,7 +75,7 @@ def create_app(config_class=Config):
                 db.session.add(group)
                 db.session.add(admin)
                 db.session.commit()
-            else:
+            elif group not in admin.groups:
                 print('add to existing group')
                 admin.group.append(group)
                 db.session.add(admin)
@@ -80,7 +85,7 @@ def create_app(config_class=Config):
             ctx.pop()
         else:
             print("WARNING: password is not complex enough, not setting up admin user")
-    except:
+    except Exception:
         pass
 
     return app

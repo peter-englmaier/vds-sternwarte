@@ -7,6 +7,8 @@ from flask_login import UserMixin
 
 @login_manager.user_loader
 def load_user(user_id):
+    print(f"DEBUG: user_loader: {user_id}")
+    print(User.query.get(int(user_id)))
     return User.query.get(int(user_id))
 
 
@@ -28,7 +30,7 @@ class User(db.Model, UserMixin):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token)['user_id']
-        except:
+        except Exception:
             return None
         return User.query.get(user_id)
 
