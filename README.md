@@ -233,3 +233,37 @@ $ flask db upgrade
 Weitere technische Informationen zur Migration findet man [in der Flask Migrate Dokumentation](https://flask-migrate.readthedocs.io/en/latest/index.html). Benötigt wird insbesondere `flask db migrate` um Änderunngen an der Struktur automatisiert zu erkennen.
 
 Wichtig ist, dass nicht mehrere Anpassung gleichzeitig passieren, deshalb sollten alle Änderungen **vorher** mit Peter abgesprochen werden.
+
+# Testing
+
+## Doctest
+
+Todo
+
+## Behave
+
+Mit `behave` können regressions tests gegen einen laufenden Webserver durchgeführt werden.
+Aktuell erwartet `behave`, dass Chrome installiert ist und der Webserver auf localhost:5000
+antwortet. 
+
+```shell
+(venv) $ behave
+Feature: Login to webpage # features/login.feature:1
+
+  Scenario: Simple                                   # features/login.feature:3
+    Given I open the url "http://localhost:5000"     # features/steps/login_steps.py:7 0.231s
+    Then I expect that the title is "VdS Sternwarte" # features/steps/login_steps.py:11 0.007s
+
+  Scenario: login to website                     # features/login.feature:7
+    Given I open the url "http://localhost:5000" # features/steps/login_steps.py:7 0.036s
+    When I click on the "Login" Link             # features/steps/login_steps.py:15 0.154s
+    And I enter the admin credentials            # features/steps/login_steps.py:26 0.720s
+    Then I am logged in                          # features/steps/login_steps.py:30 0.026s
+
+1 feature passed, 0 failed, 0 skipped
+2 scenarios passed, 0 failed, 0 skipped
+6 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m1.174s
+
+Process finished with exit code 0
+```
