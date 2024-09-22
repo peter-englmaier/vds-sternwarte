@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from itsdangerous import BadSignature
+from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from webapp import db, login_manager
@@ -22,16 +22,17 @@ class User(db.Model, UserMixin):
     posts = db.relationship('Post', backref='author', lazy=True)
     groups = db.relationship('Group', secondary='user_group', back_populates='users')
 
-    def get_reset_token(self, expires_sec=1800):
-        s = Serializer(current_app.config['SECRET_KEY'], str(expires_sec))
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+    def get_reset_token(self):
+        s = Serializer(secret_key=current_app.config['SECRET_KEY'])
+        token = s.dumps({'user_id': self.id})
+        return token
 
     @staticmethod
-    def verify_reset_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
+    def verify_reset_token(token, expires_sec=1800):
+        s = Serializer(secret_key=current_app.config['SECRET_KEY'])
         try:
-            user_id = s.loads(token)['user_id']
-        except BadSignature:
+            user_id = s.loads(token, max_age=expires_sec)['user_id']
+        except BadSignature | SignatureExpired:
             return None
         return User.query.get(user_id)
 

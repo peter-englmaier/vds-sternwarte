@@ -9,10 +9,12 @@ class Config:
     SQLALCHEMY_DATABASE_URI = config.get('SQLALCHEMY_DATABASE_URI')
     MAIL_SERVER = config.get('MAIL_SERVER')
     MAIL_PORT = config.get('MAIL_PORT')
-    MAIL_USE_TLS = config.get('MAIL_USE_TLS'),
+    MAIL_USE_TLS = config.get('MAIL_USE_TLS')
+    MAIL_USE_SSL = config.get('MAIL_USE_SSL')
     MAIL_USERNAME = config.get('MAIL_USER')
     MAIL_PASSWORD = config.get('MAIL_PASS')
     MAIL_REPLYTO = config.get('MAIL_REPLYTO')
     ADMIN_USER = config.get('ADMIN_USER')
     ADMIN_EMAIL = config.get('ADMIN_EMAIL')
     ADMIN_PASSWORD = config.get('ADMIN_PASSWORD')
+    MAIL_DEBUG = config.get('MAIL_DEBUG')
