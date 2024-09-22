@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from webapp import create_app,db
+from webapp import create_app
+from webapp.database import db
 app=create_app()
 ctx=app.app_context()
 ctx.push()

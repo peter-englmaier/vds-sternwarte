@@ -6,6 +6,7 @@ from flask_mail import Mail
 
 from .config import Config
 from .database import db
+from sqlalchemy.exc import OperationalError
 
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -47,39 +48,42 @@ def create_app(config_class=Config):
         and sum(c.islower() for c in config_class.ADMIN_PASSWORD) > 0 \
         and sum(c.isdigit() for c in config_class.ADMIN_PASSWORD) > 0
 
-    if pwd_complex:
-        from webapp.models import User, Group
-        ctx=app.app_context()
-        ctx.push()
-        admin=User.query.filter_by(username=config_class.ADMIN_USER).first()
-        hashed_password = bcrypt.generate_password_hash(config_class.ADMIN_PASSWORD).decode('utf-8')
-        if admin:
-            admin.password = hashed_password
-            admin.email = config_class.ADMIN_EMAIL
+    try:
+        if pwd_complex:
+            from webapp.models import User, Group
+            ctx=app.app_context()
+            ctx.push()
+            admin=User.query.filter_by(username=config_class.ADMIN_USER).first()
+            hashed_password = bcrypt.generate_password_hash(config_class.ADMIN_PASSWORD).decode('utf-8')
+            if admin:
+                admin.password = hashed_password
+                admin.email = config_class.ADMIN_EMAIL
+                db.session.commit()
+            else:
+                print(f"INFO: Create new admin user {config_class.ADMIN_USER}")
+                admin = User(username=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
+                db.session.add(admin)
+                db.session.commit()
+
+            # add admin group, if not present, and assign to admin user
+            group=Group.query.filter_by(groupname="admin").first()
+            if not group:
+                group = Group(groupname="admin")
+                admin.groups.append(group)
+                db.session.add(group)
+                db.session.add(admin)
+                db.session.commit()
+            elif group not in admin.groups:
+                admin.groups.append(group)
+                db.session.add(admin)
+                db.session.commit()
+
             db.session.commit()
+            ctx.pop()
         else:
-            print(f"INFO: Create new admin user {config_class.ADMIN_USER}")
-            admin = User(username=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
-            db.session.add(admin)
-            db.session.commit()
-
-        # add admin group, if not present, and assign to admin user
-        group=Group.query.filter_by(groupname="admin").first()
-        if not group:
-            group = Group(groupname="admin")
-            admin.group.append(group)
-            db.session.add(group)
-            db.session.add(admin)
-            db.session.commit()
-        elif group not in admin.groups:
-            admin.group.append(group)
-            db.session.add(admin)
-            db.session.commit()
-
-        db.session.commit()
-        ctx.pop()
-    else:
-        print("WARNING: password is not complex enough, not setting up admin user")
+            print("WARNING: password is not complex enough, not setting up admin user")
+    except OperationalError:
+        print("WARNING: Database not initialized")
 
 
     return app
