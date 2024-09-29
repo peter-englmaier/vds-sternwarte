@@ -1,6 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
-from webapp import db, bcrypt
+from webapp import bcrypt
+from webapp.database import db
 from webapp.models import User, Post
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
@@ -32,22 +33,18 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        print(f"DEBUG: First try: {user=}")
         if not user:
             user = User.query.filter_by(username=form.email.data).first()
-            print(f"DEBUG: Second try: {user=}")
         if user and bcrypt.check_password_hash(user.password, form.password.data):
-            print("DEBUG: Password OK")
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            print(f"DEBUG: {next_page=}")
             if next_page and url_has_allowed_host_and_scheme(next_page, request.host):
                 return redirect(next_page)
             else:
                 return redirect(url_for('main.home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
-    print("Redirect to login")
+
     return render_template('login.html', title='Login', form=form)
 
 

@@ -1,36 +1,38 @@
-from datetime import datetime
+from datetime import datetime, timezone
+
+from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from webapp import db, login_manager
 from flask_login import UserMixin
-
+from sqlalchemy.orm import Mapped, mapped_column
 
 @login_manager.user_loader
 def load_user(user_id):
-    print(f"DEBUG: user_loader: {user_id}")
     print(User.query.get(int(user_id)))
     return User.query.get(int(user_id))
 
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
-    password = db.Column(db.String(60), nullable=False)
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(db.String(120), unique=True, nullable=False)
+    image_file: Mapped[str] = mapped_column(db.String(20), nullable=False, default='default.jpg')
+    password: Mapped[str] = mapped_column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
-    groups = db.relationship('Group', secondary = 'user_group', back_populates = 'users')
+    groups = db.relationship('Group', secondary='user_group', back_populates='users')
 
-    def get_reset_token(self, expires_sec=1800):
-        s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+    def get_reset_token(self):
+        s = Serializer(secret_key=current_app.config['SECRET_KEY'])
+        token = s.dumps({'user_id': self.id})
+        return token
 
     @staticmethod
-    def verify_reset_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
+    def verify_reset_token(token, expires_sec=1800):
+        s = Serializer(secret_key=current_app.config['SECRET_KEY'])
         try:
-            user_id = s.loads(token)['user_id']
-        except Exception:
+            user_id = s.loads(token, max_age=expires_sec)['user_id']
+        except BadSignature | SignatureExpired:
             return None
         return User.query.get(user_id)
 
@@ -39,11 +41,10 @@ class User(db.Model, UserMixin):
 
 
 class Group(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    groupname = db.Column(db.String(20), unique=True, nullable=False)
-    users = db.relationship('User', secondary = 'user_group', back_populates = 'groups')
-    roles = db.relationship('Role', secondary = 'role_group', back_populates = 'groups')
-
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    groupname: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    users = db.relationship('User', secondary='user_group', back_populates='groups')
+    roles = db.relationship('Role', secondary='role_group', back_populates='groups')
     def __repr__(self):
         return f"Group('{self.groupname}')"
 
@@ -56,9 +57,9 @@ user_group = db.Table(
 
 
 class Role(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    rolename = db.Column(db.String(20), unique=True, nullable=False)
-    groups = db.relationship('Group', secondary = 'role_group', back_populates = 'roles')
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    rolename: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    groups = db.relationship('Group', secondary = 'role_group', back_populates='roles')
 
     def __repr__(self):
         return f"Role('{self.rolename}')"
@@ -72,11 +73,11 @@ role_group = db.Table(
 
 
 class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(db.String(100), nullable=False)
+    date_posted: Mapped[datetime] = mapped_column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
+    content: Mapped[str] = mapped_column(db.Text, nullable=False)
+    user_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
