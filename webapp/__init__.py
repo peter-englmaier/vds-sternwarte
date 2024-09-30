@@ -1,12 +1,15 @@
 from flask import Flask
+from flask_admin import Admin
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from sqlalchemy.exc import OperationalError
 
 from .config import Config
 from .database import db
-from sqlalchemy.exc import OperationalError
+from webapp.admin.utils import init_admin
+
 
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -14,7 +17,7 @@ login_manager.login_view = 'users.login'
 login_manager.login_message_category = 'info'
 login_manager.session_protection = "strong"
 mail = Mail()
-
+admin = Admin()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -30,7 +33,9 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+    init_admin(app, admin) # setup admin views
 
+    #from webapp.admin.routes import admin
     from webapp.users.routes import users
     from webapp.posts.routes import posts
     from webapp.main.routes import main
@@ -40,7 +45,8 @@ def create_app(config_class=Config):
     app.register_blueprint(main)
     app.register_blueprint(errors)
 
-    # setup admin user, if username and password are set
+
+    # setup admin user, if name and password are set
     # always reset password to configured password
     pwd_complex = len(config_class.ADMIN_USER) > 3 \
         and len(config_class.ADMIN_USER) > 3 \
@@ -50,32 +56,45 @@ def create_app(config_class=Config):
 
     try:
         if pwd_complex:
-            from webapp.models import User, Group
+            from webapp.models import User, Group, Role
             ctx=app.app_context()
             ctx.push()
-            admin=User.query.filter_by(username=config_class.ADMIN_USER).first()
+            admin_user=User.query.filter_by(name=config_class.ADMIN_USER).first()
             hashed_password = bcrypt.generate_password_hash(config_class.ADMIN_PASSWORD).decode('utf-8')
-            if admin:
-                admin.password = hashed_password
-                admin.email = config_class.ADMIN_EMAIL
+            if admin_user:
+                admin_user.password = hashed_password
+                admin_user.email = config_class.ADMIN_EMAIL
                 db.session.commit()
             else:
                 print(f"INFO: Create new admin user {config_class.ADMIN_USER}")
-                admin = User(username=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
-                db.session.add(admin)
+                admin_user = User(name=config_class.ADMIN_USER, email=config_class.ADMIN_EMAIL, password=hashed_password)
+                db.session.add(admin_user)
                 db.session.commit()
 
             # add admin group, if not present, and assign to admin user
-            group=Group.query.filter_by(groupname="admin").first()
-            if not group:
-                group = Group(groupname="admin")
-                admin.groups.append(group)
-                db.session.add(group)
-                db.session.add(admin)
+            admin_group=Group.query.filter_by(name="admin").first()
+            if not admin_group:
+                admin_group = Group(name="admin")
+                admin_user.groups.append(admin_group)
+                db.session.add(admin_group)
+                db.session.add(admin_user)
                 db.session.commit()
-            elif group not in admin.groups:
-                admin.groups.append(group)
-                db.session.add(admin)
+            elif admin_group not in admin_user.groups:
+                admin_user.groups.append(admin_group)
+                db.session.add(admin_user)
+                db.session.commit()
+
+            # add admin role, if not present, and assign to admin group
+            admin_role=Role.query.filter_by(name="admin").first()
+            if not admin_role:
+                admin_role = Role(name="admin")
+                admin_group.roles.append(admin_role)
+                db.session.add(admin_role)
+                db.session.add(admin_group)
+                db.session.commit()
+            elif admin_role not in admin_group.roles:
+                admin_group.roles.append(admin_role)
+                db.session.add(admin_group)
                 db.session.commit()
 
             db.session.commit()
@@ -84,6 +103,5 @@ def create_app(config_class=Config):
             print("WARNING: password is not complex enough, not setting up admin user")
     except OperationalError:
         print("WARNING: Database not initialized")
-
 
     return app
