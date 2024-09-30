@@ -11,6 +11,7 @@ dnspython==2.6.1
 email-validator==2.0.0.post2
 eventlet==0.36.1
 Flask==2.2.5
+Flask-Admin==1.6.1
 Flask-Bcrypt==1.0.1
 Flask-Login==0.6.3
 Flask-Mail==0.10.0
