@@ -35,6 +35,9 @@
                 <a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">New Post</a>
                 <a class="nav-item nav-link" href="{{ url_for('users.account') }}">Account</a>
                 <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Logout</a>
+                {% if current_user.has_role("admin") %}
+                    <a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a>
+                {% endif %}
               {% else %}
                 <a class="nav-item nav-link" href="{{ url_for('users.login') }}">Login</a>
                 <a class="nav-item nav-link" href="{{ url_for('users.register') }}">Register</a>

@@ -1,5 +1,7 @@
 from flask import render_template, request, Blueprint
 from flask_login import login_required
+from flask_login import current_user
+
 from webapp.models import Post
 
 main = Blueprint('main', __name__)
@@ -24,4 +26,6 @@ def about():
 def status():
     from flask import session
     print(session)
+    print(f"{current_user.name=}")
+    print(f"Admin User? {current_user.has_role('admin')}")
     return home()
