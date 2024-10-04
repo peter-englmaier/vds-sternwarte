@@ -67,6 +67,25 @@ class RoleModelView(GenericModelView):
         groups=(lambda v, c, m, p: names(m.groups)), # format group list
     )
 
+class SiteModelView(GenericModelView):
+    column_list = ('name', 'longitude', 'lattitude', 'observatories')
+    # column_descriptions = dict(
+    #     name='Name of role',
+    # )
+    # column_formatters = dict(
+    #     groups=(lambda v, c, m, p: names(m.groups)), # format group list
+    # )
+
+class ObservatoryModelView(GenericModelView):
+    column_list = ('name', 'telescopes')
+    column_formatters = dict(
+        groups=(lambda v, c, m, p: names(m.sites)), # format group list
+    )
+
+class TelescopeModelView(GenericModelView):
+    column_list = ('name', 'observatory')
+
+
 class MyHomeView(AdminIndexView):
     @expose('/')
     def index(self):
@@ -74,9 +93,12 @@ class MyHomeView(AdminIndexView):
 
 def init_admin(app, admin):
     from webapp import db
-    from webapp.models import User, Group, Role
+    from webapp.models import User, Group, Role, Site, Observatory, Telescope
 
     admin.init_app(app, index_view=MyHomeView())
     admin.add_view(UserModelView(User, db.session))
     admin.add_view(GroupModelView(Group, db.session))
     admin.add_view(RoleModelView(Role, db.session))
+    admin.add_view(SiteModelView(Site, db.session))
+    admin.add_view(ObservatoryModelView(Observatory, db.session))
+    admin.add_view(TelescopeModelView(Telescope, db.session))
