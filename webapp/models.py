@@ -19,7 +19,9 @@ class RoleDoesNotExist(Exception):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
+"""
+    A user is an individual. Do not share users.
+"""
 class User(db.Model, UserMixin):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
@@ -55,7 +57,11 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.name}', '{self.email}', '{self.image_file}')"
 
-
+"""
+    A group is a collection of akin people. At the same time, the group is a collection of
+     permissions or "roles" the group can perform. When the people in the group are not "equal",
+     it is better to create more groups.
+"""
 class Group(db.Model):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
@@ -79,7 +85,11 @@ user_group = db.Table(
     db.Column('group_id', db.Integer, db.ForeignKey('group.id'))
 )
 
-
+"""
+    A role should be defined precisely. If needed, a group can have multiple roles. Ideally, each role would 
+    only be checked for in one place of the code. Roles should be grouped together in a group to make assignments
+    easier.
+"""
 class Role(db.Model):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
@@ -105,3 +115,60 @@ class Post(db.Model):
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
+
+"""
+    A site is a place with one or more observatories
+"""
+class Site(db.Model):
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    longitude: Mapped[float] = mapped_column(db.Float)
+    lattitude: Mapped[float] = mapped_column(db.Float)
+    observatories = db.relationship('Observatory', backref='site', lazy=True)
+
+    def __repr__(self):
+        return f"Site('{self.name}', l={self.longitude}, b={self.lattitude})"
+
+"""
+    An observatory is a place with a mount but potentially multiple telescopes on the mount
+"""
+class Observatory(db.Model):
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    site_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('site.id'), nullable=False)
+    telescopes = db.relationship('Telescope', backref='observatory', lazy=True)
+
+    def __repr__(self):
+        return f"Observatory('{self.name}')"
+
+"""
+    A telescope is an Optical Tube Assembly consisting of telescope and camera
+"""
+class Telescope(db.Model):
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    observatory_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('observatory.id'), nullable=False)
+    aperature_mm: Mapped[float] = mapped_column(db.Float, nullable=False)
+    focal_length_mm: Mapped[float] = mapped_column(db.Float, nullable=False)
+    camera_name: Mapped[str] = mapped_column(db.String(20), nullable=False)
+
+    def __repr__(self):
+        return f"Telescope('{self.name}')"
+
+"""
+    An ObservationsRequest is a proposed observation for one or more telescopes
+    It is in one of the following states:
+        - draft: not yet requested
+        - waiting: waiting to be rejected or approved
+        - rejected: an rejected proposal can become draft again or simply deleted
+        - approved: waiting to be performed
+        - documentation needed: the propose was performed and needs to be documented
+        - finished: once the observation is documented it is finished
+"""
+class ObservationsRequest(db.Model):
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(20), unique=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    telescope_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('telescope.id'), nullable=False)
+
+
