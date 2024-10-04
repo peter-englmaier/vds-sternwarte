@@ -1,6 +1,6 @@
 # local database and config files
 config.json
-*.db
+instance/
 # profile pictures
 webapp/static/profile_pics/*.jpg
 webapp/static/profile_pics/*.png
