@@ -3,4 +3,5 @@ import app
 
 
 print("DEPRECATED: use ./app.py instead of ./run.py")
-exec app.py
+exec(open('app.py').read())
+
