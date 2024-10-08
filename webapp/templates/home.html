@@ -1,5 +1,15 @@
 {% extends "layout.html" %}
 {% block content %}
+
+<h2><a class="article-title" href="/post/1"><center>Dashboard für Mitglieder der VdS Fachgruppe Remotesternwarten</center></a></h2>
+            <p class="article-content">Die Fachgruppe Remotesternwarten der VdS betreibt in Hakos eine eigene Remotesternwarte. Eine Nutzung des Remoteteleskops in Hakos ist unter folgenden BEdingungen möglich:
+             <ul>
+              <li>VdS Mitglied</li>
+              <li>Interesse an Remoteastronomie</li>
+              <li>Teilnahme in der Fachgruppe als Mitglied</li>
+             </ul> 
+             <center>Sind diese Voraussetzungen erfüllt, ist eine <a class="nav-item nav-link" href="{{ url_for('users.register') }}">Registrierung</a> für das Dashboard möglich.</center>
+            </p>
     {% for post in posts.items %}
         <article class="media content-section">
           <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">

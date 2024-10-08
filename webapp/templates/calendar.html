@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Kalender</h1>
-
+    <h1><center>Kalender</center></h1>
+    <iframe src="https://nextcloud.astronomie-im-garten.de/nextcloud/remote.php/dav" name="Kalender" id="Kalender" scrolling="yes" frameborder="1" marginheight="0px" marginwidth="0px" height="400" width="600">
+    </iframe>
     {% if current_user.is_authenticated %}
     <p>Version: <b>{{ version }}</b>, <br/>
     Commit: {{ commitId }}
