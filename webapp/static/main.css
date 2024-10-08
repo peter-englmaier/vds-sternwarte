@@ -1,15 +1,15 @@
 body {
-  background: #fafafa;
-  color: #333333;
+  background: #000000;
+  color: #ffffff;
   margin-top: 5rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #444444;
+  color: #ffffff;
 }
 
 .bg-steel {
-  background-color: #5f788a;
+  background-color: #000000;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -25,15 +25,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .content-section {
-  background: #ffffff;
+  color: #ffffff;
+  background: #000000;
   padding: 10px 20px;
   border: 1px solid #dddddd;
   border-radius: 3px;
   margin-bottom: 20px;
 }
 
+.content-section p.text-muted {
+  color: #ffffff !important; /* Textfarbe auf Weiß setzen */
+}
+
 .article-title {
-  color: #444444;
+  color: hwb(0 100% 0%);
 }
 
 a.article-title:hover {
@@ -42,6 +47,7 @@ a.article-title:hover {
 }
 
 .article-content {
+  color: #ffffff;
   white-space: pre-line;
 }
 
@@ -77,4 +83,10 @@ a.article-title:hover {
 
 .account-heading {
   font-size: 2.5rem;
+}
+
+.list-group-item.list-group-item-light {
+  background-color: #000000; /* Hintergrund transparent oder gewünschte Farbe */
+  color: #ffffff; /* Textfarbe auf Weiß setzen */
+  border-color: #ffffff; /* Rahmenfarbe auf Weiß setzen */
 }
