@@ -23,7 +23,6 @@ def calendar():
     return render_template('calendar.html', title='Kalender', version=version, commitId=softwareId)
 
 @main.route("/faq")
-@login_required
 def faq():
     softwareId = "$Id$"
     version = "0.1-rc"
