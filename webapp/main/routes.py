@@ -15,12 +15,19 @@ def home():
     return render_template('home.html', posts=posts)
 
 
-@main.route("/about")
+@main.route("/calendar")
 @login_required
-def about():
+def calendar():
     softwareId = "$Id$"
     version = "0.1-rc"
-    return render_template('about.html', title='About', version=version, commitId=softwareId)
+    return render_template('calendar.html', title='Kalender', version=version, commitId=softwareId)
+
+@main.route("/faq")
+@login_required
+def faq():
+    softwareId = "$Id$"
+    version = "0.1-rc"
+    return render_template('faq.html', title='FAQ', version=version, commitId=softwareId)
 
 @main.route("/status")
 def status():
