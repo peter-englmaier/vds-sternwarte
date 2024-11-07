@@ -56,9 +56,9 @@ tzdata==2024.1
 tzlocal==5.2
 urllib3==2.2.2
 vobject==0.9.7
-waitress==3.0.0
+waitress==3.0.1
 websocket-client==1.8.0
-Werkzeug==3.0.3
+Werkzeug==3.1.2
 wsproto==1.2.0
 WTForms==3.0.1
 x-wr-timezone==0.0.7
