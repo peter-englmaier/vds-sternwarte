@@ -19,6 +19,14 @@ def calendar():
     version = "0.1-rc"
     return render_template('calendar.html', title='Kalender', version=version, commitId=softwareId)
 
+@main.route("/poweruser")
+@login_required
+def poweruser():
+    softwareId = "$Id$"
+    version = "0.1-rc"
+    return render_template('poweruser.html', title='Poweruser', version=version, commitId=softwareId)
+
+
 @main.route("/faq")
 def faq():
     softwareId = "$Id$"
