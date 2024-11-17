@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-from webapp import create_app
-from webapp.database import db
+from webapp import create_app, db
 app=create_app()
-ctx=app.app_context()
-ctx.push()
-db.create_all()
-ctx.pop()
+
+with app.app_context():
+    db.create_all()
 
 print("Database has been initialized")

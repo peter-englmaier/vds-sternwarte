@@ -1,11 +1,11 @@
 from flask import (render_template, url_for, flash,
-                   redirect, request, abort, Blueprint)
+                   redirect, request, abort)
 from flask_login import current_user, login_required
 from webapp import db
-from webapp.models import Post
+from webapp.posts import posts
+from webapp.model.db import Post
 from webapp.posts.forms import PostForm
 
-posts = Blueprint('posts', __name__)
 
 
 @posts.route("/post/new", methods=['GET', 'POST'])

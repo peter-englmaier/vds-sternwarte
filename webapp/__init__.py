@@ -4,12 +4,10 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_sqlalchemy import SQLAlchemy
 
-from .config import Config
-from .database import db
-from webapp.setup_users import setup_users
+from webapp.config import Config
 from webapp.admin.utils import init_admin
-
 
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -18,6 +16,10 @@ login_manager.login_message_category = 'info'
 login_manager.session_protection = "strong"
 mail = Mail()
 admin = Admin()
+
+db = SQLAlchemy(add_models_to_shell=True)
+
+from webapp.users.setup_users import setup_users
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -29,7 +31,7 @@ def create_app(config_class=Config):
     )
 
     db.init_app(app)
-    migrate = Migrate(app, db)
+    Migrate(app, db)
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
@@ -40,16 +42,15 @@ def create_app(config_class=Config):
         from .global_vars import set_global_vars
         set_global_vars()
 
-    #from webapp.admin.routes import admin
-    from webapp.users.routes import users
-    from webapp.posts.routes import posts
-    from webapp.main.routes import main
-    from webapp.errors.handlers import errors
-    app.register_blueprint(users)
-    app.register_blueprint(posts)
-    app.register_blueprint(main)
-    app.register_blueprint(errors)
-
-    setup_users(app, bcrypt)
+    with app.app_context():
+        from webapp.users.routes import users
+        from webapp.posts.routes import posts
+        from webapp.main.routes import main
+        from webapp.errors.handlers import errors
+        app.register_blueprint(users)
+        app.register_blueprint(posts)
+        app.register_blueprint(main)
+        app.register_blueprint(errors)
+        setup_users()
 
     return app

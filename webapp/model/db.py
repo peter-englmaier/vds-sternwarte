@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
-from webapp import db, login_manager
+from webapp import login_manager, db
 from flask_login import UserMixin
 from sqlalchemy.orm import Mapped, mapped_column
 

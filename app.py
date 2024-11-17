@@ -8,7 +8,6 @@ if sys.version_info.minor != 12:
     print("WARNING: not running with recommended python version")
     print("WARNING: -------------------------------------------")
 
-
 from webapp import create_app
 
 app = create_app()

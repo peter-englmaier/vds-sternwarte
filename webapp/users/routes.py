@@ -1,14 +1,13 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
 from webapp import bcrypt
-from webapp.database import db
-from webapp.models import User, Post
+from webapp.model.db import User, Post
+from webapp.users import users
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
 from webapp.users.utils import save_picture, send_reset_email
-from .http import url_has_allowed_host_and_scheme
+from webapp.users.http import url_has_allowed_host_and_scheme
 
-users = Blueprint('users', __name__)
 
 
 @users.route("/register", methods=['GET', 'POST'])

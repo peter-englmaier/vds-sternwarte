@@ -1,11 +1,8 @@
-from flask import render_template, request, Blueprint
+from flask import render_template, request
 from flask_login import login_required
 from flask_login import current_user
-
-from webapp.models import Post
-
-main = Blueprint('main', __name__)
-
+from webapp.main import main
+from webapp.model.db import Post
 
 @main.route("/")
 @main.route("/home")

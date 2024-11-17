@@ -93,7 +93,7 @@ class MyHomeView(AdminIndexView):
 
 def init_admin(app, admin):
     from webapp import db
-    from webapp.models import User, Group, Role, Site, Observatory, Telescope
+    from webapp.model.db import User, Group, Role, Site, Observatory, Telescope
 
     admin.init_app(app, index_view=MyHomeView())
     admin.add_view(UserModelView(User, db.session))
