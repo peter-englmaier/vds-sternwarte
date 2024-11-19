@@ -30,7 +30,7 @@
                     </div>
                     <div class="navbar-nav">
                         {% if current_user.is_authenticated %}
-                            <a class="nav-item nav-link" href="{{ url_for('main.homeintern') }}">Home</a>
+                            <a class="nav-item nav-link" href="{{ url_for('main.home') }}">Home</a>
                             <a class="nav-item nav-link" href="{{ url_for('main.calendar') }}">Kalender</a>
                             <a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">Beantragung</a>
                             <a class="nav-item nav-link" href="{{ url_for('users.account') }}">Account</a>

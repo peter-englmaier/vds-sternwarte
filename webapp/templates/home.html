@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 {% if current_user.is_authenticated %}
-    <h1>Willkommen, {{ current_user.username }}!</h1>
+    <center><h1>Willkommen, {{ current_user.name }}!</h1></center>
     <h2><a class="article-title" href="/post/1"><center>Dashboard für Mitglieder der VdS Fachgruppe Remotesternwarten</center></a></h2>
             <p class="article-content">Die Fachgruppe Remotesternwarten der VdS betreibt in Hakos eine eigene Remotesternwarte. Eine Nutzung des Remoteteleskops in Hakos ist möglich
             </p>
