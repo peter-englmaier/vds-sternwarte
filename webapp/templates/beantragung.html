@@ -46,46 +46,109 @@
         </nav>
     </header>
     
-    <main role="main" class="container mt-5">
-        <div class="row">
-            <div class="col-md-8">
-                {% with messages = get_flashed_messages(with_categories=True) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                {% block content %}{% endblock %}
-            </div>
-            <div class="col-md-4">
-                <div class="content-section">
-                    <h3 class="text-center">Betriebsstatus</h3>
-                    <p class="text-muted text-center">Daylight / In use / Maintenance</p>
-                    <ul class="list-group">
-                        <li class="list-group-item list-group-item-light text-center">Ankündigungen</li>
-                        {% if posts and posts.items %}
-                            {% for post in posts.items %}
-                                <article class="media content-section">
-                                    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}" alt="Profile Picture">
-                                    <div class="media-body">
-                                        <div class="article-metadata">
-                                            <a class="mr-2" href="{{ url_for('users.user_posts', username=post.author.name) }}">{{ post.author.name }}</a>
-                                            <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
-                                        </div>
-                                        <h2><a class="article-title" href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
-                                        <p class="article-content">{{ post.content }}</p>
-                                    </div>
-                                </article>
-                            {% endfor %}
-                        {% else %}
-                            <li class="list-group-item text-center">Keine Beiträge verfügbar.</li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </main>
+   {% block content %}
+    <h1><center>Beantragungsformular mit folgendem Beispiel:</center></h1>
+    <center>
+    <table border="1">
+        <tr>
+            <td>Beobachtungsdatum:</td>
+            <td><input type="text" id="name" name="name" required></td>
+        </tr>
+       <tr>
+            <td>Objekt:</td>
+            <td><input type="text" id="name" name="name" required></td>
+        </tr>
+    </table>
+    <p></p>
+    <table border="1">
+        <tr>
+            <td>Teleskop</td>
+            <td><form>
+                <label>
+                    <input type="checkbox" name="options" value="option1">
+                    12"Newton
+                </label><br>
+                <label>
+                    <input type="checkbox" name="options" value="option2">
+                    Takahashi
+                </label><br>
+               </form>
+            </td>
+        </tr>
+    </table>
+    <p></p>
+        <h3>Filter am 12"Newton</h3>
+        <form>
+            <label>
+                <input type="checkbox" name="options" value="option1">
+                L
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option2">
+                R
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option3">
+                G
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option4">
+                B
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option5">
+                Halpha
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option6">
+                OIII
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option7">
+                SII
+            </label><br>
+            </form>
+       
+            <p></p>
+        <h3>Filter am Takahashi</h3>
+        <form>
+            <label>
+                <input type="checkbox" name="options" value="option8">
+                Clear
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option9">
+                LeNh
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option10">
+                Triband RGB
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option11">
+                APT 5nm Narrow
+            </label><br>
+            <label>
+                <input type="checkbox" name="options" value="option12">
+               SII
+            </label><br>
+           </form>
+    
+            <table border="1"></table>
+        <tr>
+            <td>Belichtungszeit</td>
+            <td><input type="text" id="name" name="name" required></td>
+        </tr>
+        <tr>
+            <td>Bildanzahl</td>
+            <td><input type="text" id="name" name="name" required></td>
+        </tr>
+    </table>
+    <br>
+    <form><button type="submit">Absenden</button></form>
+</center>
+    {% endblock content %}
+    
 
     <!-- Optional JavaScript -->
     <!-- Bootstrap 4 JS -->
