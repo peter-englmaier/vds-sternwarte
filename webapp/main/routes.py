@@ -11,13 +11,33 @@ def home():
     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
     return render_template('home.html', posts=posts)
 
-
-@main.route("/about")
+@main.route("/beantragung")
 @login_required
-def about():
+def beantragung():
     softwareId = "$Id$"
     version = "0.1-rc"
-    return render_template('about.html', title='About', version=version, commitId=softwareId)
+    return render_template('beantragung.html', title='Beantragung', version=version, commitId=softwareId)
+
+@main.route("/calendar")
+@login_required
+def calendar():
+    softwareId = "$Id$"
+    version = "0.1-rc"
+    return render_template('calendar.html', title='Kalender', version=version, commitId=softwareId)
+
+@main.route("/poweruser")
+@login_required
+def poweruser():
+    softwareId = "$Id$"
+    version = "0.1-rc"
+    return render_template('poweruser.html', title='Poweruser', version=version, commitId=softwareId)
+
+
+@main.route("/faq")
+def faq():
+    softwareId = "$Id$"
+    version = "0.1-rc"
+    return render_template('faq.html', title='FAQ', version=version, commitId=softwareId)
 
 @main.route("/status")
 def status():

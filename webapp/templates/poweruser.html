@@ -1,0 +1,8 @@
+<!-- webapp/templates/about.html -->
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Poweruser</h1>
+    <p>Aufgaben der Poweruser:</p>
+    <p><a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
+{% endblock %}
