@@ -13,4 +13,5 @@ COPY migrations migrations/
 COPY prod.py ./
 COPY docker-startup.sh ./
 
+ENTRYPOINT [ "/bin/sh", "-c" ]
 CMD [ "./docker-startup.sh" ]
