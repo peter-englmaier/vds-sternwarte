@@ -24,33 +24,35 @@
         <header class="site-header">
             <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
                 <div class="container">
-                    <a class="navbar-brand mr-4" href="/">{{ g.site_title }}</a>
+                    <a class="navbar-brand me-4" href="/">{{ g.site_title }}</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle"
                             aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarToggle">
-                        <div class="navbar-nav mr-auto">
+                        <div class="navbar-nav me-auto">
                             <a class="nav-item nav-link" href="{{ url_for('main.home') }}">Home</a>
                             <a class="nav-item nav-link" href="{{ url_for('main.about') }}">About</a>
-                        </div>
-                        <!-- Navbar Right Side -->
-                        <div class="navbar-nav">
+
                             {% if current_user.is_authenticated %}
                                 <a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">New Post</a>
-                                <a class="nav-item nav-link" href="{{ url_for('users.account') }}">Account</a>
-                                <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Logout</a>
                                 {% if current_user.has_role("admin") %}
                                     <a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a>
                                 {% endif %}
+                            {% endif %}
+
+                        </div>
+                        <!-- Navbar Right Side -->
+                        <div class="navbar-nav ms-auto">
+                            {% if current_user.is_authenticated %}
+                                <a class="nav-item nav-link" href="{{ url_for('users.account') }}">Account</a>
+                                <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Logout</a>
                             {% else %}
                                 <a class="nav-item nav-link" href="{{ url_for('users.login') }}">Login</a>
                                 <a class="nav-item nav-link" href="{{ url_for('users.register') }}">Register</a>
                             {% endif %}
                         </div>
                     </div>
-                </div>
-
                 <!-- Darkmode HTML Beginn -->
                 <ul class="list-unstyled btn-group">
                     <li>
@@ -59,7 +61,9 @@
                             <svg class="me-2 opacity-50" width="16" height="16" fill="currentColor">
                                 <use href="#sun-fill"></use>
                             </svg>
-                            Light
+                            <div class="d-none d-lg-block">
+                                Light
+                            </div>
                         </button>
                     </li>
                     <li>
@@ -68,7 +72,9 @@
                             <svg class="me-2 opacity-50" width="16" height="16" fill="currentColor">
                                 <use href="#moon-stars-fill"></use>
                             </svg>
-                            Dark
+                            <div class="d-none d-lg-block">
+                                Dark
+                            </div>
                         </button>
                     </li>
                     <li>
@@ -77,7 +83,9 @@
                             <svg class="me-2 opacity-50" width="16" height="16" fill="currentColor">
                                 <use href="#circle-half"></use>
                             </svg>
-                            Auto
+                            <div class="d-none d-lg-block">
+                                Auto
+                            </div>
                         </button>
                     </li>
                 </ul>
@@ -94,6 +102,7 @@
                     </symbol>
                 </svg>
                 <!-- Darkmode HTML End -->
+                </div>
             </nav>
         </header>
         <main role="main" class="container">
