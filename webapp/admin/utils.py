@@ -1,13 +1,14 @@
+from flask import redirect, url_for, request
 from flask_admin.contrib.sqla import ModelView
-from flask_admin import BaseView, expose, AdminIndexView
+from flask_admin import expose, AdminIndexView
 from flask_login import current_user
 
 def names(groups):
     if groups:
-        str = groups[0].name
+        name_str = groups[0].name
         for g in groups[1:]:
-            str += f", {g.name}"
-        return str
+            name_str += f", {g.name}"
+        return name_str
     else:
         return "None"
 

@@ -15,9 +15,9 @@ def home():
 @main.route("/about")
 @login_required
 def about():
-    softwareId = "$Id$"
+    software_id = "$Id$"
     version = "0.1-rc"
-    return render_template('about.html', title='About', version=version, commitId=softwareId)
+    return render_template('about.html', title='About', version=version, commitId=software_id)
 
 @main.route("/status")
 def status():
