@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% block content %}
+    <p align="center"><h1>Antrag für Wartungsarbeiten</h1></p>
+    
+    {% if current_user.is_authenticated %}
+    <center><label for="antragssteller">Antragssteller: </label> {{ current_user.name }}</center>
+    <br></br>
+   
+        <form hx-post="/submit-maintenance" hx-trigger="submit" hx-target="#response" hx-swap="innerHTML">
+            <table align="center">
+                <tr>
+                    <td>
+                        <label for="datum">Beginn Datum:</label>
+                    </td>
+                    <td>
+                        <input type="date" id="bdatum" name="beginndatum" required>                       
+                    </td>
+                    <td>
+                        <label for="uhrzeit">Beginn Uhrzeit:</label>
+                    </td>
+                    <td>
+                        <input type="time" id="buhrzeit" name="beginnuhrzeit" required>
+                    </td>
+                </tr>
+                </table>
+                <br>
+                <table align="center">
+                <tr>
+                    <td>
+                        <label for="datum">Ende Datum:</label>
+                    </td>
+                    <td>
+                        <input type="date" id="edatum" name="enddatum" required>                       
+                    </td>
+                    <td>
+                        <label for="uhrzeit">Ende Uhrzeit:</label>
+                    </td>
+                    <td>
+                        <input type="time" id="euhrzeit" name="enduhrzeit" required>
+                    </td>
+                </tr>
+            </table>
+        <br>
+        <p align="center"><h3>Grund der Wartung:</h3></p>
+       <table align="center">
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" name="option1" value="option1" />
+                    <select id="newton" name="equipment">
+                    <option value="newton">12" Newton</option>
+                    <option value="kamera">Kamera</option>
+                    <option value="kamera">Filterrad</option>
+                    <option value="okularauszug">Okularauszug</option>
+                    <option value="kamera">Flatpanel</option>
+                </select>
+            </label>            
+            </td>
+            <td></td>
+            <td>
+                <label>
+                    <input type="checkbox" name="option2" value="option2" />
+                    <select id="tak" name="equipment">
+                    <option value="newton">Takahashi</option>
+                    <option value="kamera">Kamera</option>
+                    <option value="kamera">Filterrad</option>
+                    <option value="okularauszug">Okularauszug</option>
+                    <option value="kamera">Flatpanel</option>
+                </select>
+            </label>
+            </td>
+        </tr>
+        <tr>
+            <td><label><input type="checkbox" name="option3" value="option3" />Montierung</label></td>
+            <td></td>
+            <td><label><input type="checkbox" name="option4" value="option4" />EDV</label></td>
+        </tr>
+       </table>        
+    
+        <br>
+
+       <table align="center">
+        <tr>
+            <td>
+            <button type="submit">Absenden</button>
+            </td>
+            <td>
+    <button type="button" onclick="resetCalendar()">Zurücksetzen</button>
+            </td>
+        </tr>
+</table>
+</form>
+    <div id="response" style="margin-top: 20px;"></div>
+
+    <!-- Hinweis: Die Variablen sind derzeit noch nicht in der DAtenbank eingeflegt -->
+    {% endif %}
+{% endblock content %}
