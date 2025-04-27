@@ -40,3 +40,7 @@ def servicerequest():
     software_id = "$Id$"
     version = "0.1-rc"
     return render_template('create_service.html', title='Service Request', version=version, commitId=software_id)
+
+@main.route("/add-row")
+def add_row():
+    return render_template("aufnahme_zeile.html")

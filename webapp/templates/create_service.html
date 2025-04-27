@@ -1,97 +1,84 @@
 {% extends "layout.html" %}
 {% block content %}
-    <p align="center"><h1>Antrag für Wartungsarbeiten</h1></p>
-    
-    {% if current_user.is_authenticated %}
-    <center><label for="antragssteller">Antragssteller: </label> {{ current_user.name }}</center>
-    <br></br>
-   
-        <form hx-post="/submit-maintenance" hx-trigger="submit" hx-target="#response" hx-swap="innerHTML">
-            <table align="center">
-                <tr>
-                    <td>
-                        <label for="datum">Beginn Datum:</label>
-                    </td>
-                    <td>
-                        <input type="date" id="bdatum" name="beginndatum" required>                       
-                    </td>
-                    <td>
-                        <label for="uhrzeit">Beginn Uhrzeit:</label>
-                    </td>
-                    <td>
-                        <input type="time" id="buhrzeit" name="beginnuhrzeit" required>
-                    </td>
-                </tr>
-                </table>
-                <br>
-                <table align="center">
-                <tr>
-                    <td>
-                        <label for="datum">Ende Datum:</label>
-                    </td>
-                    <td>
-                        <input type="date" id="edatum" name="enddatum" required>                       
-                    </td>
-                    <td>
-                        <label for="uhrzeit">Ende Uhrzeit:</label>
-                    </td>
-                    <td>
-                        <input type="time" id="euhrzeit" name="enduhrzeit" required>
-                    </td>
-                </tr>
-            </table>
-        <br>
-        <p align="center"><h3>Grund der Wartung:</h3></p>
-       <table align="center">
-        <tr>
-            <td>
-                <label>
-                    <input type="checkbox" name="option1" value="option1" />
-                    <select id="newton" name="equipment">
-                    <option value="newton">12" Newton</option>
-                    <option value="kamera">Kamera</option>
-                    <option value="kamera">Filterrad</option>
-                    <option value="okularauszug">Okularauszug</option>
-                    <option value="kamera">Flatpanel</option>
-                </select>
-            </label>            
-            </td>
-            <td></td>
-            <td>
-                <label>
-                    <input type="checkbox" name="option2" value="option2" />
-                    <select id="tak" name="equipment">
-                    <option value="newton">Takahashi</option>
-                    <option value="kamera">Kamera</option>
-                    <option value="kamera">Filterrad</option>
-                    <option value="okularauszug">Okularauszug</option>
-                    <option value="kamera">Flatpanel</option>
-                </select>
-            </label>
-            </td>
-        </tr>
-        <tr>
-            <td><label><input type="checkbox" name="option3" value="option3" />Montierung</label></td>
-            <td></td>
-            <td><label><input type="checkbox" name="option4" value="option4" />EDV</label></td>
-        </tr>
-       </table>        
-    
-        <br>
 
-       <table align="center">
+<h1 class="text-center">Antrag für Wartungsarbeiten</h1>
+
+{% if current_user.is_authenticated %}
+<p>Antragssteller: {{ current_user.name }}</p>
+<p>Teleskop: VdS Remotesternwarte in Hakos</p>
+
+<form hx-post="/submit-maintenance" hx-trigger="submit" hx-target="#response" hx-swap="innerHTML">
+    <h4>Zeitraum</h4>
+    <div class="row">
+        <div class="col">
+            <label>Beginn Datum:</label>
+            <input type="date" name="beginndatum" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Beginn Uhrzeit:</label>
+            <input type="time" name="beginnuhrzeit" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Ende Datum:</label>
+            <input type="date" name="enddatum" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Ende Uhrzeit:</label>
+            <input type="time" name="enduhrzeit" class="form-control" required>
+        </div>
+    </div>
+
+    <hr>
+    <h4>notwendige Wartungsbereiche</h4>
+    <table>       
         <tr>
             <td>
-            <button type="submit">Absenden</button>
+                <div class="col-20">
+                    <label><input type="checkbox" name="newtoon" value="newton"> Newton</label><br>
+                    <label><input type="checkbox" name="newton_camera" value="newton_camera"> Newton Kamera</label><br>
+                    <label><input type="checkbox" name="newton_filterwheel" value="newton_filterwheel"> Newton Filterrad</label><br>
+                    <label><input type="checkbox" name="newton_focuser" value="newton_focuser"> Newton Fokussierer und Okularauszug</label><br>
+                    <label><input type="checkbox" name="newton_flatpanel" value="newton_flatpanel"> Newton Flatpanel</label><br>
+                </div>
             </td>
             <td>
-    <button type="button" onclick="resetCalendar()">Zurücksetzen</button>
+            </td>            
+            <td>
+                <div class="col-20">
+                    <label><input type="checkbox" name="takahashi" value="takahashi"> Takahashi</label><br>
+                    <label><input type="checkbox" name="takahashi_camera" value="takahashi_camera"> Takahashi Kamera</label><br>
+                    <label><input type="checkbox" name="takahashi_filterwheel" value="takahashi_filterwheel"> Takahashi Filterrad</label><br>
+                    <label><input type="checkbox" name="takahashi_focuser" value="takahashi_focuser"> Takahashi Fokussierer und Okularauszug</label><br>
+                    <label><input type="checkbox" name="takahashi_flatpanel" value="takahashi_flatpanel"> Takahashi Flatpanel</label><br>
+                </div>
             </td>
         </tr>
-</table>
+        <tr>
+            <td>
+                <div class="col-30">
+                    <label><input type="checkbox" name="computer" value="computer"> Computer</label><br>
+                    <label><input type="checkbox" name="betriebssystem" value="betriebssystem"> Betriebssystem</label><br>
+                    <label><input type="checkbox" name="nina" value="nina"> NINA</label><br>
+                    <label><input type="checkbox" name="andere_software" value="andere_software"> andere Software</label><br>
+                    <label><input type="checkbox" name="ueberwachungskameras" value="ueberwachungskameras"> Überwachungskameras</label>                    
+                </div>
+            </td>
+            <td>
+                </td>
+            </td>
+            <td>
+                <div class="col-30">
+                    <textarea name="sonstiges" rows="1" class="form-control">Freitext für alle anderen Arbeiten</textarea>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <hr>     
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Absenden</button>    
 </form>
-    <div id="response" style="margin-top: 20px;"></div>
-
-    <!-- Hinweis: Die Variablen sind derzeit noch nicht in der DAtenbank eingeflegt -->
-    {% endif %}
-{% endblock content %}
+<p></p>
+<button type="button" onclick="resetCalendar()">Zurücksetzen</button>
+    </div>   
+{% endif %}
+{% endblock %}
