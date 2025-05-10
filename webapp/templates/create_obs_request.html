@@ -4,7 +4,7 @@
 <h1 class="text-center">Antrag für Fachgruppennutzung</h1>
 
 {% if current_user.is_authenticated %}
-<p>Antragssteller: {{ current_user.name }}</p>
+<p>Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})</p>
 <p>Teleskop: VdS Remotesternwarte in Hakos</p>
 
 <form hx-post="/submit-maintenance" hx-trigger="submit" hx-target="#response" hx-swap="innerHTML">
