@@ -29,4 +29,4 @@ def login_admin(context):
 
 @then(u'I am logged in')
 def i_am_logged_in(context):
-    context.driver.find_element(By.LINK_TEXT, 'Logout')
+    context.driver.find_element(By.LINK_TEXT, 'Abmelden')

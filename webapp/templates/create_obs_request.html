@@ -4,6 +4,7 @@
 <h1 class="text-center">Antrag für Fachgruppennutzung</h1>
 
 {% if current_user.is_authenticated %}
+<<<<<<< HEAD
 <p>Antragssteller: {{ current_user.name }}</p>    
 <br>   
 <center><button type="button" class="btn btn-success" onclick="dupliziereAufnahmeBlock()">➕ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-circle-fill" viewBox="0 0 16 16">
@@ -37,6 +38,11 @@
     <tr>
         <td>
 <br>
+=======
+<p>Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})</p>
+<p>Teleskop: VdS Remotesternwarte in Hakos</p>
+
+>>>>>>> f0b4956020fa48640f217df0b2e8b6753fa15e58
 <form hx-post="/submit-maintenance" hx-trigger="submit" hx-target="#response" hx-swap="innerHTML">
     <h4>Beobachtungszeitraum *UTC*</h4>    
     <div class="row">

@@ -137,10 +137,22 @@ Der Server ist dann mit diesem Link erreichbar: http://localhost:5000/
 
 ## Update
 
-Hat sich der Code geändert, muss man ihn mit git aktualisieren:
+Hat sich der Code im Repository geändert, muss man ihn lokal bei sich mit git aktualisieren. Dafür gibt es zwei Möglichkeiten `merge` und `rebase`.
+Wir verwenden `rebase`, weil dadurch die History sauberer aussieht. Weiter ist es nützlich, ev. Änderungen im lokalen
+Verzeichnis mit `stash` zu sichern und anschliessend wieder hinzuzufügen. Am besten setzt man diesee Parameter global:
+
+```aiignore
+   (venv) $ git config --global pull.rebase true
+   (venv) $ git config --global rebase.autostash
+```
+
+Diese Einstellung gilt dann auf diesem PC dauerhaft für alle Git repositories. Oder man lässt `--global` weg, dann gilt
+es nur für das aktuelle Git Projekt.
+
+Um auf den aktuellen Stand zu kommen, führt man dann einen `git pull` aus:
 
 ```
-  (venv) $ git pull --ff-only
+  (venv) $ git pull
 ```
 
 Eventuell muss man dann auch die requirements updaten

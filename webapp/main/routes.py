@@ -30,16 +30,12 @@ def status():
 @main.route("/fgrequest")
 @login_required
 def fgrequest():
-    software_id = "$Id$"
-    version = "0.1-rc"
-    return render_template('create_obs_request.html', title='FG Request', version=version, commitId=software_id)
+    return render_template('create_obs_request.html', title='FG Request')
 
 @main.route("/servicerequest")
 @login_required
 def servicerequest():
-    software_id = "$Id$"
-    version = "0.1-rc"
-    return render_template('create_service.html', title='Service Request', version=version, commitId=software_id)
+    return render_template('create_service.html', title='Service Request')
 
 @main.route("/request_georg")
 @login_required

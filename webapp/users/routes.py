@@ -17,10 +17,16 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(name=form.username.data, email=form.email.data, password=hashed_password)
+        user = User(name=form.username.data,
+                    email=form.email.data,
+                    password=hashed_password,
+                    firstname=form.firstname.data,
+                    surname=form.surname.data,
+                    vds_number=form.vds_number.data
+                    )
         db.session.add(user)
         db.session.commit()
-        flash('Your account has been created! You are now able to log in', 'success')
+        flash('Ihr Benutzer ist registriert! Sie können sich jetzt anmelden', 'success')
         return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -37,12 +43,12 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            if next_page and url_has_allowed_host_and_scheme(next_page, request.host):
+            if next_page and url_has_allowed_host_and_scheme(next_page, allowed_hosts=[request.host]):
                 return redirect(next_page)
-            else:
-                return redirect(url_for('main.home'))
+            # Default to the home page if the next_page is invalid or unsafe
+            return redirect(url_for('main.home'))
         else:
-            flash('Login Unsuccessful. Please check email and password', 'danger')
+            flash('Login nicht erfolgreich. Bitte prüfen Sie ihre Angaben!', 'danger')
 
     return render_template('login.html', title='Login', form=form)
 
@@ -63,12 +69,18 @@ def account():
             current_user.image_file = picture_file
         current_user.name = form.username.data
         current_user.email = form.email.data
+        current_user.firstname = form.firstname.data
+        current_user.surname = form.surname.data
+        current_user.vds_number = form.vds_number.data
         db.session.commit()
         flash('Your account has been updated!', 'success')
         return redirect(url_for('users.account'))
     elif request.method == 'GET':
         form.username.data = current_user.name
         form.email.data = current_user.email
+        form.firstname.data = current_user.firstname
+        form.surname.data = current_user.surname
+        form.vds_number.data = current_user.vds_number
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
                            image_file=image_file, form=form)
