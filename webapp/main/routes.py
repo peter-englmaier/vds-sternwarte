@@ -37,15 +37,27 @@ def fgrequest():
 def servicerequest():
     return render_template('create_service.html', title='Service Request')
 
-@main.route("/add-row")
-def add_row():
-    return render_template("aufnahme_zeile.html")
+@main.route("/vds-newton-add-row")
+def vds_newton_add_row():
+    return render_template("_vds_newton_aufnahme_zeile.html")
 
-@main.route("/newton")
-def newton():
-    return render_template("newton.html")
+@main.route("/vds-tak-add-row")
+def vds_tak_add_row():
+    return render_template("_vds_tak_aufnahme_zeile.html")
+
+@main.route("/vds_newton_select")
+def vds_newton_select():
+    return render_template("_vds_newton_select.html")
+
+@main.route("/vds_newton")
+def vds_newton():
+    return render_template("_vds_newton.html")
 
 
-@main.route("/tak")
-def tak():
-    return render_template("tak.html")
+@main.route("/vds_tak_select")
+def vds_tak_select():
+    return render_template("_vds_tak_select.html")
+
+@main.route("/vds_tak")
+def vds_tak():
+    return render_template("_vds_tak.html")

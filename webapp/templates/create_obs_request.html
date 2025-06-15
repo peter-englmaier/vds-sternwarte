@@ -66,43 +66,18 @@
 
 <hr>
 <h4>Teleskopauswahl</h4>
-<p></p>
-<label>
-    <input
-      type="checkbox"
-      value="true"
-      name="accepted"
-      hx-get="/newton"
-      hx-trigger="click"
-      hx-target="#newton-here"
-      hx-swap="beforeend"
-    />
-    TS 12" Newton-Astrograph
-</label>
 
 <div id="newton-here">
+{{ render_partial('_vds_newton_select.html') }}
 </div>
-
-<p></p>
-<label>
-    <input
-      type="checkbox"
-      value="true"
-      name="accepted"
-      hx-get="/tak"
-      hx-trigger="click"
-      hx-target="#tak-here"
-      hx-swap="beforeend"
-    />
-    Takahashi Epsilon-160ED
-</label>
 
 <div id="tak-here">
+{{ render_partial('_vds_tak_select.html') }}
 </div>
 
 
-<!-- jdy: Aufnahmedetails wurden in die Dateien newton.html und tak.html ausgelagert. Um die Teleskope zu unterscheiden,
-          wird aufnahme_zeile.html fuer das Newton, und die neue Datei aufnahme_zeile2.html fuer das Tak verwendet -->
+<!-- jdy: Aufnahmedetails wurden in die Dateien _vds_newton.html und _vds_tak.html ausgelagert. Um die Teleskope zu unterscheiden,
+          wird _vds_newton_aufnahme_zeile.html fuer das Newton, und die neue Datei _vds_tak_aufnahme_zeile.html fuer das Tak verwendet -->
 
 <hr>
     <div class="text-center">
