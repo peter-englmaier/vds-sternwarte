@@ -69,30 +69,31 @@
             <textarea name="objectname" rows="3" class="form-control" required></textarea>
         </div>
         <div class="col-4">
+        
         <!-- Rektaszension -->
-<label>Rektaszension (RA):</label>
-<div class="col-auto">
-  <div style="width: 50px;"></div> <!-- Leerer Platzhalter -->
-</div>
-<div class="form-group d-flex gap-2 flex-nowrap">
-  <input type="number" name="ra_h" class="form-control form-control-sm" placeholder="h" min="0" max="23" required style="width: 40px;">
-  <input type="number" name="ra_m" class="form-control form-control-sm" placeholder="m" min="0" max="59" required style="width: 40px;">
-  <input type="number" name="ra_s" class="form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" required style="width: 70px;">
-</div>
-
-<!-- Deklination -->
-<label>Deklination (Dec):</label>
-<div class="form-group d-flex gap-2 flex-nowrap align-items-center">
- <select name="dec_sign" class="form-control form-control-sm" required style="width: 50px;">
-  <option value="+">+</option>
-  <option value="-">−</option>
-</select>
-<input type="number" name="dec_d" class="form-control form-control-sm" placeholder="°" min="0" max="90" required style="width: 40px;">
-<input type="number" name="dec_m" class="form-control form-control-sm" placeholder="′" min="0" max="59" required style="width: 40px;">
-<input type="number" name="dec_s" class="form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" required style="width: 70px;">
-</div>
-
-</div>
+        <label>Rektaszension (RA):</label>
+            <div class="col-auto">
+                <div style="width: 50px;"></div> <!-- Leerer Platzhalter -->
+            </div>
+            <div class="form-group d-flex gap-2 flex-nowrap">
+                <input type="number" name="ra_h" class="form-control form-control-sm" placeholder="h" min="0" max="23" required style="width: 40px;">
+                <input type="number" name="ra_m" class="form-control form-control-sm" placeholder="m" min="0" max="59" required style="width: 40px;">
+                <input type="number" name="ra_s" class="form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" required style="width: 70px;">
+            </div>
+        
+        <!-- Deklination -->
+        <label>Deklination (Dec):</label>
+            <div class="form-group d-flex gap-2 flex-nowrap align-items-center">
+                <select name="dec_sign" class="form-control form-control-sm" required style="width: 50px;">
+                    <option value="+">+</option>
+                    <option value="-">−</option>
+                </select>
+                <input type="number" name="dec_d" class="form-control form-control-sm" placeholder="°" min="0" max="90" required style="width: 40px;">
+                <input type="number" name="dec_m" class="form-control form-control-sm" placeholder="′" min="0" max="59" required style="width: 40px;">
+                <input type="number" name="dec_s" class="form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" required style="width: 70px;">
+            </div>
+        
+        </div>
 <p></p>
     <hr>
     <h4>Motivation und Anmerkungen</h4>
@@ -100,7 +101,7 @@
         <textarea name="motivation" rows="2" class="form-control" maxlength="255" required></textarea>
     </div>
 <p></p>
-<!-- jdy: Auswahl per hx-get, uncheck ist aber nicht implementiert. Jeder neue Klick fuegt wieder Aufnahmedetails ein. -->
+<!-- Auswahl per hx-get, uncheck ist aber nicht implementiert. Jeder neue Klick fuegt wieder Aufnahmedetails ein. -->
 
 <hr>
 <h4>Teleskopauswahl</h4>
@@ -113,8 +114,8 @@
 {{ render_partial('_vds_tak_select.html') }}
 </div>
 
-<!-- jdy: Aufnahmedetails wurden in die Dateien newton.html und tak.html ausgelagert. Um die Teleskope zu unterscheiden,
-          wird aufnahme_zeile.html fuer das Newton, und die neue Datei aufnahme_zeile2.html fuer das Tak verwendet -->
+<!-- Aufnahmedetails wurden in die Dateien _vds_newton.html und _vds_tak.html ausgelagert. Um die Teleskope zu unterscheiden,
+     wird _vds_newton_aufnahme_zeile.html fuer das Newton, und die neue Datei _vds_tak_aufnahme_zeile.html fuer das Tak verwendet -->
 
 
 </td>
