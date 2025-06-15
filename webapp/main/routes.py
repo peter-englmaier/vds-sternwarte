@@ -53,7 +53,6 @@ def vds_newton_select():
 def vds_newton():
     return render_template("_vds_newton.html")
 
-
 @main.route("/vds_tak_select")
 def vds_tak_select():
     return render_template("_vds_tak_select.html")
