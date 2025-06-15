@@ -40,3 +40,12 @@ def servicerequest():
 @main.route("/add-row")
 def add_row():
     return render_template("aufnahme_zeile.html")
+
+@main.route("/newton")
+def newton():
+    return render_template("newton.html")
+
+
+@main.route("/tak")
+def tak():
+    return render_template("tak.html")

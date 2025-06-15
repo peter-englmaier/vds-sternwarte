@@ -5,7 +5,7 @@
 
 {% if current_user.is_authenticated %}
 <p>Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})</p>
-<p>Teleskop: VdS Remotesternwarte in Hakos</p>
+<p>Sternwarte: VdS Remotesternwarte in Hakos</p>
 
 <form hx-post="/submit-maintenance" hx-trigger="submit" hx-target="#response" hx-swap="innerHTML">
     <h4>Zeitraum</h4>
@@ -32,19 +32,23 @@
     <h4>Objektangaben</h4>
     <div class="row">
         <div class="col-4">
-            <label>Objekt:</label>
+            <label>Objekttyp:</label>
             <select name="Objektdetails" class="form-select">
-                <option value="galaxy_cluster">Galaxienhaufen</option>
-                <option value="globular_cluster">Globaler Haufen</option>
-                <option value="open_cluster">Offener Sternhaufen</option>
+                <option value="" selected disabled hidden>Objekttyp wählen</option> <!-- jdy: neu -->
                 <option value="diffuse_nebulae">Diffuser Nebel</option>
-                <option value="emission_nebulae">Emissionsnebel</option>
-                <option value="reflection_nebulae">Reflektionsnebel</option>
-                <option value="dark_nebulae">Dunkelnebel</option>
-                <option value="planetary_nebulae">Planetarischer Nebel</option>
+	        <option value="dark_nebulae">Dunkelnebel</option>
+	        <option value="emission_nebulae">Emissionsnebel</option>
+	        <option value="exoplanet">Exoplanet</option> <!-- jdy: neu -->
+	        <option value="galaxy">Galaxie</option> <!-- jdy: neu -->
+	        <option value="galaxy_cluster">Galaxienhaufen</option>
+	        <option value="globular_cluster">Kugelsternhaufen</option> <!-- jdy: dt editiert -->
+	        <option value="open_cluster">Offener Sternhaufen</option>
+	        <option value="planetary_nebulae">Planetarischer Nebel</option>
+	        <option value="quasar">Quasar</option>
+	        <option value="reflection_nebulae">Reflektionsnebel</option>
                 <option value="supernova_remnant">Supernovaüberrest</option>
-                <option value="quasar">Quasar</option>
-            </select>
+                <option value="other">sonstiges</option> <!-- jdy: neu -->
+	    </select>
         </div>
         <div class="col-4">
             <label>Objektname:</label>
@@ -53,31 +57,53 @@
     </div>
 
     <hr>
-    <h4>Aufnahmedetails</h4>
-    <table class="table table-bordered text-center">
-        <thead>
-            <tr>
-                <th>Anzahl</th>
-                <th>Belichtungszeit</th>
-                <th>Filter</th>
-                <th>Dithering</th>
-            </tr>
-        </thead>
-        <tbody id="aufnahmeTbody">
-            {% include "aufnahme_zeile.html" %}
-        </tbody>
-    </table>
-
-    <div class="text-center mb-3">
-        <button 
-            type="button" 
-            class="btn btn-outline-secondary"
-            hx-get="/add-row"
-            hx-target="#aufnahmeTbody"
-            hx-swap="beforeend">
-            ➕ Zeile hinzufügen
-        </button>
+    <h4>Motivation und Anmerkungen</h4>
+    <div class="col-12"> 
+        <textarea name="motivation" rows="2" class="form-control" maxlength="255" required></textarea>
     </div>
+
+<!-- jdy: Auswahl per hx-get, uncheck ist aber nicht implementiert. Jeder neue Klick fuegt wieder Aufnahmedetails ein. -->
+
+<hr>
+<h4>Teleskopauswahl</h4>
+<p></p>
+<label>
+    <input
+      type="checkbox"
+      value="true"
+      name="accepted"
+      hx-get="/newton"
+      hx-trigger="click"
+      hx-target="#newton-here"
+      hx-swap="beforeend"
+    />
+    TS 12" Newton-Astrograph
+</label>
+
+<div id="newton-here">
+</div>
+
+<p></p>
+<label>
+    <input
+      type="checkbox"
+      value="true"
+      name="accepted"
+      hx-get="/tak"
+      hx-trigger="click"
+      hx-target="#tak-here"
+      hx-swap="beforeend"
+    />
+    Takahashi Epsilon-160ED
+</label>
+
+<div id="tak-here">
+</div>
+
+
+<!-- jdy: Aufnahmedetails wurden in die Dateien newton.html und tak.html ausgelagert. Um die Teleskope zu unterscheiden,
+          wird aufnahme_zeile.html fuer das Newton, und die neue Datei aufnahme_zeile2.html fuer das Tak verwendet -->
+
 <hr>
     <div class="text-center">
         <button type="submit" class="btn btn-primary">Absenden</button>    
