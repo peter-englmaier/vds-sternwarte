@@ -1,18 +1,46 @@
-<!-- jdy: Filter ergaenzt, hidden value "Filter wählen" hinzugefuegt -->
 <tr>
-<!--    <td><textarea name="aufnahmeanzahl" placeholder="Anzahl" rows="1" cols="2" class="form-control" required></textarea></td> -->
+    <td>
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">− <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-square-fill" viewBox="0 0 16 16">
+  <path d="M16 14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2zm-4.5-6.5H5.707l2.147-2.146a.5.5 0 1 0-.708-.708l-3 3a.5.5 0 0 0 0 .708l3 3a.5.5 0 0 0 .708-.708L5.707 8.5H11.5a.5.5 0 0 0 0-1"/>
+</svg></button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="copyRowTak(this)">⧉</button>
+    </td>
     <td><label for="imagenumber"></label><input type="number" placeholder="Anzahl" id="imagenumber" name="imagenumber"></td>
     <td><label for="bulbtime"></label><input type="number" placeholder="Belichtungszeit" id="bulbtime" name="bulbtime"></td>
-<!--    <td><textarea name="bulbtime" placeholder="Belichtungszeit [sec]" rows="1" cols="2" class="form-control" required></textarea></td> -->
     <td>
         <select name="filter" class="form-select">
             <option value="" selected disabled hidden>Filter wählen</option>
             <option value="tri">Triband</option>
             <option value="clear">Clear</option>
             <option value="dual">Dualband</option>
-            <option value="lenhance">L-eNhance</option>						
+            <option value="lenhance">L-eNhance</option>
             <option value="sii-t">SII</option>
         </select>
     </td>
     <td><input type="checkbox" name="dithering" class="form-check-input"></td>
 </tr>
+
+<!-- Zeile kopieren -->
+<script>
+    function copyRowTak(button) {
+        const row = button.closest('tr');
+        const clone = row.cloneNode(true);
+
+        // Lege alle Input-Felder im Clone neu an, damit keine Referenzen doppelt verwendet werden
+        clone.querySelectorAll('input, textarea').forEach(input => {
+            const newInput = input.cloneNode();
+            newInput.value = input.value;  // Optional: Werte mitkopieren
+            input.replaceWith(newInput);
+        });
+
+        // Button (Funktion Kopieren/Löschen)
+        clone.querySelector('button.btn-danger').onclick = function() {
+            this.closest('tr').remove();
+        };
+        clone.querySelector('button.btn-secondary').onclick = function() {
+            copyRow(this);
+        };
+
+        document.getElementById('aufnahmeTbody2').appendChild(clone);
+    }
+</script>
