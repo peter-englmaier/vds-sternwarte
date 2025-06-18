@@ -36,6 +36,7 @@
                                 <a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">New&nbsp;Post</a>
                                 <a class="nav-item nav-link" href="{{ url_for('main.fgrequest') }}">FG Antrag</a>
                                 <a class="nav-item nav-link" href="{{ url_for('main.servicerequest') }}">Wartung Antrag</a>
+                                <a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a>
                                 {% if current_user.has_role("admin") %}
                                     <a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a>
                                 {% endif %}

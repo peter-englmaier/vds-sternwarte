@@ -37,6 +37,13 @@ def fgrequest():
 def servicerequest():
     return render_template('create_service.html', title='Service Request')
 
+@main.route("/request_georg")
+@login_required
+def request_georg():
+    software_id = "$Id$"
+    version = "0.1-rc"
+    return render_template('create_request_georg.html', title='Request Georg', version=version, commitId=software_id)
+
 @main.route("/add-row")
 def add_row():
     return render_template("aufnahme_zeile.html")
