@@ -9,6 +9,8 @@ import jinja_partials
 
 from webapp.config import Config
 from webapp.admin.utils import init_admin
+from webapp.orders import constants
+
 
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -30,6 +32,11 @@ def create_app(config_class=Config):
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='Lax',
     )
+
+    @app.context_processor
+    def inject_constants():
+        return dict(CONSTANTS=constants)
+
     app.jinja_env.add_extension('jinja_partials.PartialsJinjaExtension') # make render_partial available inside templates
     db.init_app(app)
     Migrate(app, db)
@@ -47,11 +54,13 @@ def create_app(config_class=Config):
         from webapp.users.routes import users
         from webapp.posts.routes import posts
         from webapp.main.routes import main
+        from webapp.orders.routes import orders
         from webapp.errors.handlers import errors
         app.register_blueprint(users)
         app.register_blueprint(posts)
         app.register_blueprint(main)
         app.register_blueprint(errors)
+        app.register_blueprint(orders)
         setup_users()
 
     return app

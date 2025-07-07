@@ -1,0 +1,341 @@
+{% extends "layout_no_sidebar.html" %}
+{% block content %}
+
+<script>
+
+function renumberRows() {
+console.log(" enter renumberRows");
+    document.querySelectorAll('#positions-list tr').forEach((row, idx) => {
+        row.querySelectorAll('input, select, textarea, label').forEach(el => {
+            if (el.name) {
+                el.name = el.name.replace(/positions-\d+-/, `positions-${idx}-`);
+            }
+            if (el.id) {
+                el.id = el.id.replace(/positions-\d+-/, `positions-${idx}-`);
+            }
+            if (el.htmlFor) {
+                el.htmlFor = el.htmlFor.replace(/positions-\d+-/, `positions-${idx}-`);
+            }
+        });
+    });
+}
+
+function deleteRow(btn) {
+    if (confirm('Wirklich löschen?')) {
+        btn.closest('tr').remove();
+        renumberRows();
+    }
+}
+
+function updateMoveButtons() {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach((row, idx) => {
+        row.querySelector('.btn-up').disabled = idx === 0;
+        row.querySelector('.btn-down').disabled = idx === rows.length - 1;
+    });
+}
+
+function moveUp(btn) {
+    const row = btn.closest('tr');
+    const prev = row.previousElementSibling;
+    const tbody = row.parentNode;
+    if (prev && prev.nodeName === "TR") {
+        tbody.insertBefore(row, prev);
+        renumberRows();
+        updateMoveButtons();
+    }
+}
+
+function moveDown(btn) {
+    const row = btn.closest('tr');
+    const next = row.nextElementSibling;
+    if (next && next.nodeName === "TR") {
+        row.parentNode.insertBefore(next, row);
+        renumberRows();
+        updateMoveButtons();
+    }
+}
+
+function copyRow(btn) {
+    const row = btn.closest('tr');
+    const clone = row.cloneNode(true);
+
+    // Alle Inputs, Selects und Textareas durchlaufen
+    const origInputs = row.querySelectorAll('input, select, textarea');
+    const cloneInputs = clone.querySelectorAll('input, select, textarea');
+
+    origInputs.forEach((input, idx) => {
+        const cloneInput = cloneInputs[idx];
+        if (!cloneInput) return;
+
+        if (input.type === "checkbox" || input.type === "radio") {
+            cloneInput.checked = input.checked;
+        } else if (input.tagName.toLowerCase() === "select") {
+            cloneInput.selectedIndex = input.selectedIndex;
+        } else {
+            cloneInput.value = input.value;
+        }
+    });
+
+    // Sichtbarkeitsstatus der expert-field Felder übernehmen
+    const origExpertFields = row.querySelectorAll('.expert-field');
+    const cloneExpertFields = clone.querySelectorAll('.expert-field');
+
+    origExpertFields.forEach((origField, idx) => {
+        const cloneField = cloneExpertFields[idx];
+        if (!cloneField) return;
+
+        // Sichtbarkeitsklasse synchronisieren
+        if (origField.classList.contains('visible')) {
+            cloneField.classList.add('visible');
+        } else {
+            cloneField.classList.remove('visible');
+        }
+    });
+
+    // Die geklonte Zeile nach der aktuellen einfügen
+    row.parentNode.insertBefore(clone, row.nextSibling);
+    renumberRows();
+    updateMoveButtons();
+    toggleExpertFields();
+}
+</script>
+
+
+<!-- Modal -->
+<div class="modal fade" id="checkPopup" tabindex="-1" aria-labelledby="checkPopupLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="checkPopupLabel">Prüfergebnis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+      </div>
+      <div class="modal-body">
+        Alles OK
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-check-input.expert-big {
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  .expert-field {
+    display: none;
+  }
+
+  .expert-field.visible {
+    display: table-cell; /* oder block, je nach Element */
+  }
+
+  #coord-btn {
+    display: none;
+  }
+
+  #coord-btn.visible {
+    display: inline-block; /* oder passend */
+  }
+</style>
+
+<h2>Teleskopzeit Zeilen bearbeiten</h2>
+<form method="post" action="">
+{{ form.hidden_tag() }}
+{% if current_user.is_authenticated %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <span>
+        Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})
+        Status: {{ form.head.status_label.data }}
+    </span>
+    <div class="form-check p-2 bg-warning rounded d-flex align-items-center ms-3">
+        <input class="form-check-input expert-big me-2" type="checkbox" id="expert_switch"
+               {% if expert_mode in [True, "True", "true", 1, "1"] %} checked {% endif %} >
+        <label class="form-check-label fw-bold" for="expert_switch">
+            Experte
+        </label>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Datum</th>
+            <th>Beteiligte</th>
+            <th>Observatorium</th>
+            <th>Motivation</th>
+            <th>Wunsch Poweruser</th>
+            <th>Type</th>
+            <th>Anmerkungen</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ form.head.request_date()}}</td>
+            <td>{{ form.head.requester_name() }}</td>
+            <td>{{ form.head.observatory_name() }}</td>
+            <td>{{ form.head.request_purpose(style="width: 120px;") }}</td>
+            <td>{{ form.head.poweruser_name() }}</td>
+            <td>{{ form.head.request_type() }}</td>
+            <td>{{ form.head.remark() }}</td>
+        </tr>
+
+    </tbody>
+</table>
+
+    <table class="table table-bordered table-striped table-hover" style="table-layout: auto;">
+        <tr>
+            <th>Aktionen</th>
+            <th>Teleskop</th>
+            <th>Filterset
+              <span
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Die Auswahl von einzelnen oder einer Gruppe Filter."
+                style="cursor: pointer;" >
+                <i class="bi bi-question-circle text-info"></i>
+              </span>
+            </th>
+            <th>Rubrik</th>
+            <th>Objekt</th>
+            <th class="expert-field" >Koordinaten RA DEC</th>
+            <th class="expert-field" >Sperre</th>
+            <th>Anzahl Bilder</th>
+            <th>Bel. Zeit</th>
+            <th class="expert-field" >Startzeit</th>
+            <th class="expert-field" >Gain</th>
+            <th class="expert-field" >Offset</th>
+            <th class="expert-field" >Dither</th>
+            <th class="expert-field" >Focus</th>
+        </tr>
+        <tbody id="positions-list">
+        {% for subform in form.positions %}
+        <tr>
+            <td>
+              <div class="btn-group" role="group">
+              <button type="button" class="btn btn-sm btn-light" onclick="moveUp(this)" title="Nach oben">
+                 <i class="bi bi-arrow-up"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-light" onclick="moveDown(this)" title="Nach unten">
+                 <i class="bi bi-arrow-down"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-danger" onclick="deleteRow(this)" title="Löschen">
+                 <i class="bi bi-trash"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="copyRow(this)" title="Kopieren">
+                 <i class="bi bi-files"></i>
+              </button>
+              </div>
+            </td>
+            <td>{{ subform.telescope(size=1, class_='telescope_box') }}</td>
+            <td>{{ subform.filterset(size=1, class_='filterset_box') }}</td>
+            <td>{{ subform.target_objecttype(size=1) }}</td>
+            <td >{{ subform.target }}</td>
+            <td class="expert-field" >{{ subform.target_coordinates }}</td>
+            <td class="expert-field" >{{ subform.target_coordinates_lock(size=1) }}</td>
+            <td>{{ subform.exposure_count(size=2) }}</td>
+            <td>{{ subform.exposure_time(size=2) }}</td>
+            <td class="expert-field" >{{ subform.exposure_starttime(size=1, placeholder="HH:MM")}}</td>
+            <td class="expert-field" >{{ subform.exposure_gain(size=1) }}</td>
+            <td class="expert-field" >{{ subform.exposure_offset(size=1) }}</td>
+            <td class="expert-field" >{{ subform.exposure_dither(size=1) }}</td>
+            <td class="expert-field" >{{ subform.exposure_focus(size=1) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+  <button type="submit" class="btn" name="action" value="save_order" style="background-color: green; color: white;">
+     Speichern
+  </button>
+
+<button type="submit" class="btn" name="action" value="submit_order" style="background-color: purple; color: white;"
+        onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
+   Beantragung abschicken
+</button>
+
+<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
+  Überprüfen
+</button>
+
+<button id="coord-btn" type="submit" class="btn" name="action" value="resolve_coordinates" style="background-color: #f00000; color: white;">
+  Objekt Koordinaten ergänzen
+</button>
+
+<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+
+{% endif %}
+</form>
+
+<script>
+
+window.addEventListener('DOMContentLoaded', function() {
+    const expertSwitch = document.getElementById('expert_switch');
+    const button_coordinates = document.getElementById('coord-btn');
+
+    function toggleExpertFields() {
+        const expertFields = document.querySelectorAll('.expert-field');
+  console.log('Toggle Expert!');
+        expertFields.forEach(field => {
+            if (expertSwitch.checked) {
+                field.classList.add('visible');
+            } else {
+                field.classList.remove('visible');
+            }
+        });
+
+        if (expertSwitch.checked) {
+            button_coordinates.classList.add('visible');
+        } else {
+            button_coordinates.classList.remove('visible');
+        }
+    }
+
+    // Initial aufrufen
+    toggleExpertFields();
+
+    // Event Listener setzen
+    expertSwitch.addEventListener('change', function() {
+        toggleExpertFields();
+
+        // Zustand speichern
+        fetch('/orders/user_preference', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({key: 'expert_mode', value: this.checked ? "True" : "False"})
+        });
+    });
+<!-- xxxxxxx -->
+  document.querySelectorAll('.telescope_box').forEach(function(select) {
+    select.addEventListener('change', function() {
+      const row = this.getAttribute('data-row');
+      const telescopeId = this.value;
+      fetch('/orders/get_filtersets', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({telescope_id: telescopeId})
+      })
+      .then(response => response.json())
+      .then(options => {
+        const filtersetSelect = document.querySelector('.filterset_box[data-row="' + row + '"]');
+        filtersetSelect.innerHTML = '';
+        options.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt.id;
+          option.textContent = opt.name;
+          filtersetSelect.appendChild(option);
+        });
+      });
+    });
+  });
+
+<!-- xxxxxxx -->
+});
+
+</script>
+
+{% endblock content %}

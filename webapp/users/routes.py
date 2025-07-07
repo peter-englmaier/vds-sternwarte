@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request, Blueprint
+from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from webapp import bcrypt, db
 from webapp.model.db import User, Post
@@ -7,7 +7,7 @@ from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
 from webapp.users.utils import save_picture, send_reset_email
 from webapp.users.http import url_has_allowed_host_and_scheme
-
+from sqlalchemy import func
 
 
 @users.route("/register", methods=['GET', 'POST'])
@@ -25,7 +25,12 @@ def register():
                     vds_number=form.vds_number.data
                     )
         db.session.add(user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.', 'error')
+
         flash('Ihr Benutzer ist registriert! Sie können sich jetzt anmelden', 'success')
         return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
@@ -37,9 +42,15 @@ def login():
         return redirect(url_for('main.home'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if not user:
-            user = User.query.filter_by(name=form.email.data).first()
+        user = User.query.filter(    # zuerst schauen, ob eine email Adresse eingegeben wurde
+            func.upper(User.email) == form.email.data.upper()
+        ).first()
+
+        if not user:   # wenn das nichts bringt, annehmen, dass der Username im Feld steht
+           user = User.query.filter(
+                func.upper(User.name) == form.email.data.upper()
+            ).first()
+
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
