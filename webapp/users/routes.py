@@ -54,8 +54,12 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            if next_page and url_has_allowed_host_and_scheme(next_page, allowed_hosts=[request.host]):
-                return redirect(next_page)
+            if next_page:
+                next_page = next_page.replace('\\', '')  # Remove backslashes
+                if url_has_allowed_host_and_scheme(next_page, allowed_hosts=[request.host]):
+                    return redirect(next_page)
+            # Default to the home page if the next_page is invalid or unsafe
+            return redirect(url_for('main.home'))
             # Default to the home page if the next_page is invalid or unsafe
             return redirect(url_for('main.home'))
         else:
