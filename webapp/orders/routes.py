@@ -5,6 +5,7 @@ from flask import current_app
 from datetime import date, datetime
 from webapp import db
 from webapp.model.db import ObservationRequest, ObservationRequestPosition
+from urllib.parse import urlparse
 from . import orders  #  Blueprint-Objekt
 from .orderform import (ObservationRequestPositionsForm ,ObservationRequestHead,
                         telescope_query, filterset_query)
@@ -38,7 +39,8 @@ def set_user_preference():
 
     if status == 1:
         # Fehlerfall
-        return jsonify(success=False, error=message), 500
+        print(f"ERROR: {message}")
+        return jsonify(success=False, error="Ein fehler ist aufgetreten; siehe logfile."), 500
     else:
         # Erfolg
         return jsonify(success=True)
@@ -88,7 +90,18 @@ def copy_order(order_id):
         flash(message, 'success')
     else:
         flash(message,'danger')
-    return redirect(request.referrer or '/orders')
+
+    # Validate referrer
+    referrer = request.referrer
+    if referrer:
+        referrer = referrer.replace('\\', '')  # Normalize backslashes
+        parsed_referrer = urlparse(referrer)
+        if parsed_referrer.netloc or parsed_referrer.scheme:
+            # Invalid referrer; fallback to safe default
+            referrer = '/orders'
+    else:
+        referrer = '/orders'
+    return redirect(referrer)
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag löschen
@@ -105,8 +118,12 @@ def delete_order(order_id):
     else:
         flash(message,'danger')
 
-    return redirect(request.referrer or '/orders')
-
+    # Validate the referrer to ensure it does not contain an explicit host name.
+    referrer = request.referrer or ''
+    referrer = referrer.replace('\\', '')  # Handle backslashes
+    if not urlparse(referrer).netloc and not urlparse(referrer).scheme:
+        return redirect(referrer)
+    return redirect('/orders')
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag erstellem, abschicken, sichern oder anzeigen
