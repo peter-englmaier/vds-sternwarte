@@ -1,0 +1,53 @@
+{% extends "layout_no_sidebar.html" %}
+{% block content %}
+
+<h2>Teleskopzeit Neu beantragen</h2>
+<form method="post" action="{{ url_for('orders.actionhandler') }}">
+{% if current_user.is_authenticated %}
+<p>Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})</p>
+
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Datum</th>
+            <th>Beteiligte</th>
+            <th>Observatorium</th>
+            <th>Motivation</th>
+            <th>Wunsch Poweruser</th>
+            <th>Type</th>
+            <th>Anmerkungen</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{form.request_date}}</td>
+            <td>{{form.requester_name()}}</td>
+            <td>{{form.observatory_name()}}</td>
+            <td>{{form.request_purpose(style="width: 120px;")}}</td>
+            <td>{{form.poweruser_name(placeholder="Poweruser wählen oder leer lassen")}}</td>
+            <td>{{form.request_type()}}</td>
+            <td>{{form.remark(placeholder="Hier können Mitteilungen oder Anmerkungen eingegeben werden")}}</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<br>
+<br>
+  <button type="submit" class="btn" name="action" value="save_order" style="background-color: #a020f0; color: white;">
+   Weiter
+  </button>
+
+<a class="btn btn-warning" style="background-color: #07a0f7; color: white;" href="{{ url_for('orders.show_calendar') }}" >Kalender anzeigen</a>
+
+   <button type="reset" class="btn btn-secondary">
+      Zurücksetzen
+  </button>
+
+
+<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+{% endif %}
+</form>
+
+
+{% endblock content %}

@@ -1,8 +1,14 @@
-from flask import render_template, request
+from datetime import datetime
+
+from flask import render_template, request, url_for
 from flask_login import login_required
 from flask_login import current_user
 from webapp.main import main
-from webapp.model.db import Post
+from webapp.model.db import Post, SystemParameters, ObservationRequest
+from webapp.orders.constants import USER_ROLE_ADMIN, ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
+    ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED
+from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
+
 
 @main.route("/")
 @main.route("/home")
@@ -19,12 +25,56 @@ def about():
     version = "0.1-rc"
     return render_template('about.html', title='About', version=version, commitId=software_id)
 
+
+# -------------------------------------------------------------
+#
+# -------------------------------------------------------------
+@main.route("/poweruser", methods=['GET'])
+@login_required
+def poweruser():
+
+    all_orders = (
+        ObservationRequest.query
+        .filter(ObservationRequest.status.in_([ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED]))
+        .all()
+    )
+    for order in all_orders: order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+    return render_template('poweruser.html', title='Poweruser', orders=all_orders)
+
+# -------------------------------------------------------------
+#
+# -------------------------------------------------------------
+@main.route("/approver", methods=['GET'])
+@login_required
+def approver():
+
+    all_orders = (
+        ObservationRequest.query
+        .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED]))
+        .all()
+    )
+    for order in all_orders: order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+    return render_template('approver.html', title='Approver', orders=all_orders)
+
+# -------------------------------------------------------------
+#
+# -------------------------------------------------------------
+@main.route("/faq")
+def faq():
+    vds_link = SystemParameters.query.filter_by(parameter='vds_link').first()
+    if vds_link:
+        vds_link = vds_link.value
+    else:
+        vds_link = "#"
+    return render_template('faq.html', title='FAQ', vds_link=vds_link)
+
 @main.route("/status")
 def status():
     from flask import session
     print(session)
     print(f"{current_user.name=}")
-    print(f"Admin User? {current_user.has_role('admin')}")
+    print(f"Admin User? {current_user.has_role(USER_ROLE_ADMIN)}")
+    print( "Du bist" + f" current_user.groups")
     return home()
 
 @main.route("/fgrequest")

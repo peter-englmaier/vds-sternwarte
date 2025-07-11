@@ -4,6 +4,7 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, Integ
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from flask_login import current_user
 from webapp.model.db import User
+from sqlalchemy import func
 
 
 class RegistrationForm(FlaskForm):
@@ -51,13 +52,20 @@ class UpdateAccountForm(FlaskForm):
 
     def validate_username(self, username):
         if username.data != current_user.name:
-            user = User.query.filter_by(name=username.data).first()
+#            user = User.query.filter_by(name=username.data).first()
+            user = User.query.filter(
+                func.upper(User.name) == username.data.upper()
+            ).first()
+
             if user:
                 raise ValidationError('That username is taken. Please choose a different one.')
 
     def validate_email(self, email):
         if email.data != current_user.email:
-            user = User.query.filter_by(email=email.data).first()
+#            user = User.query.filter_by(email=email.data).first()
+            user = User.query.filter(
+                func.upper(User.email) == email.data.upper()
+            ).first()
             if user:
                 raise ValidationError('That email is taken. Please choose a different one.')
 
@@ -68,7 +76,10 @@ class RequestResetForm(FlaskForm):
     submit = SubmitField('Request Password Reset')
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
+#        user = User.query.filter_by(email=email.data).first()
+        user = User.query.filter(
+            func.upper(User.email) == email.data.upper()
+        ).first()
         if user is None:
             raise ValidationError('There is no account with that email. You must register first.')
 
