@@ -1,12 +1,6 @@
 {% extends "layout_no_sidebar.html" %}
 {% block content %}
 
-<script>
-$(document).ready(function() {
-    $('.table').DataTable();
-});
-</script>
-
 <h2>Meine Teleskopzeiten</h2>
 {% if current_user.is_authenticated %}
 <p>

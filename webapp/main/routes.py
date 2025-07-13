@@ -61,7 +61,11 @@ def approver():
 # -------------------------------------------------------------
 @main.route("/faq")
 def faq():
-    vds_link = SystemParameters.query.filter_by(parameter='vds_link').first().value
+    vds_link = SystemParameters.query.filter_by(parameter='vds_link').first()
+    if vds_link:
+        vds_link = vds_link.value
+    else:
+        vds_link = "#"
     return render_template('faq.html', title='FAQ', vds_link=vds_link)
 
 @main.route("/status")

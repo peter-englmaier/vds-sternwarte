@@ -8,13 +8,6 @@ from sqlalchemy import UniqueConstraint, CheckConstraint, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 
-'''
-    Exception raised when Role does not exist
-'''
-class RoleDoesNotExist(Exception):
-    def __init__(self, name):
-        super().__init__(name)
-        self.name = name
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -110,7 +103,8 @@ class Group(db.Model):
         if role:
             return role in self.roles
         else:
-            raise RoleDoesNotExist(name)
+            print("ERROR: No such role '{}'".format(name))
+            return False
 
     def __repr__(self):
        return f"Group('{self.name}')"
