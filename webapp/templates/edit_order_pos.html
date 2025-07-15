@@ -48,14 +48,6 @@ function deleteRow(btn) {
     }
 }
 
-function updateMoveButtons1() {
-    const rows = document.querySelectorAll('tbody tr');
-    rows.forEach((row, idx) => {
-        row.querySelector('.btn-up').disabled = idx === 0;
-        row.querySelector('.btn-down').disabled = idx === rows.length - 1;
-    });
-}
-
 function updateMoveButtons() {
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach((row, idx) => {
