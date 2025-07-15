@@ -5,7 +5,6 @@ from flask import current_app
 from datetime import date, datetime
 from webapp import db
 from webapp.model.db import ObservationRequest, ObservationRequestPosition
-from urllib.parse import urlparse
 from . import orders  #  Blueprint-Objekt
 from .orderform import (ObservationRequestPositionsForm ,ObservationRequestHead,
                         telescope_query, filterset_query)
@@ -92,18 +91,7 @@ def copy_order(order_id):
         flash(message, 'success')
     else:
         flash(message,'danger')
-
-    # Validate referrer
-    referrer = request.referrer
-    if referrer:
-        referrer = referrer.replace('\\', '')  # Normalize backslashes
-        parsed_referrer = urlparse(referrer)
-        if parsed_referrer.netloc or parsed_referrer.scheme:
-            # Invalid referrer; fallback to safe default
-            referrer = '/orders'
-    else:
-        referrer = '/orders'
-    return redirect(referrer)
+    return redirect('/orders')
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag löschen
@@ -119,12 +107,6 @@ def delete_order(order_id):
         flash(message, 'success')
     else:
         flash(message,'danger')
-
-    # Validate the referrer to ensure it does not contain an explicit host name.
-    referrer = request.referrer or ''
-    referrer = referrer.replace('\\', '')  # Handle backslashes
-    if not urlparse(referrer).netloc and not urlparse(referrer).scheme:
-        return redirect(referrer)
     return redirect('/orders')
 
 # --------------------------------------------------------------------
