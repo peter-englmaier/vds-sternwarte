@@ -14,3 +14,4 @@ webapp/static/profile_pics/*.png
 venv/
 # macos specific
 .DS_Store
+/copy_DB_content.sql

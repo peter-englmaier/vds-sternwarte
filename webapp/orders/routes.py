@@ -5,7 +5,6 @@ from flask import current_app
 from datetime import date, datetime
 from webapp import db
 from webapp.model.db import ObservationRequest, ObservationRequestPosition
-from urllib.parse import urlparse
 from . import orders  #  Blueprint-Objekt
 from .orderform import (ObservationRequestPositionsForm ,ObservationRequestHead,
                         telescope_query, filterset_query)
@@ -90,18 +89,7 @@ def copy_order(order_id):
         flash(message, 'success')
     else:
         flash(message,'danger')
-
-    # Validate referrer
-    referrer = request.referrer
-    if referrer:
-        referrer = referrer.replace('\\', '')  # Normalize backslashes
-        parsed_referrer = urlparse(referrer)
-        if parsed_referrer.netloc or parsed_referrer.scheme:
-            # Invalid referrer; fallback to safe default
-            referrer = '/orders'
-    else:
-        referrer = '/orders'
-    return redirect(referrer)
+    return redirect('/orders')
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag löschen
@@ -117,29 +105,25 @@ def delete_order(order_id):
         flash(message, 'success')
     else:
         flash(message,'danger')
-
-    # Validate the referrer to ensure it does not contain an explicit host name.
-    referrer = request.referrer or ''
-    referrer = referrer.replace('\\', '')  # Handle backslashes
-    if not urlparse(referrer).netloc and not urlparse(referrer).scheme:
-        return redirect(referrer)
     return redirect('/orders')
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag erstellem, abschicken, sichern oder anzeigen
 # --------------------------------------------------------------------
-@orders.route( '/actionhandler', methods=['GET', 'POST'])
+@orders.route( '/actionhandler', methods=['POST'])
 @login_required
 def actionhandler():
     action = request.form.get("action")
     order_id = request.form.get("order_id")
     form = ObservationRequestHead()
 
-    if request.method == "POST" and action == "create_order":
+#   Start with new observation request
+    if action == "create_order":
         order= init_new_order_service()
         form = ObservationRequestHead(obj=order)
         return render_template('create_order.html', form=form, order_id=None)
 
+#   User submits order to get the approval
     elif action == "submit_order":
         order_head = ObservationRequest.query.get(order_id)
         if order_head.user_id != current_user.id:
@@ -151,7 +135,8 @@ def actionhandler():
             db.session.rollback()
             flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.', 'error')
 
-    elif action == "save_order":     # Eingaben auslesen und Kopfsatz anlegen
+#   Read entries from gui and save as new observation request ( no positions so far )
+    elif action == "save_order":
         order_head = ObservationRequest()
         order_head.user_id = current_user.id
         order_head.request_date = form.request_date.data
@@ -170,10 +155,7 @@ def actionhandler():
             flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.', 'error')
 
         return redirect(url_for('orders.edit_order_pos', order_id=order_head.id))
-
-    if request.method == "GET":
-        flash('actionhandler GET', 'success')
-        return render_template('edit_order_pos.html', form=form, order_id=None)
+    return redirect('/orders')
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag bearbeiten, Zeilen hinzufügen oder entfernen
@@ -282,10 +264,6 @@ def edit_order_pos(order_id):
                 flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.', 'error')
 
             with app.app_context():
-                if len(form.positions) == 0:
-                    print("Keine Positionen im Formular.")
-                else:
-                    print(f"{len(form.positions)} Positionen im Formular.")
                 for idx, pos_form in enumerate(form.positions):
                     position_new = ObservationRequestPosition(
                        row_no = idx + 1,  # Reihenfolge im Formular = Reihenfolge in der DB
@@ -338,7 +316,7 @@ def edit_order_pos(order_id):
               for x in form.head.observatory_name.choices:
                   if x[0] == selected_id:
                       name_str = x[1]  # keine weitere Auswahl ermöglichen
-                      form.head.observatory_name.choices = [(x[0], x[1])]
+                      form.head.observatory_name.choices = [(selected_id, name_str)]
                       break
               return render_template('edit_order_pos.html', expert_mode=expert_mode, form=form)
 

@@ -1,10 +1,31 @@
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 {% extends "layout_no_sidebar.html" %}
 {% block content %}
 
 <script>
 
+
+function toggleExpertFields() {
+
+    const expertSwitch = document.getElementById('expert_switch');
+    const button_coordinates = document.getElementById('coord-btn');
+    const expertFields = document.querySelectorAll('.expert-field');
+    expertFields.forEach(field => {
+        if (expertSwitch.checked) {
+            field.classList.add('visible');
+        } else {
+            field.classList.remove('visible');
+        }
+    });
+        if (expertSwitch.checked) {
+            button_coordinates.classList.add('visible');
+        } else {
+            button_coordinates.classList.remove('visible');
+        }
+}
+
+
 function renumberRows() {
-console.log(" enter renumberRows");
     document.querySelectorAll('#positions-list tr').forEach((row, idx) => {
         row.querySelectorAll('input, select, textarea, label').forEach(el => {
             if (el.name) {
@@ -30,8 +51,13 @@ function deleteRow(btn) {
 function updateMoveButtons() {
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach((row, idx) => {
-        row.querySelector('.btn-up').disabled = idx === 0;
-        row.querySelector('.btn-down').disabled = idx === rows.length - 1;
+        const btnUp = row.querySelector('.btn-up');
+        const btnDown = row.querySelector('.btn-down');
+        if (!btnUp || !btnDown) {
+            console.warn('Fehlender Button in Zeile:', idx, row);
+        }
+        if (btnUp) btnUp.disabled = idx === 0;
+        if (btnDown) btnDown.disabled = idx === rows.length - 1;
     });
 }
 
@@ -54,6 +80,50 @@ function moveDown(btn) {
         renumberRows();
         updateMoveButtons();
     }
+}
+
+function registerTelescopeBoxListeners(context = document) {
+    const selects = context.querySelectorAll('.telescope_box');
+    selects.forEach(function(select) {
+        // Vorherigen Listener entfernen (nur wenn vorhanden)
+        if (select._telescopeChangeListener) {
+            select.removeEventListener('change', select._telescopeChangeListener);
+        }
+
+        // Listener-Funktion definieren
+        const listener = function() {
+            // Finde die aktuelle Zeile
+            const tr = this.closest('tr');
+            // Finde die Filterset-Box in derselben Zeile
+            const filtersetSelect = tr.querySelector('.filterset_box');
+
+            if (!filtersetSelect) {
+                console.warn("Keine Filterset-Box in dieser Zeile gefunden!");
+                return;
+            }
+
+            const telescopeId = this.value;
+            fetch('/orders/get_filtersets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telescope_id: telescopeId })
+            })
+            .then(response => response.json())
+            .then(options => {
+                filtersetSelect.innerHTML = '';
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.id;
+                    option.textContent = opt.name;
+                    filtersetSelect.appendChild(option);
+                });
+            });
+        };
+
+        // Listener merken, um ihn ggf. wieder entfernen zu können
+        select._telescopeChangeListener = listener;
+        select.addEventListener('change', listener);
+    });
 }
 
 function copyRow(btn) {
@@ -92,7 +162,6 @@ function copyRow(btn) {
             cloneField.classList.remove('visible');
         }
     });
-
     // Die geklonte Zeile nach der aktuellen einfügen
     row.parentNode.insertBefore(clone, row.nextSibling);
     renumberRows();
@@ -231,8 +300,8 @@ function copyRow(btn) {
               </button>
               </div>
             </td>
-            <td>{{ subform.telescope(size=1, class_='telescope_box') }}</td>
-            <td>{{ subform.filterset(size=1, class_='filterset_box') }}</td>
+            <td>{{ subform.telescope(size=1, class_='telescope_box', data_row=loop.index0) }}</td>
+            <td>{{ subform.filterset(size=1, class_='filterset_box', data_row=loop.index0) }}</td>
             <td>{{ subform.target_objecttype(size=1) }}</td>
             <td >{{ subform.target }}</td>
             <td class="expert-field" >{{ subform.target_coordinates }}</td>
@@ -277,24 +346,6 @@ window.addEventListener('DOMContentLoaded', function() {
     const expertSwitch = document.getElementById('expert_switch');
     const button_coordinates = document.getElementById('coord-btn');
 
-    function toggleExpertFields() {
-        const expertFields = document.querySelectorAll('.expert-field');
-  console.log('Toggle Expert!');
-        expertFields.forEach(field => {
-            if (expertSwitch.checked) {
-                field.classList.add('visible');
-            } else {
-                field.classList.remove('visible');
-            }
-        });
-
-        if (expertSwitch.checked) {
-            button_coordinates.classList.add('visible');
-        } else {
-            button_coordinates.classList.remove('visible');
-        }
-    }
-
     // Initial aufrufen
     toggleExpertFields();
 
@@ -309,31 +360,9 @@ window.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({key: 'expert_mode', value: this.checked ? "True" : "False"})
         });
     });
-<!-- xxxxxxx -->
-  document.querySelectorAll('.telescope_box').forEach(function(select) {
-    select.addEventListener('change', function() {
-      const row = this.getAttribute('data-row');
-      const telescopeId = this.value;
-      fetch('/orders/get_filtersets', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({telescope_id: telescopeId})
-      })
-      .then(response => response.json())
-      .then(options => {
-        const filtersetSelect = document.querySelector('.filterset_box[data-row="' + row + '"]');
-        filtersetSelect.innerHTML = '';
-        options.forEach(opt => {
-          const option = document.createElement('option');
-          option.value = opt.id;
-          option.textContent = opt.name;
-          filtersetSelect.appendChild(option);
-        });
-      });
-    });
-  });
 
-<!-- xxxxxxx -->
+    registerTelescopeBoxListeners();
+
 });
 
 </script>
