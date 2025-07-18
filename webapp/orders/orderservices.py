@@ -8,7 +8,7 @@ from .constants import ORDER_STATUS_CREATED, ORDER_STATUS_APPROVED, ORDER_STATUS
 from webapp.model.db import UserPreferences
 
 # --------------------------------------------------------------------------
-#  Umformung von Dezimal Koordinaten in die Stunden / Minuten und Winkelgrad
+#  Umformung von dezimal Koordinaten in die Stunden / Minuten und Winkelgrad
 # --------------------------------------------------------------------------
 def deg_to_hms(ra_deg):
     hours = ra_deg / 15
@@ -91,7 +91,10 @@ def copy_order_service(order_id):
 
         if orig_positions:
             for pos in orig_positions:
-                position_new = pos
+                position_new = ObservationRequestPosition()
+                for column in ObservationRequestPosition.__table__.columns:
+                    setattr(position_new, column.name, getattr(pos, column.name))
+                position_new.id = None
                 position_new.observation_request_id = new_order.id
                 db.session.add(position_new)
 

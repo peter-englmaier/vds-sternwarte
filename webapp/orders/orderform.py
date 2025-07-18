@@ -108,8 +108,7 @@ class ObservationRequestPositionForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.target_objecttype.choices = [('', 'Auswählen')] + [
-        self.target_objecttype.choices = [
+        self.target_objecttype.choices = [('-1', 'Auswählen oder leerlassen')] + [
             (x.Objecttype, x.Objecttype) for x in objecttype_query()
         ]
         self.filterset.choices = [('-2', 'Auswählen')] + [
