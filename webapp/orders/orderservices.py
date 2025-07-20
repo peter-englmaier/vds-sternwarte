@@ -31,7 +31,10 @@ def deg_to_dms(dec_deg):
 def init_new_order_service():
     order = ObservationRequest()
     order.user_id = current_user.id
-    order.requester_name = current_user.firstname + ' ' + current_user.surname
+    try:
+        order.requester_name = current_user.firstname + ' ' + current_user.surname
+    except Exception as e:
+        order.requester_name = f"Unknown ({order.user_id})"
     order.positions = []
     order.date_created = datetime.now()
     order.request_date = datetime.now()
