@@ -12,7 +12,15 @@
     <div class="row">
         <div class="col">
             <label>Beginn Datum:</label>
-            <input type="date" name="beginndatum" class="form-control" required>
+            <input type="hidden" name="beginndatum" id="beginndatum" class="form-control" required>
+            <span id="selected_date_display_beginn">Kein Datum ausgewählt</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary"
+                    hx-get="{{ url_for('orders.show_calendar', picker=True, target_id='beginndatum', display_id='selected_date_display_beginn') }}"
+                    hx-target="#calendar-container-modal .modal-body"
+                    hx-swap="innerHTML"
+                    data-bs-toggle="modal" data-bs-target="#calendar-container-modal">
+                Kalender
+            </button>
         </div>
         <div class="col">
             <label>Beginn Uhrzeit:</label>
@@ -79,6 +87,21 @@
 </form>
 <p></p>
 <button type="button" onclick="resetCalendar()">Zurücksetzen</button>
-    </div>   
+    </div>
+
+<!-- Modal -->
+<div class="modal fade" id="calendar-container-modal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="calendarModalLabel">Datum auswählen</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Calendar will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
 {% endif %}
 {% endblock %}

@@ -415,13 +415,19 @@ def show_calendar():
 
     year = request.args.get('year', default=datetime.now().year, type=int)
     month = request.args.get('month', default=datetime.now().month, type=int)
+    picker = request.args.get('picker', default=False, type=bool)
+    target_id = request.args.get('target_id', default='request_date', type=str)
+    display_id = request.args.get('display_id', default='selected_date_display', type=str)
 
     cal, planned_days, approved_days, new_moon_days, full_moon_days = calendar_service(year, month)
     today = date.today()
     referrer = request.referrer
+
     template = '_calendar.html' if request.headers.get('HX-Request') else 'calendar.html'
+
     return render_template(
         template,
+                           datetime=datetime,
                            cal=cal,
                            planned_days=planned_days,
                            approved_days=approved_days,
@@ -429,5 +435,8 @@ def show_calendar():
                            new_moon_days=new_moon_days,
                            month=month, year=year,
                            today_day=today.day,today_month=today.month,today_year=today.year,
-                           referrer=referrer)
+                           referrer=referrer,
+                           picker=picker,
+                           target_id=target_id,
+                           display_id=display_id)
 
