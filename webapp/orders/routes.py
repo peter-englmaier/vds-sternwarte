@@ -418,9 +418,10 @@ def show_calendar():
 
     cal, planned_days, approved_days, new_moon_days, full_moon_days = calendar_service(year, month)
     today = date.today()
-    referrer = None
+    referrer = request.referrer
+    template = '_calendar.html' if request.headers.get('HX-Request') else 'calendar.html'
     return render_template(
-        'calendar.html',
+        template,
                            cal=cal,
                            planned_days=planned_days,
                            approved_days=approved_days,
