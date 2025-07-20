@@ -60,8 +60,6 @@ def login():
                     return redirect(next_page)
             # Default to the home page if the next_page is invalid or unsafe
             return redirect(url_for('main.home'))
-            # Default to the home page if the next_page is invalid or unsafe
-            return redirect(url_for('main.home'))
         else:
             flash('Login nicht erfolgreich. Bitte prüfen Sie ihre Angaben!', 'danger')
 
