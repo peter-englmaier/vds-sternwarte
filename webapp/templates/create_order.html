@@ -9,18 +9,14 @@
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <th>Datum</th>
-            <th>Beteiligte</th>
-            <th>Observatorium</th>
-            <th>Motivation</th>
-            <th>Wunsch Poweruser</th>
-            <th>Type</th>
-            <th>Anmerkungen</th>
+            <th class="col-fixed-100">Datum</th>
+            <th class="col-fixed-100">Beteiligte</th>
+            <th class="col-fixed-100">Observatorium</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>
+            <td class="col-fixed-100">
                 {{ form.request_date(class="form-control", type="hidden") }}
                 <span id="selected_date_display">Kein Datum ausgewählt</span>
                 <button type="button" class="btn btn-sm btn-outline-secondary"
@@ -31,8 +27,26 @@
                     Kalender
                 </button>
             </td>
-            <td>{{form.requester_name()}}</td>
-            <td>{{form.observatory_name()}}</td>
+            <td class="col-fixed-100">
+                {{ form.requester_name(class="form-control") }}
+            </td>
+            <td class="col-fixed-100">
+                {{ form.observatory_name(class="form-control") }}
+            </td>
+        </tr>
+    </tbody>
+</table>
+    <p></p>
+<table class="table table-bordered table-striped table-hover mx-auto">
+    <thead>
+        <tr>
+            <th>Motivation</th>
+            <th>Wunsch Poweruser</th>
+            <th>Type</th>
+            <th>Anmerkungen</th>
+        </tr>
+    </thead>    
+    <tbody>
             <td>{{form.request_purpose(style="width: 120px;")}}</td>
             <td>{{form.poweruser_name(placeholder="Poweruser wählen oder leer lassen")}}</td>
             <td>{{form.request_type()}}</td>
