@@ -170,7 +170,6 @@ function copyRow(btn) {
 }
 </script>
 
-
 <!-- Modal -->
 <div class="modal fade" id="checkPopup" tabindex="-1" aria-labelledby="checkPopupLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -281,220 +280,199 @@ function copyRow(btn) {
 
 <hr style="border: 2px solid red; margin-top: 10px; margin-bottom: 20px;">
 
-<!-- Kompletter Datensatz bearbeiten !-->
+<!-- Anfang Kompletter Datensatz bearbeiten !-->
+
 <script>
-function toggleExpertFields() {
-
-    const expertSwitch = document.getElementById('expert_switch');
-    const button_coordinates = document.getElementById('coord-btn');
-    const expertFields = document.querySelectorAll('.expert-field');
-    expertFields.forEach(field => {
-        if (expertSwitch.checked) {
-            field.classList.add('visible');
-        } else {
-            field.classList.remove('visible');
-        }
+/* Block-Auswahl */
+function getActiveBlock() {
+  return document.querySelector('#positions-root .position-block.active')
+      || document.querySelector('#positions-root .position-block');
+}
+function setActive(block){
+  document.querySelectorAll('#positions-root .position-block').forEach(b=>{
+    b.classList.remove('active','border-primary','shadow');
+    b.classList.add('border-transparent');
+    b.setAttribute('aria-selected','false');
+    const badge = b.querySelector('.active-badge');
+    if (badge) badge.classList.add('d-none');
+  });
+  if(block){
+    block.classList.add('active','border-primary','shadow');
+    block.classList.remove('border-transparent');
+    block.setAttribute('aria-selected','true');
+    const badge = block.querySelector('.active-badge');
+    if (badge) badge.classList.remove('d-none');
+    block.focus();
+  }
+}
+function findBlockFromBtn(btn) {
+  const block = btn.closest('.position-block');
+  if (block) setActive(block);
+  return block || getActiveBlock();
+}
+function renumberAll() {
+  document.querySelectorAll('#positions-root .position-block').forEach((block, idx) => {
+    block.dataset.index = idx;
+    block.querySelectorAll('input, select, textarea, label').forEach(el => {
+      if (el.name)    el.name    = el.name.replace(/positions-\d+-/, `positions-${idx}-`);
+      if (el.id)      el.id      = el.id.replace(/positions-\d+-/, `positions-${idx}-`);
+      if (el.htmlFor) el.htmlFor = el.htmlFor.replace(/positions-\d+-/, `positions-${idx}-`);
+      if (el.dataset && typeof el.dataset.row !== 'undefined') el.dataset.row = String(idx);
     });
-        if (expertSwitch.checked) {
-            button_coordinates.classList.add('visible');
-        } else {
-            button_coordinates.classList.remove('visible');
-        }
+  });
 }
-
-
-function renumberRows() {
-    document.querySelectorAll('#positions-list tr').forEach((row, idx) => {
-        row.querySelectorAll('input, select, textarea, label').forEach(el => {
-            if (el.name) {
-                el.name = el.name.replace(/positions-\d+-/, `positions-${idx}-`);
-            }
-            if (el.id) {
-                el.id = el.id.replace(/positions-\d+-/, `positions-${idx}-`);
-            }
-            if (el.htmlFor) {
-                el.htmlFor = el.htmlFor.replace(/positions-\d+-/, `positions-${idx}-`);
-            }
-        });
-    });
+function deepCloneBlock(block) {
+  const clone = block.cloneNode(true);
+  const src = block.querySelectorAll('input, textarea, select');
+  const dst = clone.querySelectorAll('input, textarea, select');
+  src.forEach((s, i) => {
+    const d = dst[i]; if (!d) return;
+    if (s.type === 'checkbox' || s.type === 'radio') d.checked = s.checked;
+    else if (s.tagName === 'SELECT') d.selectedIndex = s.selectedIndex;
+    else d.value = s.value;
+  });
+  return clone;
 }
-
-function deleteRow(btn) {
-    if (confirm('Wirklich löschen?')) {
-        btn.closest('tr').remove();
-        renumberRows();
-    }
+function kopiereAufnahmeBlock(btn) {
+  const block = findBlockFromBtn(btn); if (!block) return;
+  const clone = deepCloneBlock(block);
+  block.after(clone);
+  setActive(clone);
+  registerTelescopeBoxListeners(clone);
+  renumberAll();
 }
-
-function updateMoveButtons() {
-    const rows = document.querySelectorAll('tbody tr');
-    rows.forEach((row, idx) => {
-        const btnUp = row.querySelector('.btn-up');
-        const btnDown = row.querySelector('.btn-down');
-        if (!btnUp || !btnDown) {
-            console.warn('Fehlender Button in Zeile:', idx, row);
-        }
-        if (btnUp) btnUp.disabled = idx === 0;
-        if (btnDown) btnDown.disabled = idx === rows.length - 1;
-    });
+function loescheAufnahmeBlock(btn) {
+  const block = findBlockFromBtn(btn); if (!block) return;
+  if (!confirm('Wirklich löschen?')) return;
+  const next = block.nextElementSibling || block.previousElementSibling;
+  block.remove();
+  if (next && next.classList.contains('position-block')) setActive(next);
+  renumberAll();
 }
-
-function moveUpComplete(btn) {
-    const row = btn.closest('tr');
-    const prev = row.previousElementSibling;
-    const tbody = row.parentNode;
-    if (prev && prev.nodeName === "TR") {
-        tbody.insertBefore(row, prev);
-        renumberRows();
-        updateMoveButtons();
-    }
+function moveBlockUp(btn) {
+  const block = findBlockFromBtn(btn); if (!block) return;
+  const prev = block.previousElementSibling;
+  if (prev && prev.classList.contains('position-block')) {
+    block.parentNode.insertBefore(block, prev);
+    setActive(block);
+    renumberAll();
+  }
 }
-
-function moveDownComplete(btn) {
-    const row = btn.closest('tr');
-    const next = row.nextElementSibling;
-    if (next && next.nodeName === "TR") {
-        row.parentNode.insertBefore(next, row);
-        renumberRows();
-        updateMoveButtons();
-    }
-}
-
-function copyRowComplete(btn) {
-    const row = btn.closest('tr');
-    const clone = row.cloneNode(true);
-
-    // Alle Inputs, Selects und Textareas durchlaufen
-    const origInputs = row.querySelectorAll('input, select, textarea');
-    const cloneInputs = clone.querySelectorAll('input, select, textarea');
-
-    origInputs.forEach((input, idx) => {
-        const cloneInput = cloneInputs[idx];
-        if (!cloneInput) return;
-
-        if (input.type === "checkbox" || input.type === "radio") {
-            cloneInput.checked = input.checked;
-        } else if (input.tagName.toLowerCase() === "select") {
-            cloneInput.selectedIndex = input.selectedIndex;
-        } else {
-            cloneInput.value = input.value;
-        }
-    });
-
-    // Die geklonte Zeile nach der aktuellen einfügen
-    row.parentNode.insertBefore(clone, row.nextSibling);
-    renumberRows();
-    updateMoveButtons();
-    toggleExpertFields();
+function moveBlockDown(btn) {
+  const block = findBlockFromBtn(btn); if (!block) return;
+  const next = block.nextElementSibling;
+  if (next && next.classList.contains('position-block')) {
+    block.parentNode.insertBefore(next, block);
+    setActive(block);
+    renumberAll();
+  }
 }
 </script>
 
+<div class="d-flex flex-column align-items-center gap-3 mb-3">
+  <div class="text-center mb-3">
+    <button type="button" class="btn btn-sm btn-light" onclick="moveBlockUp(this)" title="Aktiven Block nach oben">
+      <i class="bi bi-arrow-up-circle-fill"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-light" onclick="moveBlockDown(this)" title="Aktiven Block nach unten">
+      <i class="bi bi-arrow-down-circle-fill"></i>
+    </button>
+    <button type="button" class="btn btn-sm btn-secondary" onclick="kopiereAufnahmeBlock(this)" title="Aktiven Block kopieren">⧉ Kopieren</button>
+    <button type="button" class="btn btn-sm btn-danger" onclick="loescheAufnahmeBlock(this)" title="Aktiven Block löschen">− Löschen</button>
+  </div>
+</div>
 
-<center>
- <div class="btn-group" role="group">
-              <button type="button" class="btn btn-sm btn-light" onclick="moveUpComplete(this)" title="Kompletter Datensatz nach oben">
-                 <i class="bi bi-arrow-up"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-light" onclick="moveDownComplete(this)" title="Kompletter Datensatz nach unten">
-                 <i class="bi bi-arrow-down"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-danger" onclick="deleteRowComplete(this)" title="Datensatz löschen">
-                 <i class="bi bi-trash"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="copyRowComplete(this)" title="Datensatz kopieren">
-                 <i class="bi bi-files"></i>
-              </button>
-              </div>    
-</center>
-<table class="table table-bordered table-striped table-hover">
-    <thead>
-        <tr>        
-            <td>
+<div class="container py-4">
+  <div id="positions-root">
+    {% for subform in form.positions %}
+    <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
+         data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
 
-    <table class="table table-bordered table-striped table-hover" style="table-layout: auto;">
-        <tr>           
-            <th>Teleskop</th>            
+      <!-- Badge (nur bei aktiv sichtbar) -->
+      <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
+        Aktiver Block
+      </span>
+
+      <!-- obere Tabelle  -->
+      <table class="table table-bordered table-striped table-hover mb-1">
+        <thead>
+          <tr>
+            <th>Teleskop</th>
             <th>Rubrik</th>
             <th>Objekt</th>
-        </tr>
-        <tbody id="positions-list">
-        {% for subform in form.positions %}
-        <tr>            
-            <td>{{ subform.telescope(size=1, class_='telescope_box', data_row=loop.index0) }}</td>  
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ subform.telescope(size=1, class_='telescope_box', data_row=loop.index0) }}</td>
             <td>{{ subform.target_objecttype(size=1) }}</td>
-            <td >{{ subform.target }}</td>          
-        </tr>        
-        {% endfor %}
+            <td>{{ subform.target }}</td>
+          </tr>
         </tbody>
-    </table>
+      </table>
 
-    <table class="table table-bordered table-striped table-hover" style="table-layout: auto;">
-        <tr>
-            <th>Aktionen</th>            
-            <th>Filterset
-              <span
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                title="Die Auswahl von einzelnen oder einer Gruppe Filter."
-                style="cursor: pointer;" >
+      <!-- Aufnahmedetails -->
+      <table class="table table-bordered table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Aktionen</th>
+            <th>
+              Filterset
+              <span data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Die Auswahl von einzelnen oder einer Gruppe Filter.">
                 <i class="bi bi-question-circle text-info"></i>
               </span>
-            </th>            
-            <th class="expert-field" >Koordinaten RA DEC</th>
-            <th class="expert-field" >Sperre</th>
+            </th>
+            <th class="expert-field">Koordinaten RA DEC</th>
+            <th class="expert-field">Sperre</th>
             <th>Anzahl Bilder</th>
             <th>Bel. Zeit</th>
-            <th class="expert-field" >Startzeit</th>
-            <th class="expert-field" >Gain</th>
-            <th class="expert-field" >Offset</th>
-            <th class="expert-field" >Dither</th>
-            <th class="expert-field" >Focus</th>
-        </tr>
-        <tbody id="positions-list">
-        {% for subform in form.positions %}
-        <tr>
+            <th class="expert-field">Startzeit</th>
+            <th class="expert-field">Gain</th>
+            <th class="expert-field">Offset</th>
+            <th class="expert-field">Dither</th>
+            <th class="expert-field">Focus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
             <td>
               <div class="btn-group" role="group">
-              <button type="button" class="btn btn-sm btn-light" onclick="moveUp(this)" title="Zeile nach oben">
-                 <i class="bi bi-arrow-up"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-light" onclick="moveDown(this)" title="Zeile nach unten">
-                 <i class="bi bi-arrow-down"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-danger" onclick="deleteRow(this)" title="Zeile löschen">
-                 <i class="bi bi-trash"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-secondary" onclick="copyRow(this)" title="Zeile kopieren">
-                 <i class="bi bi-files"></i>
-              </button>
+                <button type="button" class="btn btn-sm btn-light" onclick="moveUp(this)"   title="Zeile nach oben"><i class="bi bi-arrow-up"></i></button>
+                <button type="button" class="btn btn-sm btn-light" onclick="moveDown(this)" title="Zeile nach unten"><i class="bi bi-arrow-down"></i></button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="copyRow(this)"  title="Zeile kopieren"><i class="bi bi-files"></i></button>
+                <button type="button" class="btn btn-sm btn-danger"    onclick="deleteRow(this)" title="Zeile löschen"><i class="bi bi-trash"></i></button>
               </div>
-            </td>            
-            <td>{{ subform.filterset(size=1, class_='filterset_box', data_row=loop.index0) }}</td>          
-            <td class="expert-field" >{{ subform.target_coordinates }}</td>
-            <td class="expert-field" >{{ subform.target_coordinates_lock(size=1) }}</td>
+            </td>
+            <td>{{ subform.filterset(size=1, class_='filterset_box', data_row=loop.index0) }}</td>
+            <td class="expert-field">{{ subform.target_coordinates }}</td>
+            <td class="expert-field">{{ subform.target_coordinates_lock(size=1) }}</td>
             <td>{{ subform.exposure_count(size=2) }}</td>
             <td>{{ subform.exposure_time(size=2) }}</td>
-            <td class="expert-field" >{{ subform.exposure_starttime(size=1, placeholder="HH:MM")}}</td>
-            <td class="expert-field" >{{ subform.exposure_gain(size=1) }}</td>
-            <td class="expert-field" >{{ subform.exposure_offset(size=1) }}</td>
-            <td class="expert-field" >{{ subform.exposure_dither(size=1) }}</td>
-            <td class="expert-field" >{{ subform.exposure_focus(size=1) }}</td>
-        </tr>
-        {% endfor %}
+            <td class="expert-field">{{ subform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
+            <td class="expert-field">{{ subform.exposure_gain(size=1) }}</td>
+            <td class="expert-field">{{ subform.exposure_offset(size=1) }}</td>
+            <td class="expert-field">{{ subform.exposure_dither(size=1) }}</td>
+            <td class="expert-field">{{ subform.exposure_focus(size=1) }}</td>
+          </tr>
         </tbody>
-    </table>
-</td>
-</tr>
-</thead>
-</table>
+      </table>
 
-  <button type="submit" class="btn" name="action" value="save_order" style="background-color: green; color: white;">
-     Speichern
-  </button>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Ende Kompletter Datensatz bearbeiten !-->
+
+
+<button type="submit" class="btn" name="action" value="save_order" style="background-color: green; color: white;">
+  Speichern
+</button>
 
 <button type="submit" class="btn" name="action" value="submit_order" style="background-color: purple; color: white;"
         onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
-   Beantragung abschicken
+  Beantragung abschicken
 </button>
 
 <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
@@ -505,51 +483,58 @@ function copyRowComplete(btn) {
   Objekt Koordinaten ergänzen
 </button>
 
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+<a class="btn btn-primary" href="{{ url_for('main.home') }}">Zur Startseite</a>
 
 {% endif %}
 </form>
 
 <script>
-
 window.addEventListener('DOMContentLoaded', function() {
-    const expertSwitch = document.getElementById('expert_switch');
-    const button_coordinates = document.getElementById('coord-btn');
-
-    // Initial aufrufen
-    toggleExpertFields();
-
-    // Event Listener setzen
+  // Expertenmodus initial & Listener (robust)
+  toggleExpertFields();
+  const expertSwitch = document.getElementById('expert_switch');
+  if (expertSwitch) {
     expertSwitch.addEventListener('change', function() {
-        toggleExpertFields();
-
-        // Zustand speichern
-        fetch('/orders/user_preference', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({key: 'expert_mode', value: this.checked ? "True" : "False"})
-        });
+      toggleExpertFields();
+      fetch('/orders/user_preference', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({key: 'expert_mode', value: this.checked ? "True" : "False"})
+      });
     });
+  }
 
-    registerTelescopeBoxListeners();
+  // Listener initialisieren
+  registerTelescopeBoxListeners();
 
+  // Aktiven Block setzen & per Klick/Fokus umschalten
+  setActive(getActiveBlock());
+  const root = document.getElementById('positions-root');
+  if (root) {
+    root.addEventListener('click', (e)=>{
+      const b = e.target.closest('.position-block');
+      if (b) setActive(b);
+    });
+    root.addEventListener('focusin', (e)=>{
+      const b = e.target.closest('.position-block');
+      if (b) setActive(b);
+    });
+  }
+
+  // IDs/Namen konsistent
+  renumberAll();
 });
-
 </script>
 
-<!-- Modal -->
+<!-- Kalender-Modal -->
 <div class="modal fade" id="calendar-container-modal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="calendarModalLabel">Datum auswählen</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Calendar will be loaded here -->
-      </div>
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="calendarModalLabel">Datum auswählen</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-  </div>
+    <div class="modal-body"><!-- Calendar will be loaded here --></div>
+  </div></div>
 </div>
 
 {% endblock content %}
