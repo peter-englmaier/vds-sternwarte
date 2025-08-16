@@ -51,6 +51,10 @@ class User(db.Model, UserMixin):
             return None
         return User.query.get(user_id)
 
+    @staticmethod
+    def by_role(role_name):
+        return db.session.query(User).join(User.groups).join(Group.roles).filter(Role.name == role_name).all()
+
 
     def __repr__(self):
         return f"User('{self.name}', '{self.email}', '{self.image_file}')"

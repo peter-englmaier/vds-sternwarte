@@ -7,7 +7,7 @@ from webapp import db
 from webapp.model.db import ObservationRequest, ObservationRequestPosition
 from . import orders  #  Blueprint-Objekt
 from .orderform import (ObservationRequestPositionsForm ,ObservationRequestHead,
-                        telescope_query, filterset_query)
+                        telescope_query, filterset_query, poweruser_query)
 from .constants import ORDER_STATUS_LABELS, ORDER_STATUS_CREATED, ORDER_STATUS_WAITING, ORDER_STATUS_PU_ACCEPTED, \
     ORDER_STATUS_REJECTED, USER_ROLE_ADMIN, ORDER_STATUS_APPROVED
 from .orderservices import (copy_order_service, delete_order_service, calendar_service, resolve_coordinates_service,
@@ -242,6 +242,13 @@ def edit_order_pos(order_id):
                 name_str = x[1]  # keine weitere Auswahl ermöglichen
                 form.head.observatory_name.choices = [(x[0], x[1])]
                 break
+
+        selected_poweruser_id = str(order_head.request_poweruser_id)
+        form.head.poweruser_name.choices = [('', 'Auswählen oder leer lassen')] + [
+            (str(x.id), x.name) for x in poweruser_query()
+        ]
+        if selected_poweruser_id:
+            form.head.poweruser_name.data = selected_poweruser_id
 
         return render_template('edit_order_pos.html', expert_mode=expert_mode, form=form )
 

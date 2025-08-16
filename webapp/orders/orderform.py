@@ -7,7 +7,7 @@ from datetime import date
 from .constants import REQUEST_CHOICES
 
 from webapp.model.db import  Telescope, Filterset, Observatory, \
-    ObjectTypes, MotivationTypes, Poweruser
+    ObjectTypes, MotivationTypes, User
 from .constants import PU_AKTIV
 
 
@@ -29,12 +29,9 @@ def observatory_query():  # Im Kopfsatz
     )
 
 def poweruser_query():  # Im Kopfsatz
-    return (
-        Poweruser.query
-        .order_by(Poweruser.name)
-        .filter(Poweruser.Status == PU_AKTIV)
-        .all()
-    )
+    return User.by_role('poweruser')
+
+
 
 def objecttype_query():
     return (
