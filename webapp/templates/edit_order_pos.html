@@ -130,7 +130,7 @@ function copyRow(btn) {
     const row = btn.closest('tr');
     const clone = row.cloneNode(true);
 
-    // Alle Inputs, Selects und Textareas durchlaufen
+    // Alle Eingaben pruefen
     const origInputs = row.querySelectorAll('input, select, textarea');
     const cloneInputs = clone.querySelectorAll('input, select, textarea');
 
@@ -155,14 +155,14 @@ function copyRow(btn) {
         const cloneField = cloneExpertFields[idx];
         if (!cloneField) return;
 
-        // Sichtbarkeitsklasse synchronisieren
+        // Sichtbarkeitsbereich aktualisieren
         if (origField.classList.contains('visible')) {
             cloneField.classList.add('visible');
         } else {
             cloneField.classList.remove('visible');
         }
     });
-    // Die geklonte Zeile nach der aktuellen einfügen
+    // kopierte Zeile nach der aktuellen einfügen
     row.parentNode.insertBefore(clone, row.nextSibling);
     renumberRows();
     updateMoveButtons();
@@ -208,9 +208,19 @@ function copyRow(btn) {
 
   #coord-btn.visible {
     display: inline-block; /* oder passend */
-  }
-</style>
-
+  }    
+  :root{
+      --primary:#0d6efd;
+    }    
+    .border-transparent{ border-color:transparent !important; }
+    .position-block.active {
+      border-color: var(--primary) !important;
+      box-shadow: 0 8px 24px rgba(13,110,253,.18) !important;
+    }
+    .position-badge {
+      right:.75rem; top:.75rem;
+    }
+  </style>
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
 <form method="post" action="">
 {{ form.hidden_tag() }}
@@ -369,18 +379,24 @@ function moveBlockDown(btn) {
 }
 </script>
 
-<div class="d-flex flex-column align-items-center gap-3 mb-3">
-  <div class="text-center mb-3">
-    <button type="button" class="btn btn-sm btn-light" onclick="moveBlockUp(this)" title="Aktiven Block nach oben">
-      <i class="bi bi-arrow-up-circle-fill"></i>
-    </button>
-    <button type="button" class="btn btn-sm btn-light" onclick="moveBlockDown(this)" title="Aktiven Block nach unten">
-      <i class="bi bi-arrow-down-circle-fill"></i>
-    </button>
-    <button type="button" class="btn btn-sm btn-secondary" onclick="kopiereAufnahmeBlock(this)" title="Aktiven Block kopieren">⧉ Kopieren</button>
-    <button type="button" class="btn btn-sm btn-danger" onclick="loescheAufnahmeBlock(this)" title="Aktiven Block löschen">− Löschen</button>
-  </div>
-</div>
+ <div class="d-flex justify-content-center gap-2 flex-wrap mb-2">
+      <button class="btn btn-light" id="move-up"   type="button" title="Aktiven Block nach oben">
+        <i class="bi bi-arrow-up"></i>
+      </button>
+      <button class="btn btn-light" id="move-down" type="button" title="Aktiven Block nach unten">
+        <i class="bi bi-arrow-down"></i>
+      </button>
+      <div class="vr mx-1"></div>
+      <button class="btn btn-secondary" id="copy-active" type="button" title="Aktiven Block kopieren">
+        <i class="bi bi-files"></i>
+      </button>
+      <button class="btn btn-primary" id="add-new" type="button" title="Leeren Block hinzufügen">
+        <i class="bi bi-plus"></i>
+      </button>
+      <button class="btn btn-danger" id="delete-active" type="button" title="Aktiven Block löschen">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
 
 <div class="container py-4">
   <div id="positions-root">
@@ -523,6 +539,88 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // IDs/Namen konsistent
   renumberAll();
+});
+</script>
+
+<!-- ===== Block-Aktivierung ===== -->
+ <script>
+const root = document.getElementById('positions-root');
+
+function setActive(block){
+  root.querySelectorAll('.position-block').forEach(b=>{
+    b.classList.remove('active');
+    b.setAttribute('aria-selected','false');
+    const badge = b.querySelector('.position-badge'); if (badge) badge.classList.add('d-none');
+  });
+  if(block){
+    block.classList.add('active');
+    block.setAttribute('aria-selected','true');
+    const badge = block.querySelector('.position-badge'); if (badge) badge.classList.remove('d-none');
+  }
+  updateToolbarState();
+}
+function getActive(){ return root.querySelector('.position-block.active'); }
+root.addEventListener('click', (e)=>{ const blk=e.target.closest('.position-block'); if(blk&&root.contains(blk)) setActive(blk); });
+
+function deepCloneBlock(block){
+  const clone = block.cloneNode(true);
+  const src = block.querySelectorAll('input, textarea, select');
+  const dst = clone.querySelectorAll('input, textarea, select');
+  src.forEach((s,i)=>{ const d=dst[i]; if(!d) return;
+    if(s.type==='checkbox'||s.type==='radio') d.checked=s.checked;
+    else if(s.tagName==='SELECT') d.selectedIndex=s.selectedIndex;
+    else d.value=s.value;
+  });
+  clone.classList.remove('active'); 
+  clone.setAttribute('aria-selected','false');
+  return clone;
+}
+function deleteBlock(block){
+  const next=block.nextElementSibling||block.previousElementSibling;
+  block.remove();
+  if(next?.classList?.contains('position-block')) setActive(next);
+  updateToolbarState();
+}
+function moveUpBlock(block){ const prev=block.previousElementSibling; if(prev&&prev.classList.contains('position-block')) root.insertBefore(block,prev); }
+function moveDownBlock(block){ const next=block.nextElementSibling; if(next&&next.classList.contains('position-block')) root.insertBefore(next,block); }
+
+/* Buttons im Block */
+function triggerMoveUpBlock(btn){ const blk=btn.closest('.position-block'); if(!blk) return; moveUpBlock(blk); updateToolbarState(); }
+function triggerMoveDownBlock(btn){ const blk=btn.closest('.position-block'); if(!blk) return; moveDownBlock(blk); updateToolbarState(); }
+function triggerCopyBlock(btn){ const blk=btn.closest('.position-block'); if(!blk) return; blk.after(deepCloneBlock(blk)); updateToolbarState(); }
+function triggerDeleteBlock(btn){ const blk=btn.closest('.position-block'); if(!blk) return; deleteBlock(blk); }
+
+/* ===== Toolbar ===== */
+const btnUp=document.getElementById('move-up');
+const btnDown=document.getElementById('move-down');
+const btnCopy=document.getElementById('copy-active');
+const btnNew=document.getElementById('add-new');
+const btnDel=document.getElementById('delete-active');
+
+function updateToolbarState(){
+  const active=getActive(); const hasBlocks=!!root.querySelector('.position-block');
+  btnUp.disabled=!active||!active.previousElementSibling;
+  btnDown.disabled=!active||!active.nextElementSibling;
+  btnCopy.disabled=!hasBlocks; btnDel.disabled=!active;
+}
+
+btnUp.addEventListener('click',()=>{ const active=getActive(); if(!active)return; moveUpBlock(active); updateToolbarState(); });
+btnDown.addEventListener('click',()=>{ const active=getActive(); if(!active)return; moveDownBlock(active); updateToolbarState(); });
+btnCopy.addEventListener('click',()=>{ const active=getActive()||root.querySelector('.position-block'); if(!active)return; root.appendChild(deepCloneBlock(active)); updateToolbarState(); });
+btnNew.addEventListener('click',()=>{ const tmpl=root.querySelector('.position-block'); if(!tmpl)return; 
+  const blank=tmpl.cloneNode(true);
+  blank.querySelectorAll('input').forEach(i=>i.value='');
+  blank.querySelectorAll('textarea').forEach(t=>t.value='');
+  blank.querySelectorAll('select').forEach(s=>s.selectedIndex=0);
+  blank.classList.remove('active'); blank.setAttribute('aria-selected','false');
+  root.appendChild(blank); updateToolbarState();
+});
+btnDel.addEventListener('click',()=>{ const active=getActive(); if(!active)return; deleteBlock(active); });
+
+/* DOMContent */
+document.addEventListener('DOMContentLoaded', () => {
+  toggleExpertFields();
+  updateToolbarState();
 });
 </script>
 
