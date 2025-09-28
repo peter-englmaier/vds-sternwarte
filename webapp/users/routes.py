@@ -1,12 +1,12 @@
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
+from urllib.parse import urlparse
 from webapp import bcrypt, db
 from webapp.model.db import User, Post
 from webapp.users import users
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
 from webapp.users.utils import save_picture, send_reset_email
-from webapp.users.http import url_has_allowed_host_and_scheme
 from sqlalchemy import func
 
 
@@ -53,11 +53,10 @@ def login():
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            if next_page:
-                next_page = next_page.replace('\\', '')  # Remove backslashes
-                if url_has_allowed_host_and_scheme(next_page, allowed_hosts=[request.host]):
-                    return redirect(next_page)
+            next_page = request.args.get('next', '').replace('\\', '')  # Remove backslashes
+            if not urlparse(next_page).netloc and not urlparse(next_page).scheme: # allow only relative path
+                # relative path, safe to redirect (no protocol and no hostname in url)
+                return redirect(next_page)
             # Default to the home page if the next_page is invalid or unsafe
             return redirect(url_for('main.home'))
         else:
