@@ -230,16 +230,16 @@ function copyRow(btn) {
         Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})
         Status: {{ form.head.status_label.data }}
     </span>
-<!-- Beginn Expertenmodus => zukuenftig erweiterter Modus: vorlaufig ausgeblendet-->
-<!--    <div class="form-check p-2 bg-warning rounded d-flex align-items-center ms-3">
+<!-- Beginn Expertenmodus => zukuenftig erweiterter Modus: vorlaufig deaktiviert-->
+
+<!-- <div class="form-check p-2 bg-warning rounded d-flex align-items-center ms-3">
         <input class="form-check-input expert-big me-2" type="checkbox" id="expert_switch"
                {% if expert_mode in [True, "True", "true", 1, "1"] %} checked {% endif %} >
         <label class="form-check-label fw-bold" for="expert_switch">
             erweiterter Modus
         </label>
-    </div>
--->
-<!-- Ende Expertenmodus: vorlaufig ausgeblendet-->
+    </div> !-->
+<!-- Ende Expertenmodus: vorlaufig deaktiviert-->
 </div>
 <table class="table table-bordered table-striped table-hover">
     <thead>
@@ -415,14 +415,14 @@ function moveBlockDown(btn) {
           <tr>
             <th>Teleskop</th>
             <th>Rubrik</th>
-            <th>Objekt</th>
+            <th>Objekt oder Koordinaten</th>            
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>{{ subform.telescope(size=1, class_='telescope_box', data_row=loop.index0) }}</td>
             <td>{{ subform.target_objecttype(size=1) }}</td>
-            <td>{{ subform.target }}</td>
+            <td>{{ subform.target(placeholder="Objekt") }} oder {{ subform.target_coordinates(placeholder="Koordinaten") }}</td>            
           </tr>
         </tbody>
       </table>

@@ -73,12 +73,7 @@ RT_TEMPLATE = 'M'
 
 REQUEST_CHOICES = [
 (RT_OBSERVATION, 'Beobachtung'),
-(RT_PRESENTATION, 'Führung' ),
-(RT_MAINTENANCE, 'Wartung'),
-(RT_SCIENTIFIC_WORK, 'Wissenschaft'),
-(RT_RESERVED, 'Reserviert'),
-(RT_GEORG, 'Spektroskopie'),
-(RT_TEMPLATE, 'Musterantrag')
+(RT_PRESENTATION, 'Führung' )
 ]
 
 REQUEST_CHOICES_LABELS = dict(ORDER_STATUS_CHOICES)
