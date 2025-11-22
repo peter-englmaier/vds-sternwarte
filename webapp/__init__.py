@@ -63,6 +63,7 @@ def create_app(config_class=Config):
         app.register_blueprint(errors)
         app.register_blueprint(orders)
         app.register_blueprint(inout_bp)
+        db.create_all()
         setup_users()
 
     return app
