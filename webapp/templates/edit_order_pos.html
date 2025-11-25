@@ -244,14 +244,14 @@ function copyRow(btn) {
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <th class="col-fixed-100">Datum</th>
-            <th class="col-fixed-100">Beteiligte</th>
-            <th class="col-fixed-100">Observatorium</th>
+            <th class="col-fixed-100, text-center">Datum</th>
+            <th class="col-fixed-100, text-center">Beteiligte</th>
+            <th class="col-fixed-100, text-center">Observatorium</th>
             </tr>
     </thead>
     <tbody>
         <tr>
-            <td>
+            <td class="text-center">
                 {{ form.head.request_date(class="form-control", type="hidden") }}
                 <span id="selected_date_display">
                     {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
@@ -264,25 +264,23 @@ function copyRow(btn) {
                     Kalender
                 </button>
             </td>
-            <td>{{ form.head.requester_name() }}</td>
-            <td>{{ form.head.observatory_name() }}</td>
+            <td class="text-center">{{ form.head.requester_name() }}</td>
+            <td class="text-center">{{ form.head.observatory_name() }}</td>
     </tbody>
 </table>
 <table class="table table-bordered table-striped table-hover">
     <thead>
-        <tr>        
-            <th>Motivation</th>
-            <th>Wunsch Poweruser</th>
-            <th>Type</th>
-            <th>Anmerkungen</th>
+        <tr>      
+            <th class="text-center">Wunsch Poweruser</th>
+            <th class="text-center">Type</th>
+            <th class="text-center">Anmerkungen</th>
         </tr>
     </thead>
     <tbody>
         <tr>            
-            <td>{{ form.head.request_purpose(style="width: 120px;") }}</td>
-            <td>{{ form.head.poweruser_name() }}</td>
-            <td>{{ form.head.request_type() }}</td>
-            <td>{{ form.head.remark() }}</td>
+            <td class="text-center">{{ form.head.poweruser_name() }}</td>
+            <td class="text-center">{{ form.head.request_type() }}</td>
+            <td class="text-center">{{ form.head.remark() }}</td>
         </tr>
 
     </tbody>
@@ -413,16 +411,71 @@ function moveBlockDown(btn) {
       <table class="table table-bordered table-striped table-hover mb-1">
         <thead>
           <tr>
-            <th>Teleskop</th>
-            <th>Rubrik</th>
-            <th>Objekt oder Koordinaten</th>            
+            <th class="text-center">Teleskop</th>            
+            <th class="text-center">Objekt oder Koordinaten</th>            
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>{{ subform.telescope(size=1, class_='telescope_box', data_row=loop.index0) }}</td>
-            <td>{{ subform.target_objecttype(size=1) }}</td>
-            <td>{{ subform.target(placeholder="Objekt") }} oder {{ subform.target_coordinates(placeholder="Koordinaten") }}</td>            
+            <td class="text-center">{{ subform.telescope(size=1, class_='telescope_box', data_row=loop.index0) }}</td>            
+<td class="text-center">
+            <!-- Beginn Java zur Aktivierung des Koordinatenmenues-->        
+
+            <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const toggle = document.getElementById('coord-toggle');
+  const coords = document.getElementById('coord-fields');
+
+  toggle.addEventListener('change', function () {
+    coords.classList.toggle('d-none', !this.checked);
+  });
+});
+</script>
+
+            <!-- Ende Java zur Aktivierung des Koordinatenmenues--> 
+  
+    <div class="d-flex align-items-center gap-3 flex-nowrap  justify-content-center ">
+
+    <!-- Objekteingabe -->
+    {{ subform.target(placeholder="Objekt") }}
+
+    <!-- Aktivierungskasten -->
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="coord-toggle">
+      <label class="form-check-label" for="coord-toggle">
+        Koordinaten eingeben
+      </label>
+    </div>
+
+  </div>
+
+  <!-- Koordinatenbereich: zuerst versteckt -->
+  <div id="coord-fields" class="mt-2 d-none d-flex flex-wrap align-items-center gap-3">
+
+    <!-- Rektaszension -->
+    <label class="mb-1">Rektaszension (RA):</label>    
+      <input type="number" name="ra_h" class="form-control form-control-sm" placeholder="h" min="0" max="23" style="width: 40px;">
+      <input type="number" name="ra_m" class="form-control form-control-sm" placeholder="m" min="0" max="59" style="width: 40px;">
+      <input type="number" name="ra_s" class="form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width: 70px;">
+  
+ 
+    <!-- Deklination -->
+    <label class="mb-1">Deklination (Dec):</label>    
+      <select name="dec_sign" class="form-control form-control-sm" style="width: 50px;">
+        <option value="+">+</option>
+        <option value="-">−</option>
+      </select>
+
+      <input type="number" name="dec_d" class="form-control form-control-sm" placeholder="°" min="0" max="90" style="width: 40px;">
+      <input type="number" name="dec_m" class="form-control form-control-sm" placeholder="′" min="0" max="59" style="width: 40px;">
+      <input type="number" name="dec_s" class="form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width: 70px;">
+    </div>
+  
+ 
+
+</td>
+
+            
           </tr>
         </tbody>
       </table>
@@ -431,8 +484,8 @@ function moveBlockDown(btn) {
       <table class="table table-bordered table-striped table-hover mb-0">
         <thead>
           <tr>
-            <th>Aktionen</th>
-            <th>
+            <th class="text-center">Aktionen</th>
+            <th class="text-center">
               Filterset
               <span data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Die Auswahl von einzelnen oder einer Gruppe Filter.">
@@ -441,8 +494,9 @@ function moveBlockDown(btn) {
             </th>
             <th class="expert-field">Koordinaten RA DEC</th>
             <th class="expert-field">Sperre</th>
-            <th>Anzahl Bilder</th>
-            <th>Bel. Zeit</th>
+            <th class="text-center">Anzahl Bilder</th>
+            <th class="text-center">Bel. Zeit</th>
+            <th class="text-center">Mosaik</th>
             <th class="expert-field">Startzeit</th>
             <th class="expert-field">Gain</th>
             <th class="expert-field">Offset</th>
@@ -452,7 +506,7 @@ function moveBlockDown(btn) {
         </thead>
         <tbody>
           <tr>
-            <td>
+            <td class="text-center">
               <div class="btn-group" role="group">
                 <button type="button" class="btn btn-sm btn-light" onclick="moveUp(this)"   title="Zeile nach oben"><i class="bi bi-arrow-up"></i></button>
                 <button type="button" class="btn btn-sm btn-light" onclick="moveDown(this)" title="Zeile nach unten"><i class="bi bi-arrow-down"></i></button>
@@ -460,16 +514,19 @@ function moveBlockDown(btn) {
                 <button type="button" class="btn btn-sm btn-danger"    onclick="deleteRow(this)" title="Zeile löschen"><i class="bi bi-trash"></i></button>
               </div>
             </td>
-            <td>{{ subform.filterset(size=1, class_='filterset_box', data_row=loop.index0) }}</td>
+            <td class="text-center">{{ subform.filterset(size=1, class_='filterset_box', data_row=loop.index0) }}</td>
             <td class="expert-field">{{ subform.target_coordinates }}</td>
             <td class="expert-field">{{ subform.target_coordinates_lock(size=1) }}</td>
-            <td>{{ subform.exposure_count(size=2) }}</td>
-            <td>{{ subform.exposure_time(size=2) }}</td>
+            <td class="text-center">{{ subform.exposure_count(size=2) }}</td>
+            <td class="text-center">{{ subform.exposure_time(size=2) }}</td>
+            <td class="d-flex justify-content-center align-items-center">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="coord-toggle"></div>
+            </td>
             <td class="expert-field">{{ subform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
             <td class="expert-field">{{ subform.exposure_gain(size=1) }}</td>
             <td class="expert-field">{{ subform.exposure_offset(size=1) }}</td>
             <td class="expert-field">{{ subform.exposure_dither(size=1) }}</td>
-            <td class="expert-field">{{ subform.exposure_focus(size=1) }}</td>
+            <td class="expert-field">{{ subform.exposure_focus(size=1) }}</td>            
           </tr>
         </tbody>
       </table>
