@@ -73,10 +73,19 @@ def import_data():
         ]
 
         for table_name in ordered_tables:
+
+            print('Status of table sites:')
+            for site in db.session.query(Site).all():
+                print(site)
+            print('Status of users:')
+            for user in db.session.query(User).all():
+                print(user)
+
             if table_name in data and table_name in models:
                 print(f'Importing {table_name}')
                 model = models[table_name]
                 for record in data[table_name]:
+                    print(f'\t{record}')
                     # Convert string dates back to datetime objects
                     for c in model.__table__.columns:
                         col_name = c.name
@@ -103,18 +112,24 @@ def import_data():
                     pk_name = model.__mapper__.primary_key[0].name
                     pk_value = record.get(pk_name)
                     if pk_value is not None:
-                        exists = db.session.get(model, pk_value)
-                        if not exists:
-                            # make sure, the password field is set to empty string, if missing in imported record.
-                            if table_name == 'user' and 'password' not in record:
-                                record['password'] = ''
+                        try:
 
-                            # skip columns in input which do not exist
-                            valid_columns = [c.name for c in model.__table__.columns]
-                            filtered_record = {k: v for k, v in record.items() if k in valid_columns}
-                            
-                            instance = model(**filtered_record)
-                            db.session.add(instance)
+                            # DEBUG: hier geht etwas schief! id=1 wird gelesen, aber existiert schon, id=2 ergibt fehler, aber waere noch frei...
+                            exists = db.session.get(model, pk_value)
+                            if not exists:
+                                # skip columns in input which do not exist
+                                valid_columns = [c.name for c in model.__table__.columns]
+                                valid_columns.remove(pk_name) # also remove primary key
+                                print(f'valid columns: {valid_columns}')
+                                filtered_record = {k: v for k, v in record.items() if k in valid_columns}
+                                print(f'filtered_record: {filtered_record}')
+
+                                # DEBUG: funktioniert nicht weil primary key (id) im 'filtered_record'
+                                instance = model(**filtered_record)
+                                print(f'add: \t{instance}')
+                                db.session.add(instance)
+                        except Exception as e:
+                            db.Session.rollback(self)
                     else:
                         print(f'primary key {pk_name} is None - skipping')
             else:
