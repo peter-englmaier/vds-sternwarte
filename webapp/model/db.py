@@ -4,7 +4,7 @@ from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from webapp import login_manager, db
 from flask_login import UserMixin
-from sqlalchemy import UniqueConstraint, CheckConstraint, Time
+from sqlalchemy import Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 
@@ -13,10 +13,10 @@ from typing import List, Optional
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-"""
-    A user is an individual. Do not share users.
-"""
 class User(db.Model, UserMixin):
+    """
+    A user is an individual. Do not share users.
+    """
     __table_args__ = {'sqlite_autoincrement': True}
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     name: Mapped[str] = mapped_column(db.String(60), unique=True, nullable=False)
@@ -90,12 +90,12 @@ class UserPreferences(db.Model):
     value = db.Column(db.String(100))
 
 
-"""
-    A group is a collection of akin people. At the same time, the group is a collection of
-     permissions or "roles" the group can perform. When the people in the group are not "equal",
-     it is better to create more groups.
-"""
 class Group(db.Model):
+    """
+    A group is a collection of akin people. At the same time, the group is a collection of
+    permissions or "roles" the group can perform. When the people in the group are not "equal",
+    it is better to create more groups.
+    """
     __table_args__ = {'sqlite_autoincrement': True}
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     name: Mapped[str] = mapped_column(db.String(30), unique=True, nullable=False)
@@ -390,7 +390,7 @@ class ObservationRequestPosition(db.Model):
 
 # Aus Altdaten extrahiert
 class ObservationHistory(db.Model):
-    __tablename__ = 'ObservationHistory'
+    __tablename__ = 'observation_history'
     __table_args__ = {'sqlite_autoincrement': True}
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     Datum: Mapped[str] = mapped_column(db.String(25), nullable=False)

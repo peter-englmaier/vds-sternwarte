@@ -8,20 +8,79 @@ from webapp.model.db import User, UserPreferences, Group, Role, Post, Site, Obse
 from datetime import datetime, date, time
 from webapp.users.utils import role_required
 
+models = {
+    'role': Role,
+    'group': Group,
+    'user': User,
+    'post': Post,
+    'user_preferences': UserPreferences,
+    'site': Site,
+    'observatory': Observatory,
+    'telescope': Telescope,
+    'filterset': Filterset,
+    'poweruser': Poweruser,
+    'observation_request': ObservationRequest,
+    'observation_request_position': ObservationRequestPosition,
+    'observation_history': ObservationHistory,
+    'system_parameters': SystemParameters,
+    'system_parameters_history': SystemParametersHistory,
+    'motivation_types': MotivationTypes,
+    'object_types': ObjectTypes,
+    'observation_request_log': ObservationRequestLog,
+    'catalogue_meta': CatalogueMeta,
+    'catalogue': Catalogue
+}
+"""
+A dictionary mapping table names to their corresponding models.
+"""
+ordered_tables = list(models.keys())
+"""
+A list of table names in the correct order for import/export.
+"""
+
+def _import_association_table(data, table, model1, model2, col1, col2):
+    """
+    Imports data for an association table, resolving foreign key relationships.
+
+    Args:
+        data (dict): The imported data.
+        table (db.Table): The association table.
+        model1 (db.Model): The first model in the relationship.
+        model2 (db.Model): The second model in the relationship.
+        col1 (str): The name of the first foreign key column.
+        col2 (str): The name of the second foreign key column.
+    """
+    if table.__tablename__ in data:
+        for record in data[table.__tablename__]:
+            old_id1 = record.get(col1)
+            old_id2 = record.get(col2)
+
+            name1 = next((m['name'] for m in data[model1.__tablename__] if m['id'] == old_id1), None)
+            name2 = next((m['name'] for m in data[model2.__tablename__] if m['id'] == old_id2), None)
+
+            if name1 and name2:
+                current_m1 = model1.query.filter_by(name=name1).first()
+                current_m2 = model2.query.filter_by(name=name2).first()
+
+                if current_m1 and current_m2:
+                    stmt = select(table).where(and_(table.c[col1] == getattr(current_m1, 'id'), table.c[col2] == getattr(current_m2, 'id')))
+                    exists = db.session.execute(stmt).first()
+                    if not exists:
+                        db.session.execute(table.insert().values({col1: getattr(current_m1, 'id'), col2: getattr(current_m2, 'id')}))
+
 @bp.route('/inout/export', methods=['POST'])
 @role_required('admin')
 def export_data():
+    """
+    Exports all data from the database to a JSON file.
+    """
     data = {}
 
-    models = [User, UserPreferences, Group, Role, Post, Site, Observatory, Telescope,
-              Filterset, Poweruser, ObservationRequest, ObservationRequestPosition,
-              ObservationHistory, SystemParameters, SystemParametersHistory, MotivationTypes,
-              ObjectTypes, ObservationRequestLog, CatalogueMeta, Catalogue]
-
-    for model in models:
-        table_name = model.__tablename__
-        records = model.query.all()
-        data[table_name] = [record_to_dict(record) for record in records]
+    for table_name in ordered_tables:
+        if table_name in models:
+            model = models[table_name]
+            records = model.query.all()
+            data[table_name] = [record_to_dict(record) for record in records]
 
     # Also export the association tables
     data['user_group'] = [{'user_id': row[0], 'group_id': row[1]} for row in db.session.query(user_group).all()]
@@ -39,11 +98,7 @@ def export_data():
 @role_required('admin')
 def import_data():
     """
-        Import data into database, which has been exported from same version.
-        This works in two cases only:
-            Case 1: some record has been deleted and needs to be restored. Note, that this will only work if
-            no additional data has been added in the meantime.
-            Case 2: the backend database has been replaced and data needs to be imported in the new database.
+    Imports data from a JSON file into the database.
     """
     if 'file' not in request.files:
         flash('No file part')
@@ -55,17 +110,6 @@ def import_data():
     if file:
         data = json.load(file.stream)
         
-        models = {
-            'user': User, 'user_preferences': UserPreferences, 'group': Group, 'role': Role, 'post': Post, 'site': Site,
-            'observatory': Observatory, 'telescope': Telescope, 'filterset': Filterset, 'poweruser': Poweruser,
-            'observation_request': ObservationRequest, 'observation_request_position': ObservationRequestPosition,
-            'ObservationHistory': ObservationHistory, 'system_parameters': SystemParameters,
-            'system_parameters_history': SystemParametersHistory, 'motivation_types': MotivationTypes,
-            'object_types': ObjectTypes, 'observation_request_log': ObservationRequestLog, 'catalogue_meta': CatalogueMeta,
-            'catalogue': Catalogue
-        }
-        ordered_tables = list(models.keys())
-
         for table_name in ordered_tables:
             if table_name in data and table_name in models:
                 print(f'Importing {table_name}')
@@ -113,54 +157,21 @@ def import_data():
 
 
         # Now handle the association tables: only import, if mapping does not already exist.
-        if 'user_group' in data:
-            for record in data['user_group']:
-                # get id's from imported data
-                old_user_id = record.get('user_id')
-                old_group_id = record.get('group_id')
-                
-                # Find the user and group names from the imported data
-                user_name = next((user['name'] for user in data['user'] if user['id'] == old_user_id), None)
-                group_name = next((group['name'] for group in data['group'] if group['id'] == old_group_id), None)
-
-                if user_name and group_name:
-                    # Find the corresponding user and group in the current database
-                    current_user = User.query.filter_by(name=user_name).first()
-                    current_group = Group.query.filter_by(name=group_name).first()
-
-                    if current_user and current_group:
-                        # Check if the association already exists
-                        stmt = select(user_group).where(and_(user_group.c.user_id == current_user.id, user_group.c.group_id == current_group.id))
-                        exists = db.session.execute(stmt).first()
-                        if not exists:
-                            # Insert the new association
-                            db.session.execute(user_group.insert().values(user_id=current_user.id, group_id=current_group.id))
-
-        if 'role_group' in data:
-            for record in data['role_group']:
-                old_role_id = record.get('role_id')
-                old_group_id = record.get('group_id')
-
-                # Find the role and group names from the imported data
-                role_name = next((role['name'] for role in data['role'] if role['id'] == old_role_id), None)
-                group_name = next((group['name'] for group in data['group'] if group['id'] == old_group_id), None)
-
-                if role_name and group_name:
-                    # Find the corresponding role and group in the current database
-                    current_role = Role.query.filter_by(name=role_name).first()
-                    current_group = Group.query.filter_by(name=group_name).first()
-
-                    if current_role and current_group:
-                        # Check if the association already exists
-                        stmt = select(role_group).where(and_(role_group.c.role_id == current_role.id, role_group.c.group_id == current_group.id))
-                        exists = db.session.execute(stmt).first()
-                        if not exists:
-                            # Insert the new association
-                            db.session.execute(role_group.insert().values(role_id=current_role.id, group_id=current_group.id))
+        _import_association_table(data, user_group, User, Group, 'user_id', 'group_id')
+        _import_association_table(data, role_group, Role, Group, 'role_id', 'group_id')
 
         db.session.commit()
         flash('Data imported successfully. Existing records were ignored.')
     return redirect(url_for('admin.index'))
 
 def record_to_dict(record):
+    """
+    Converts a SQLAlchemy model instance to a dictionary.
+
+    Args:
+        record (db.Model): The model instance to convert.
+
+    Returns:
+        dict: A dictionary representation of the model instance.
+    """
     return {c.name: getattr(record, c.name) for c in record.__table__.columns}
