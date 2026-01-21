@@ -299,7 +299,7 @@ def edit_order_pos(order_id):
             return redirect(url_for('orders.edit_order_pos', order_id=order_id))
 
 
-        if action == "resolve_coordinates":
+    if action == "resolve_coordinates":
               form.positions, count, resolved, ambigious = resolve_coordinates_service(form.positions)
               flash(
                         f'Von {count} Objekten wurden bei {resolved} Koordinaten zugeordnet. {ambigious} ohne Zuordnung.',
@@ -325,7 +325,7 @@ def edit_order_pos(order_id):
                       break
               return render_template('edit_order_pos.html', expert_mode=expert_mode, form=form)
 
-        if action == "submit_order":
+    if action == "submit_order":
             order_head = ObservationRequest.query.get(order_id)
             order_head.status = ORDER_STATUS_WAITING
             try:
