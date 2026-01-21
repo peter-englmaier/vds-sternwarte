@@ -6,23 +6,25 @@
 
 
 function toggleExpertFields() {
+  const expertSwitch = document.getElementById('expert_switch');
+  if (!expertSwitch) return; // <- verhindert den Crash
 
-    const expertSwitch = document.getElementById('expert_switch');
-    const button_coordinates = document.getElementById('coord-btn');
-    const expertFields = document.querySelectorAll('.expert-field');
-    expertFields.forEach(field => {
-        if (expertSwitch.checked) {
-            field.classList.add('visible');
-        } else {
-            field.classList.remove('visible');
-        }
-    });
-        if (expertSwitch.checked) {
-            button_coordinates.classList.add('visible');
-        } else {
-            button_coordinates.classList.remove('visible');
-        }
+  const button_coordinates = document.getElementById('coord-btn');
+  const expertFields = document.querySelectorAll('.expert-field');
+
+  expertFields.forEach(field => {
+    field.classList.toggle('visible', expertSwitch.checked);
+    // optional: wenn du required-Probleme hast, hier disabled setzen (siehe Ursache B)
+  });
+
+  if (button_coordinates) {
+    button_coordinates.classList.toggle('visible', expertSwitch.checked);
+  }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  toggleExpertFields();
+});
 
 
 function renumberRows() {
@@ -782,5 +784,50 @@ document.addEventListener('input', function (e) {
   }, true);
 })();
 </script>
+
+<script>
+function setExpertFieldsEnabled(enabled) {
+  // Alle Expert-Container
+  document.querySelectorAll('.expert-field').forEach(container => {
+    // Sichtbarkeit
+    container.classList.toggle('visible', enabled);
+
+    // Inputs im Container aktivieren/deaktivieren
+    container.querySelectorAll('input, select, textarea').forEach(ctrl => {
+      if (!enabled) {
+        ctrl.disabled = true;
+        ctrl.removeAttribute('required'); // wichtig gegen HTML5-Blockade
+      } else {
+        ctrl.disabled = false;
+        // required NICHT automatisch wieder setzen (sonst wieder Blockade möglich)
+      }
+    });
+  });
+}
+
+function toggleExpertFields() {
+  const expertSwitch = document.getElementById('expert_switch');
+  if (!expertSwitch) {
+    // Falls der Switch nicht existiert: Expert-Felder sicherheitshalber deaktivieren
+    setExpertFieldsEnabled(false);
+    return;
+  }
+
+  setExpertFieldsEnabled(expertSwitch.checked);
+
+  const coordBtn = document.getElementById('coord-btn');
+  if (coordBtn) coordBtn.classList.toggle('visible', expertSwitch.checked);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  toggleExpertFields();
+
+  const expertSwitch = document.getElementById('expert_switch');
+  if (expertSwitch) {
+    expertSwitch.addEventListener('change', toggleExpertFields);
+  }
+});
+</script>
+
 
 {% endblock content %}
