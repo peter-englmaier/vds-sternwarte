@@ -168,6 +168,28 @@ def actionhandler():
 @login_required
 def edit_order_pos(order_id):
 
+    # ===================== DEBUG: WAS KOMMT WIRKLICH AN? =====================
+    if request.method == "POST":
+        print("\n" + "=" * 100)
+        print(f"POST edit_order_pos(order_id={order_id})")
+        print("action =", request.form.get("action"))
+        print("form keys count =", len(request.form.keys()))
+        print("-" * 100)
+
+        # 1) Komplette Key/Value-Liste
+        for k in sorted(request.form.keys()):
+            vals = request.form.getlist(k)
+            # getlist() zeigt dir, ob ein Key mehrfach vorkommt (z.B. doppelte Namen!)
+            if len(vals) == 1:
+                print(f"{k}: {vals[0]}")
+            else:
+                print(f"{k}: {vals}")
+
+        print("-" * 100)
+        print("RAW request.form:", request.form)
+        print("=" * 100 + "\n")
+    # ========================================================================
+
     app = current_app
     action = request.form.get("action")
     order_head = ObservationRequest.query.get(order_id)
@@ -178,6 +200,7 @@ def edit_order_pos(order_id):
 
     expert_mode = get_user_preference_service(current_user.id, "expert_mode", "False")
     form = ObservationRequestPositionsForm()
+    
     selected_observatory_id = order_head.request_observatory_id
 
     if request.method == 'GET':
@@ -250,56 +273,53 @@ def edit_order_pos(order_id):
         if selected_poweruser_id:
             form.head.poweruser_name.data = selected_poweruser_id
 
-        return render_template('edit_order_pos.html', expert_mode=expert_mode, form=form )
+        return render_template('edit_order_pos.html', expert_mode=expert_mode, form=form, order_id=order_id)
 
     #    Maske auslesen, alle bisherigen Positionen löschen und entsprechend der aktuellen Liste neu anlegen
     if request.method == 'POST':
-        if action == "save_order":
-            #  Kopfsatz Update
-            order_head.request_date = form.head.request_date.data
-            order_head.name = form.head.requester_name.data
-            order_head.request_purpose = form.head.request_purpose.data
-            order_head.request_poweruser_id = form.head.poweruser_name.data
-            order_head.request_type = form.head.request_type.data
-            order_head.remark = form.head.remark.data
+        form = ObservationRequestPositionsForm(request.form)
 
-            deleted_count = ObservationRequestPosition.query.filter_by(observation_request_id=order_id).delete()
-            try:
-                db.session.commit()
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.', 'error')
+    if action == "save_order":
+        # Kopf speichern
+        order_head.request_date = form.head.request_date.data
+        order_head.name = form.head.requester_name.data
+        order_head.request_purpose = form.head.request_purpose.data
+        order_head.request_poweruser_id = form.head.poweruser_name.data or None
+        order_head.request_type = form.head.request_type.data
+        order_head.remark = form.head.remark.data
 
-            with app.app_context():
-                for idx, pos_form in enumerate(form.positions):
-                    position_new = ObservationRequestPosition(
-                       row_no = idx + 1,  # Reihenfolge im Formular = Reihenfolge in der DB
-                       observation_request_id = order_id,
-                       telescope_id = pos_form.telescope.data,
-                       target = pos_form.target.data,
-                       filterset_id = pos_form.filterset.data,
-                       target_objecttype = pos_form.target_objecttype.data,
-                       target_coordinates = pos_form.target_coordinates.data,
-                       target_coordinates_lock = pos_form.target_coordinates_lock.data,
-                       exposure_count = pos_form.exposure_count.data,
-                       exposure_time = pos_form.exposure_time.data,
-                       exposure_starttime=pos_form.exposure_starttime.data,
-                       exposure_gain = pos_form.exposure_gain.data,
-                       exposure_offset = pos_form.exposure_offset.data,
-                       exposure_dither = pos_form.exposure_dither.data,
-                       exposure_focus = pos_form.exposure_focus.data
-                    )
-                    db.session.add(position_new)
+        try:
+            # alles in EINER Transaktion: delete + insert + commit
+            ObservationRequestPosition.query.filter_by(observation_request_id=order_id).delete()
 
-                try:
-                    db.session.commit()
-                except Exception as e:
-                    db.session.rollback()
-                    flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.',
-                          'error')
+            for idx, pos_form in enumerate(form.positions):
+                db.session.add(ObservationRequestPosition(
+                    row_no=idx + 1,
+                    observation_request_id=order_id,
+                    telescope_id=pos_form.telescope.data,
+                    target=pos_form.target.data,
+                    filterset_id=pos_form.filterset.data,
+                    target_objecttype=pos_form.target_objecttype.data,
+                    target_coordinates=pos_form.target_coordinates.data,
+                    target_coordinates_lock=pos_form.target_coordinates_lock.data,
+                    exposure_count=pos_form.exposure_count.data,
+                    exposure_time=pos_form.exposure_time.data,
+                    exposure_starttime=pos_form.exposure_starttime.data,
+                    exposure_gain=pos_form.exposure_gain.data,
+                    exposure_offset=pos_form.exposure_offset.data,
+                    exposure_dither=pos_form.exposure_dither.data,
+                    exposure_focus=pos_form.exposure_focus.data,
+                ))
 
-                flash('Deine Eingaben sind gespeichert!', 'success')
-                return redirect(url_for('orders.edit_order_pos', order_id=order_head.id))
+            db.session.commit()
+            flash('Deine Eingaben sind gespeichert!', 'success')
+            return redirect(url_for('orders.edit_order_pos', order_id=order_id))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Es ist ein Fehler aufgetreten: {e}', 'error')
+            return redirect(url_for('orders.edit_order_pos', order_id=order_id))
+
 
         if action == "resolve_coordinates":
               form.positions, count, resolved, ambigious = resolve_coordinates_service(form.positions)

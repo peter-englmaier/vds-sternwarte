@@ -222,7 +222,9 @@ function copyRow(btn) {
     }
   </style>
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
-<form method="post" action="">
+<form method="post"
+      action="{{ url_for('orders.edit_order_pos', order_id=order_id) }}"
+      hx-disable="true">
 {{ form.hidden_tag() }}
 {% if current_user.is_authenticated %}
 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -422,15 +424,19 @@ function moveBlockDown(btn) {
             <!-- Beginn Java zur Aktivierung des Koordinatenmenues-->        
 
             <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const toggle = document.getElementById('coord-toggle');
-  const coords = document.getElementById('coord-fields');
+document.addEventListener('change', function (e) {
+  if (!e.target.classList.contains('coord-toggle')) return;
 
-  toggle.addEventListener('change', function () {
-    coords.classList.toggle('d-none', !this.checked);
-  });
+  const block = e.target.closest('.position-block');
+  if (!block) return;
+
+  const coords = block.querySelector('.coord-fields');
+  if (!coords) return;
+
+  coords.classList.toggle('d-none', !e.target.checked);
 });
 </script>
+
 
             <!-- Ende Java zur Aktivierung des Koordinatenmenues--> 
   
@@ -441,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <!-- Aktivierungskasten -->
     <div class="form-check">
-      <input class="form-check-input" type="checkbox" id="coord-toggle">
+      <input class="form-check-input coord-toggle" type="checkbox">
       <label class="form-check-label" for="coord-toggle">
         Koordinaten eingeben
       </label>
@@ -449,30 +455,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   </div>
 
-  <!-- Koordinatenbereich: zuerst versteckt -->
-  <div id="coord-fields" class="mt-2 d-none d-flex flex-wrap align-items-center gap-3">
+ <!-- Koordinatenbereich: zuerst versteckt -->
+<div class="coord-fields mt-2 d-none d-flex flex-wrap align-items-center gap-3">
 
-    <!-- Rektaszension -->
-    <label class="mb-1">Rektaszension (RA):</label>    
-      <input type="number" name="ra_h" class="form-control form-control-sm" placeholder="h" min="0" max="23" style="width: 40px;">
-      <input type="number" name="ra_m" class="form-control form-control-sm" placeholder="m" min="0" max="59" style="width: 40px;">
-      <input type="number" name="ra_s" class="form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width: 70px;">
-  
- 
-    <!-- Deklination -->
-    <label class="mb-1">Deklination (Dec):</label>    
-      <select name="dec_sign" class="form-control form-control-sm" style="width: 50px;">
-        <option value="+">+</option>
-        <option value="-">−</option>
-      </select>
+  <!-- Rektaszension -->
+  <label class="mb-1">Rektaszension (RA):</label>
+  <input type="number" class="ra-h form-control form-control-sm" placeholder="h" min="0" max="23" style="width: 60px;">
+  <input type="number" class="ra-m form-control form-control-sm" placeholder="m" min="0" max="59" style="width: 60px;">
+  <input type="number" class="ra-s form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width: 80px;">
 
-      <input type="number" name="dec_d" class="form-control form-control-sm" placeholder="°" min="0" max="90" style="width: 40px;">
-      <input type="number" name="dec_m" class="form-control form-control-sm" placeholder="′" min="0" max="59" style="width: 40px;">
-      <input type="number" name="dec_s" class="form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width: 70px;">
-    </div>
-  
- 
+  <!-- Deklination -->
+  <label class="mb-1">Deklination (Dec):</label>
+  <select class="dec-sign form-control form-control-sm" style="width: 60px;">
+    <option value="+">+</option>
+    <option value="-">−</option>
+  </select>
 
+  <input type="number" class="dec-d form-control form-control-sm" placeholder="°" min="0" max="90" style="width: 60px;">
+  <input type="number" class="dec-m form-control form-control-sm" placeholder="′" min="0" max="59" style="width: 60px;">
+  <input type="number" class="dec-s form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width: 80px;">
+
+</div>
 </td>
 
             
@@ -510,8 +513,8 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="btn-group" role="group">
                 <button type="button" class="btn btn-sm btn-light" onclick="moveUp(this)"   title="Zeile nach oben"><i class="bi bi-arrow-up"></i></button>
                 <button type="button" class="btn btn-sm btn-light" onclick="moveDown(this)" title="Zeile nach unten"><i class="bi bi-arrow-down"></i></button>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="copyRow(this)"  title="Zeile kopieren"><i class="bi bi-files"></i></button>
-                <button type="button" class="btn btn-sm btn-danger"    onclick="deleteRow(this)" title="Zeile löschen"><i class="bi bi-trash"></i></button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="kopiereAufnahmeBlock(this)" title="Position kopieren">
+                <button type="button" class="btn btn-sm btn-danger" onclick="loescheAufnahmeBlock(this)" title="Position löschen">
               </div>
             </td>
             <td class="text-center">{{ subform.filterset(size=1, class_='filterset_box', data_row=loop.index0) }}</td>
@@ -539,9 +542,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- Ende Kompletter Datensatz bearbeiten !-->
 
 
-<button type="submit" class="btn" name="action" value="save_order" style="background-color: green; color: white;">
-  Speichern
-</button>
+<button type="submit" name="action" value="save_order">Speichern</button>
+
 
 <button type="submit" class="btn" name="action" value="submit_order" style="background-color: purple; color: white;"
         onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
@@ -691,5 +693,94 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="modal-body"><!-- Calendar will be loaded here --></div>
   </div></div>
 </div>
+
+<script>
+// Hilfsfunktionen
+function pad2(v) {
+  v = String(v ?? '').trim();
+  if (v === '') return '00';
+  return v.padStart(2, '0');
+}
+function padSec(v) {
+  if (v === '' || v == null) return '00.00';
+  const n = Number(v);
+  if (Number.isNaN(n)) return '00.00';
+  return n.toFixed(2).padStart(5, '0'); // ss.ss
+}
+
+function updateTargetCoordinates(block) {
+  if (!block) return;
+
+  const h  = block.querySelector('.ra-h')?.value;
+  const m  = block.querySelector('.ra-m')?.value;
+  const s  = block.querySelector('.ra-s')?.value;
+
+  const sign = block.querySelector('.dec-sign')?.value || '+';
+  const d  = block.querySelector('.dec-d')?.value;
+  const dm = block.querySelector('.dec-m')?.value;
+  const ds = block.querySelector('.dec-s')?.value;
+
+  // Nur schreiben, wenn mindestens irgendwas eingegeben wurde
+  const anyRA  = (h || m || s);
+  const anyDec = (d || dm || ds);
+  if (!anyRA && !anyDec) return;
+
+  const ra  = `${pad2(h)}:${pad2(m)}:${padSec(s)}`;
+  const dec = `${sign}${pad2(d)}:${pad2(dm)}:${padSec(ds)}`;
+
+  const targetField = block.querySelector('input[name$="-target_coordinates"]');
+  if (targetField) {
+    targetField.value = `${ra} ${dec}`;
+  }
+}
+
+// Event-Delegation: reagiert auf jede Eingabe in RA/Dec-Feldern
+document.addEventListener('input', function (e) {
+  if (!e.target.closest('.position-block')) return;
+
+  // Nur reagieren, wenn eines der Koordinaten-Felder geändert wurde
+  if (
+    e.target.classList.contains('ra-h') ||
+    e.target.classList.contains('ra-m') ||
+    e.target.classList.contains('ra-s') ||
+    e.target.classList.contains('dec-sign') ||
+    e.target.classList.contains('dec-d') ||
+    e.target.classList.contains('dec-m') ||
+    e.target.classList.contains('dec-s')
+  ) {
+    updateTargetCoordinates(e.target.closest('.position-block'));
+  }
+});
+
+// Optional: beim Laden vorhandene target_coordinates NICHT überschreiben
+// (nur live aktualisieren)
+</script>
+<script>
+(function () {
+  function renumberAll() {
+    // WICHTIG: Passe ggf. den Selector an.
+    // Suche nach dem Container, der einen kompletten Block umschließt.
+    const blocks = document.querySelectorAll('.position-block, [data-block], .block');
+
+    // Wenn nichts gefunden wird, machen wir NICHTS (damit nichts kaputtgeht)
+    if (!blocks || blocks.length === 0) return;
+
+    blocks.forEach((block, idx) => {
+      block.querySelectorAll('input, select, textarea, label').forEach(el => {
+        if (el.name) el.name = el.name.replace(/positions-\d+-/g, `positions-${idx}-`);
+        if (el.id)   el.id   = el.id.replace(/positions-\d+-/g, `positions-${idx}-`);
+        if (el.tagName === 'LABEL' && el.htmlFor) {
+          el.htmlFor = el.htmlFor.replace(/positions-\d+-/g, `positions-${idx}-`);
+        }
+      });
+    });
+  }
+
+  // Vor jedem Submit renumbern
+  document.addEventListener('submit', function (e) {
+    renumberAll();
+  }, true);
+})();
+</script>
 
 {% endblock content %}
