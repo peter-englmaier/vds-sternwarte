@@ -167,29 +167,7 @@ def actionhandler():
 @orders.route('/orders/<int:order_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_order_pos(order_id):
-
-    # ===================== DEBUG: WAS KOMMT WIRKLICH AN? =====================
-    if request.method == "POST":
-        print("\n" + "=" * 100)
-        print(f"POST edit_order_pos(order_id={order_id})")
-        print("action =", request.form.get("action"))
-        print("form keys count =", len(request.form.keys()))
-        print("-" * 100)
-
-        # 1) Komplette Key/Value-Liste
-        for k in sorted(request.form.keys()):
-            vals = request.form.getlist(k)
-            # getlist() zeigt dir, ob ein Key mehrfach vorkommt (z.B. doppelte Namen!)
-            if len(vals) == 1:
-                print(f"{k}: {vals[0]}")
-            else:
-                print(f"{k}: {vals}")
-
-        print("-" * 100)
-        print("RAW request.form:", request.form)
-        print("=" * 100 + "\n")
-    # ========================================================================
-
+    
     app = current_app
     action = request.form.get("action")
     order_head = ObservationRequest.query.get(order_id)
