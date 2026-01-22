@@ -1,0 +1,749 @@
+{% extends "layout_no_sidebar.html" %}
+{% block content %}
+
+<style>
+  .form-check-input.expert-big { width: 1.5em; height: 1.5em; }
+
+  .expert-field { display: none; }
+  .expert-field.visible { display: table-cell; }
+
+  #coord-btn { display: none; }
+  #coord-btn.visible { display: inline-block; }
+
+  :root { --primary:#0d6efd; }
+  .border-transparent{ border-color:transparent !important; }
+  .position-block.active {
+    border-color: var(--primary) !important;
+    box-shadow: 0 8px 24px rgba(13,110,253,.18) !important;
+  }
+</style>
+
+<h2>Teleskopzeit Zeilen bearbeiten</h2>
+
+<form id="edit-pos-form" method="post"
+      action="{{ url_for('orders.edit_order_pos', order_id=order_id) }}"
+      hx-disable="true">
+  {{ form.hidden_tag() }}
+
+  {% if current_user.is_authenticated %}
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <span>
+      Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})
+      Status: {{ form.head.status_label.data }}
+    </span>
+
+    {# Expertenmodus (aktuell deaktiviert)
+    <div class="form-check p-2 bg-warning rounded d-flex align-items-center ms-3">
+      <input class="form-check-input expert-big me-2" type="checkbox" id="expert_switch"
+             {% if expert_mode in [True, "True", "true", 1, "1"] %} checked {% endif %}>
+      <label class="form-check-label fw-bold" for="expert_switch">erweiterter Modus</label>
+    </div>
+    #}
+  </div>
+
+  <!-- Kopfbereich -->
+  <table class="table table-bordered table-striped table-hover">
+    <thead>
+      <tr>
+        <th class="text-center">Datum</th>
+        <th class="text-center">Beteiligte</th>
+        <th class="text-center">Observatorium</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="text-center">
+          {{ form.head.request_date(class="form-control", type="hidden") }}
+          <span id="selected_date_display">
+            {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
+          </span>
+          <button type="button" class="btn btn-sm btn-outline-secondary"
+                  hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
+                  hx-target="#calendar-container-modal .modal-body"
+                  hx-swap="innerHTML"
+                  data-bs-toggle="modal" data-bs-target="#calendar-container-modal">
+            Kalender
+          </button>
+        </td>
+        <td class="text-center">{{ form.head.requester_name() }}</td>
+        <td class="text-center">{{ form.head.observatory_name() }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="table table-bordered table-striped table-hover">
+    <thead>
+      <tr>
+        <th class="text-center">Wunsch Poweruser</th>
+        <th class="text-center">Type</th>
+        <th class="text-center">Anmerkungen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="text-center">{{ form.head.poweruser_name() }}</td>
+        <td class="text-center">{{ form.head.request_type() }}</td>
+        <td class="text-center">{{ form.head.remark() }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr style="border:2px solid red; margin-top:10px; margin-bottom:20px;">
+
+  <!-- Block-Toolbar -->
+  <div class="d-flex justify-content-center gap-2 flex-wrap mb-2">
+    <button class="btn btn-light" id="move-up" type="button" title="Aktiven Block nach oben">
+      <i class="bi bi-arrow-up"></i>
+    </button>
+    <button class="btn btn-light" id="move-down" type="button" title="Aktiven Block nach unten">
+      <i class="bi bi-arrow-down"></i>
+    </button>
+    <div class="vr mx-1"></div>
+    <button class="btn btn-secondary" id="copy-active" type="button" title="Aktiven Block kopieren">
+      <i class="bi bi-files"></i>
+    </button>
+    <button class="btn btn-primary" id="add-new" type="button" title="Leeren Block hinzufügen">
+      <i class="bi bi-plus"></i>
+    </button>
+    <button class="btn btn-danger" id="delete-active" type="button" title="Aktiven Block löschen">
+      <i class="bi bi-trash"></i>
+    </button>
+  </div>
+
+  <!-- Positionen -->
+  <div class="container py-4">
+    <div id="positions-root">
+
+      {% for subform in form.positions %}
+      <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
+           data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
+
+        <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
+          Aktiver Block
+        </span>
+
+        <!-- obere Tabelle -->
+        <table class="table table-bordered table-striped table-hover mb-1">
+          <thead>
+            <tr>
+              <th class="text-center">Teleskop</th>
+              <th class="text-center">Objekt oder Koordinaten</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-center">
+                {{ subform.telescope(size=1, class_='telescope_box') }}
+              </td>
+              <td class="text-center">
+
+                <div class="d-flex align-items-center gap-3 flex-nowrap justify-content-center">
+                  {{ subform.target(placeholder="Objekt", class_="target_input") }}
+
+                  <div class="form-check">
+                    <input class="form-check-input coord-toggle" type="checkbox">
+                    <label class="form-check-label">Koordinaten eingeben</label>
+                  </div>
+                </div>
+
+                <!-- Koordinatenbereich -->
+                <div class="coord-fields mt-2 d-none d-flex flex-wrap align-items-center gap-3">
+                  <label class="mb-1">Rektaszension (RA):</label>
+                  <input type="number" class="ra-h form-control form-control-sm" placeholder="h" min="0" max="23" style="width:60px;">
+                  <input type="number" class="ra-m form-control form-control-sm" placeholder="m" min="0" max="59" style="width:60px;">
+                  <input type="number" class="ra-s form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width:80px;">
+
+                  <label class="mb-1">Deklination (Dec):</label>
+                  <select class="dec-sign form-control form-control-sm" style="width:60px;">
+                    <option value="+">+</option>
+                    <option value="-">−</option>
+                  </select>
+                  <input type="number" class="dec-d form-control form-control-sm" placeholder="°" min="0" max="90" style="width:60px;">
+                  <input type="number" class="dec-m form-control form-control-sm" placeholder="′" min="0" max="59" style="width:60px;">
+                  <input type="number" class="dec-s form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width:80px;">
+                </div>
+
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Aufnahmedetails -->
+        <table class="table table-bordered table-striped table-hover mb-0">
+          <thead>
+            <tr>
+              <th class="text-center">Aktionen</th>
+              <th class="text-center">
+                Filterset
+                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Die Auswahl von einzelnen oder einer Gruppe Filter.">
+                  <i class="bi bi-question-circle text-info"></i>
+                </span>
+              </th>
+              <th class="expert-field">Koordinaten RA DEC</th>
+              <th class="expert-field">Sperre</th>
+              <th class="text-center">Anzahl Bilder</th>
+              <th class="text-center">Bel. Zeit</th>
+              <th class="text-center">Mosaik</th>
+              <th class="expert-field">Startzeit</th>
+              <th class="expert-field">Gain</th>
+              <th class="expert-field">Offset</th>
+              <th class="expert-field">Dither</th>
+              <th class="expert-field">Focus</th>
+            </tr>
+          </thead>
+
+          <!-- WICHTIG: KEIN zweiter Loop hier! 1 Block = 1 Zeile -->
+          <tbody class="rows-body">
+    <tr class="pos-row">
+      <td class="text-center">
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-sm btn-light" data-row-move="up" title="Zeile nach oben">
+            <i class="bi bi-arrow-up"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-light" data-row-move="down" title="Zeile nach unten">
+            <i class="bi bi-arrow-down"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
+            <i class="bi bi-files"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
+            <i class="bi bi-trash"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-primary" data-row-add>+ Zeile</button>
+        </div>
+      </td>
+
+      <td class="text-center">{{ subform.filterset(size=1, class_='filterset_box') }}</td>
+      <td class="expert-field">{{ subform.target_coordinates }}</td>
+      <td class="expert-field">{{ subform.target_coordinates_lock(size=1) }}</td>
+      <td class="text-center">{{ subform.exposure_count(size=2) }}</td>
+      <td class="text-center">{{ subform.exposure_time(size=2) }}</td>
+      <td class="expert-field">{{ subform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
+      <td class="expert-field">{{ subform.exposure_gain(size=1) }}</td>
+      <td class="expert-field">{{ subform.exposure_offset(size=1) }}</td>
+      <td class="expert-field">{{ subform.exposure_dither(size=1) }}</td>
+      <td class="expert-field">{{ subform.exposure_focus(size=1) }}</td>
+    </tr>
+  </tbody>
+        </table>
+
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-success" name="action" value="save_order">Speichern</button>
+
+  <button type="submit" class="btn" name="action" value="submit_order"
+          style="background-color: purple; color:white;"
+          onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
+    Beantragung abschicken
+  </button>
+
+  <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
+    Überprüfen
+  </button>
+
+  <button id="coord-btn" type="submit" class="btn" name="action" value="resolve_coordinates"
+          style="background-color:#f00000; color:white;">
+    Objekt Koordinaten ergänzen
+  </button>
+
+  <a class="btn btn-primary" href="{{ url_for('main.home') }}">Zur Startseite</a>
+
+  <div id="flatten-hidden" style="display:none;"></div>
+  {% endif %}
+  
+</form>
+
+<!-- Modal Prüfergebnis -->
+<div class="modal fade" id="checkPopup" tabindex="-1" aria-labelledby="checkPopupLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="checkPopupLabel">Prüfergebnis</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+      </div>
+      <div class="modal-body">Alles OK</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Kalender-Modal -->
+<div class="modal fade" id="calendar-container-modal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="calendarModalLabel">Datum auswählen</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body"></div>
+  </div></div>
+</div>
+
+<script>
+/* ===================== Expert Fields (safe + disables hidden required) ===================== */
+function setExpertFieldsEnabled(enabled) {
+  document.querySelectorAll('.expert-field').forEach(cell => {
+    cell.classList.toggle('visible', enabled);
+    cell.querySelectorAll('input, select, textarea').forEach(ctrl => {
+      if (!enabled) {
+        ctrl.disabled = true;
+        ctrl.removeAttribute('required');
+      } else {
+        ctrl.disabled = false;
+      }
+    });
+  });
+}
+function toggleExpertFields() {
+  const expertSwitch = document.getElementById('expert_switch');
+  if (!expertSwitch) {
+    setExpertFieldsEnabled(false);
+    return;
+  }
+  setExpertFieldsEnabled(expertSwitch.checked);
+  const coordBtn = document.getElementById('coord-btn');
+  if (coordBtn) coordBtn.classList.toggle('visible', expertSwitch.checked);
+}
+
+/* ===================== Renumber blocks => positions-0-..., positions-1-... ===================== */
+function renumberAllBlocks() {
+  const blocks = document.querySelectorAll('#positions-root .position-block');
+  blocks.forEach((block, idx) => {
+    block.dataset.index = String(idx);
+    block.querySelectorAll('input, select, textarea, label').forEach(el => {
+      if (el.name)    el.name    = el.name.replace(/positions-\d+-/g, `positions-${idx}-`);
+      if (el.id)      el.id      = el.id.replace(/positions-\d+-/g, `positions-${idx}-`);
+      if (el.tagName === 'LABEL' && el.htmlFor) {
+        el.htmlFor = el.htmlFor.replace(/positions-\d+-/g, `positions-${idx}-`);
+      }
+    });
+  });
+}
+
+/* ===================== Block active selection ===================== */
+function getActiveBlock() {
+  return document.querySelector('#positions-root .position-block.active')
+      || document.querySelector('#positions-root .position-block');
+}
+function setActive(block) {
+  document.querySelectorAll('#positions-root .position-block').forEach(b => {
+    b.classList.remove('active','border-primary','shadow');
+    b.classList.add('border-transparent');
+    b.setAttribute('aria-selected','false');
+    const badge = b.querySelector('.active-badge');
+    if (badge) badge.classList.add('d-none');
+  });
+    if (block) {
+    block.classList.add('active','border-primary','shadow');
+    block.classList.remove('border-transparent');
+    block.setAttribute('aria-selected','true');
+    const badge = block.querySelector('.active-badge');
+    if (badge) badge.classList.remove('d-none');
+  }
+}
+
+/* ===================== Clone / Clear block ===================== */
+function deepCloneBlock(block) {
+  const clone = block.cloneNode(true);
+  const src = block.querySelectorAll('input, textarea, select');
+  const dst = clone.querySelectorAll('input, textarea, select');
+  src.forEach((s, i) => {
+    const d = dst[i]; if (!d) return;
+    if (s.type === 'checkbox' || s.type === 'radio') d.checked = s.checked;
+    else if (s.tagName === 'SELECT') d.selectedIndex = s.selectedIndex;
+    else d.value = s.value;
+  });
+  return clone;
+}
+function clearBlockInputs(block) {
+  block.querySelectorAll('input, textarea').forEach(i => {
+    if (i.type === 'checkbox' || i.type === 'radio') i.checked = false;
+    else i.value = '';
+  });
+  block.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+}
+
+/* ===================== Move / Copy / Delete ===================== */
+function moveBlockUp(block) {
+  const prev = block.previousElementSibling;
+  if (prev && prev.classList.contains('position-block')) {
+    block.parentNode.insertBefore(block, prev);
+  }
+}
+function moveBlockDown(block) {
+  const next = block.nextElementSibling;
+  if (next && next.classList.contains('position-block')) {
+    block.parentNode.insertBefore(next, block);
+  }
+}
+function deleteBlock(block) {
+  const root = document.getElementById('positions-root');
+  const blocks = root.querySelectorAll('.position-block');
+  if (blocks.length <= 1) return; // optional: mindestens 1 behalten
+  const next = block.nextElementSibling || block.previousElementSibling;
+  block.remove();
+  if (next && next.classList.contains('position-block')) setActive(next);
+}
+
+/* ===================== Telescope -> Filtersets ===================== */
+function registerTelescopeBoxListeners(context = document) {
+  const selects = context.querySelectorAll('.telescope_box');
+  selects.forEach(select => {
+    if (select._telescopeChangeListener) {
+      select.removeEventListener('change', select._telescopeChangeListener);
+    }
+    const listener = function() {
+      const block = this.closest('.position-block');
+      if (!block) return;
+      const filtersetSelect = block.querySelector('.filterset_box');
+      if (!filtersetSelect) return;
+
+      fetch('/orders/get_filtersets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telescope_id: this.value })
+      })
+      .then(r => r.json())
+      .then(options => {
+        filtersetSelect.innerHTML = '';
+        options.forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.id;
+          o.textContent = opt.name;
+          filtersetSelect.appendChild(o);
+        });
+      });
+    };
+    select._telescopeChangeListener = listener;
+    select.addEventListener('change', listener);
+  });
+}
+
+/* ===================== Coord toggle + write target_coordinates ===================== */
+function pad2(v){ v=String(v??'').trim(); if(v==='') return '00'; return v.padStart(2,'0'); }
+function padSec(v){
+  if(v===''||v==null) return '00.00';
+  const n=Number(v); if(Number.isNaN(n)) return '00.00';
+  return n.toFixed(2).padStart(5,'0');
+}
+function updateTargetCoordinates(block) {
+  if (!block) return;
+  const h  = block.querySelector('.ra-h')?.value;
+  const m  = block.querySelector('.ra-m')?.value;
+  const s  = block.querySelector('.ra-s')?.value;
+
+  const sign = block.querySelector('.dec-sign')?.value || '+';
+  const d  = block.querySelector('.dec-d')?.value;
+  const dm = block.querySelector('.dec-m')?.value;
+  const ds = block.querySelector('.dec-s')?.value;
+
+  const anyRA  = (h || m || s);
+  const anyDec = (d || dm || ds);
+  if (!anyRA && !anyDec) return;
+
+  const ra  = `${pad2(h)}:${pad2(m)}:${padSec(s)}`;
+  const dec = `${sign}${pad2(d)}:${pad2(dm)}:${padSec(ds)}`;
+
+  const targetField = block.querySelector('input[name$="-target_coordinates"]');
+  if (targetField) targetField.value = `${ra} ${dec}`;
+}
+
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('coord-toggle')) {
+    const block = e.target.closest('.position-block');
+    const coords = block?.querySelector('.coord-fields');
+    if (coords) coords.classList.toggle('d-none', !e.target.checked);
+  }
+});
+document.addEventListener('input', (e) => {
+  const block = e.target.closest('.position-block');
+  if (!block) return;
+  if (
+    e.target.classList.contains('ra-h') ||
+    e.target.classList.contains('ra-m') ||
+    e.target.classList.contains('ra-s') ||
+    e.target.classList.contains('dec-sign') ||
+    e.target.classList.contains('dec-d') ||
+    e.target.classList.contains('dec-m') ||
+    e.target.classList.contains('dec-s')
+  ) {
+    updateTargetCoordinates(block);
+  }
+});
+
+/* ===================== In-block buttons + toolbar buttons ===================== */
+document.addEventListener('click', (e) => {
+  const block = e.target.closest('.position-block');
+  if (block) setActive(block);
+
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  // Buttons in Aufnahmedetails
+  if (btn.dataset.blockMove === 'up') {
+    const b = btn.closest('.position-block'); if (!b) return;
+    moveBlockUp(b); setActive(b); renumberAllBlocks(); return;
+  }
+  if (btn.dataset.blockMove === 'down') {
+    const b = btn.closest('.position-block'); if (!b) return;
+    moveBlockDown(b); setActive(b); renumberAllBlocks(); return;
+  }
+  if (btn.dataset.blockCopy) {
+    const b = btn.closest('.position-block'); if (!b) return;
+    const clone = deepCloneBlock(b);
+    b.after(clone);
+    registerTelescopeBoxListeners(clone);
+    setActive(clone);
+    renumberAllBlocks();
+    return;
+  }
+  if (btn.dataset.blockDelete) {
+    const b = btn.closest('.position-block'); if (!b) return;
+    if (!confirm('Wirklich löschen?')) return;
+    deleteBlock(b);
+    renumberAllBlocks();
+    return;
+  }
+});
+
+document.getElementById('move-up')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  moveBlockUp(b); setActive(b); renumberAllBlocks();
+});
+document.getElementById('move-down')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  moveBlockDown(b); setActive(b); renumberAllBlocks();
+});
+document.getElementById('copy-active')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  const clone = deepCloneBlock(b);
+  b.after(clone);
+  registerTelescopeBoxListeners(clone);
+  setActive(clone);
+  renumberAllBlocks();
+});
+document.getElementById('add-new')?.addEventListener('click', () => {
+  const tmpl = document.querySelector('#positions-root .position-block');
+  if (!tmpl) return;
+  const blank = tmpl.cloneNode(true);
+  clearBlockInputs(blank);
+  document.getElementById('positions-root').appendChild(blank);
+  registerTelescopeBoxListeners(blank);
+  setActive(blank);
+  renumberAllBlocks();
+});
+document.getElementById('delete-active')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  if (!confirm('Wirklich löschen?')) return;
+  deleteBlock(b);
+  renumberAllBlocks();
+});
+
+/* ===================== Init ===================== */
+window.addEventListener('DOMContentLoaded', () => {
+  toggleExpertFields();
+  registerTelescopeBoxListeners();
+  setActive(getActiveBlock());
+  renumberAllBlocks();
+
+  // Vor jedem Submit renumbern (entscheidend fürs Speichern)
+  document.addEventListener('submit', () => renumberAllBlocks(), true);
+
+  const expertSwitch = document.getElementById('expert_switch');
+  if (expertSwitch) expertSwitch.addEventListener('change', toggleExpertFields);
+});
+</script>
+
+<script>
+(function () {
+  function clearRow(row) {
+    row.querySelectorAll('input, select, textarea').forEach(el => {
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+      else if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const isRowBtn =
+      btn.hasAttribute('data-row-add') ||
+      btn.hasAttribute('data-row-copy') ||
+      btn.hasAttribute('data-row-delete') ||
+      btn.hasAttribute('data-row-move');
+
+    if (!isRowBtn) return;
+
+    const row = btn.closest('tr');
+    const tbody = btn.closest('tbody');
+    console.log("ROW HANDLER:", { hasRow: !!row, hasTbody: !!tbody, rowClass: row?.className });
+
+    if (!row || !tbody) return;
+
+    // COPY
+    if (btn.hasAttribute('data-row-copy')) {
+      const clone = row.cloneNode(true);
+      row.after(clone);
+      console.log("COPIED ROW");
+      return;
+    }
+
+    // DELETE
+    if (btn.hasAttribute('data-row-delete')) {
+      const rows = tbody.querySelectorAll('tr');
+      if (rows.length <= 1) return;
+      row.remove();
+      console.log("DELETED ROW");
+      return;
+    }
+
+    // MOVE
+    const mv = btn.getAttribute('data-row-move');
+    if (mv === 'up') {
+      const prev = row.previousElementSibling;
+      if (prev) tbody.insertBefore(row, prev);
+      console.log("MOVED UP");
+      return;
+    }
+    if (mv === 'down') {
+      const next = row.nextElementSibling;
+      if (next) tbody.insertBefore(next, row);
+      console.log("MOVED DOWN");
+      return;
+    }
+
+    // ADD
+    if (btn.hasAttribute('data-row-add')) {
+      const last = tbody.querySelector('tr:last-child');
+      if (!last) return;
+      const clone = last.cloneNode(true);
+      clearRow(clone);
+      tbody.appendChild(clone);
+      console.log("ADDED ROW");
+      return;
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  // ===== Helfer: Name-Teil extrahieren (z.B. "exposure_time" aus "positions-3-exposure_time")
+  function fieldKeyFromName(name) {
+    // erwartet: positions-<idx>-<key>
+    const m = String(name || '').match(/^positions-\d+-(.+)$/);
+    return m ? m[1] : null;
+  }
+
+  // ===== Helfer: Hidden input anlegen
+  function addHidden(container, name, value) {
+    const inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = name;
+    inp.value = value ?? '';
+    container.appendChild(inp);
+  }
+
+  // ===== Wert lesen (Input/Select/Textarea, Checkbox korrekt)
+  function readValue(el) {
+    if (!el) return '';
+    if (el.type === 'checkbox') return el.checked ? 'y' : ''; // WTForms BooleanField: "y" passt meist
+    return el.value ?? '';
+  }
+
+  // ===== Alle Zeilen in allen Blöcken "flatten" => positions-0-..., positions-1-...
+  function flattenAllBlocksToHidden() {
+    const form = document.getElementById('edit-pos-form');
+    if (!form) return;
+
+    const hidden = document.getElementById('flatten-hidden');
+    if (!hidden) return;
+
+    // Hidden Container leeren
+    hidden.innerHTML = '';
+
+    // WICHTIG: CSRF und Head-Felder NICHT anfassen.
+    // Wir erzeugen nur zusätzliche positions-* Hidden Inputs.
+
+    const blocks = document.querySelectorAll('#positions-root .position-block');
+
+    let globalIdx = 0;
+
+    blocks.forEach((block) => {
+      // Block-Header: telescope + target (wird auf jede Zeile übertragen)
+      const telSel = block.querySelector('select.telescope_box');
+      const targetInp = block.querySelector('.target_input') || block.querySelector('input[name$="-target"]');
+
+      const telescopeVal = readValue(telSel);
+      const targetVal = readValue(targetInp);
+
+      // Koordinatenfeld (falls du es im Block hast und auf Zeilen übertragen willst)
+      // Hinweis: Du hast target_coordinates als WTForms Feld IN der Zeile - das kopieren wir zeilenweise,
+      // aber wenn du RA/Dec oben pflegst und in target_coordinates schreibst, passt das.
+      // Wenn du stattdessen ein "Block-Koordinatenfeld" hast, müsstest du es hier holen.
+
+      // Zeilen: alle <tr.pos-row> innerhalb des Blocks
+      const rows = block.querySelectorAll('tbody.rows-body tr.pos-row');
+      rows.forEach((row) => {
+        // Nimm alle Formcontrols aus der Zeile, die bereits positions-?-<key> Namen tragen
+        const controls = row.querySelectorAll('input[name], select[name], textarea[name]');
+
+        // Erst: telescope/target immer setzen
+        addHidden(hidden, `positions-${globalIdx}-telescope`, telescopeVal);
+        addHidden(hidden, `positions-${globalIdx}-target`, targetVal);
+
+        // Dann: alle Zeilenfelder übernehmen (filterset, exposure_count, exposure_time, mosaic, etc.)
+        controls.forEach((el) => {
+          const key = fieldKeyFromName(el.name);
+          if (!key) return;
+
+          // telescope/target überspringen (setzen wir schon fix)
+          if (key === 'telescope' || key === 'target') return;
+
+          addHidden(hidden, `positions-${globalIdx}-${key}`, readValue(el));
+        });
+
+        globalIdx += 1;
+      });
+    });
+
+    // Jetzt haben wir eine flache Hidden positions-0..N Liste im Form.
+    // Damit nicht noch "doppelte Original-Inputs" stören:
+    // -> Original-positions-Inputs deaktivieren (nur die dynamischen Positions-Felder!)
+    document.querySelectorAll('#positions-root input[name^="positions-"], #positions-root select[name^="positions-"], #positions-root textarea[name^="positions-"]')
+      .forEach(el => { el.disabled = true; });
+
+    // Block-Header Felder (telescope/target) NICHT deaktivieren, denn sie sind auch positions-* Felder!
+    // Wir haben telescope/target im Hidden bereits gesetzt, aber wenn du sie disabled willst, musst du selektiver sein.
+    // Darum: direkt wieder aktivieren, falls sie erwischt wurden:
+    document.querySelectorAll('#positions-root select.telescope_box, #positions-root .target_input, #positions-root input[name$="-target"]')
+      .forEach(el => { el.disabled = false; });
+  }
+
+  // ===== Hook beim Submit
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('edit-pos-form');
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+      // Flatten bauen
+      flattenAllBlocksToHidden();
+
+      // Debug optional:
+      // console.log('Flattened positions count:', document.querySelectorAll('#flatten-hidden input[name^="positions-"][name$="-filterset"]').length);
+    }, true);
+  });
+})();
+</script>
+
+
+{% endblock content %}
