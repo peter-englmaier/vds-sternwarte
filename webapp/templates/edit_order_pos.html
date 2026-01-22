@@ -115,121 +115,132 @@
   <div class="container py-4">
     <div id="positions-root">
 
-      {% for subform in form.positions %}
-      <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
-           data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
+      {# ============================================================
+         Outer Loop über blocks
+         - Header: telescope/target aus erster Row (global idx)
+         - tbody rows-body: loop über row_indices
+         ============================================================ #}
 
-        <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
-          Aktiver Block
-        </span>
+      {% for block in blocks %}
+        {% set header_idx = block.row_indices[0] %}
+        {% set header_form = form.positions[header_idx] %}
 
-        <!-- obere Tabelle -->
-        <table class="table table-bordered table-striped table-hover mb-1">
-          <thead>
-            <tr>
-              <th class="text-center">Teleskop</th>
-              <th class="text-center">Objekt oder Koordinaten</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="text-center">
-                {{ subform.telescope(size=1, class_='telescope_box') }}
-              </td>
-              <td class="text-center">
+        <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
+             data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
 
-                <div class="d-flex align-items-center gap-3 flex-nowrap justify-content-center">
-                  {{ subform.target(placeholder="Objekt", class_="target_input") }}
+          <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
+            Aktiver Block
+          </span>
 
-                  <div class="form-check">
-                    <input class="form-check-input coord-toggle" type="checkbox">
-                    <label class="form-check-label">Koordinaten eingeben</label>
+          <!-- obere Tabelle: Block-Header -->
+          <table class="table table-bordered table-striped table-hover mb-1">
+            <thead>
+              <tr>
+                <th class="text-center">Teleskop</th>
+                <th class="text-center">Objekt oder Koordinaten</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-center">
+                  {{ header_form.telescope(size=1, class_='telescope_box') }}
+                </td>
+                <td class="text-center">
+
+                  <div class="d-flex align-items-center gap-3 flex-nowrap justify-content-center">
+                    {{ header_form.target(placeholder="Objekt", class_="target_input") }}
+
+                    <div class="form-check">
+                      <input class="form-check-input coord-toggle" type="checkbox">
+                      <label class="form-check-label">Koordinaten eingeben</label>
+                    </div>
                   </div>
-                </div>
 
-                <!-- Koordinatenbereich -->
-                <div class="coord-fields mt-2 d-none d-flex flex-wrap align-items-center gap-3">
-                  <label class="mb-1">Rektaszension (RA):</label>
-                  <input type="number" class="ra-h form-control form-control-sm" placeholder="h" min="0" max="23" style="width:60px;">
-                  <input type="number" class="ra-m form-control form-control-sm" placeholder="m" min="0" max="59" style="width:60px;">
-                  <input type="number" class="ra-s form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width:80px;">
+                  <!-- Koordinatenbereich -->
+                  <div class="coord-fields mt-2 d-none d-flex flex-wrap align-items-center gap-3">
+                    <label class="mb-1">Rektaszension (RA):</label>
+                    <input type="number" class="ra-h form-control form-control-sm" placeholder="h" min="0" max="23" style="width:60px;">
+                    <input type="number" class="ra-m form-control form-control-sm" placeholder="m" min="0" max="59" style="width:60px;">
+                    <input type="number" class="ra-s form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width:80px;">
 
-                  <label class="mb-1">Deklination (Dec):</label>
-                  <select class="dec-sign form-control form-control-sm" style="width:60px;">
-                    <option value="+">+</option>
-                    <option value="-">−</option>
-                  </select>
-                  <input type="number" class="dec-d form-control form-control-sm" placeholder="°" min="0" max="90" style="width:60px;">
-                  <input type="number" class="dec-m form-control form-control-sm" placeholder="′" min="0" max="59" style="width:60px;">
-                  <input type="number" class="dec-s form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width:80px;">
-                </div>
+                    <label class="mb-1">Deklination (Dec):</label>
+                    <select class="dec-sign form-control form-control-sm" style="width:60px;">
+                      <option value="+">+</option>
+                      <option value="-">−</option>
+                    </select>
+                    <input type="number" class="dec-d form-control form-control-sm" placeholder="°" min="0" max="90" style="width:60px;">
+                    <input type="number" class="dec-m form-control form-control-sm" placeholder="′" min="0" max="59" style="width:60px;">
+                    <input type="number" class="dec-s form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width:80px;">
+                  </div>
 
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-        <!-- Aufnahmedetails -->
-        <table class="table table-bordered table-striped table-hover mb-0">
-          <thead>
-            <tr>
-              <th class="text-center">Aktionen</th>
-              <th class="text-center">
-                Filterset
-                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                      title="Die Auswahl von einzelnen oder einer Gruppe Filter.">
-                  <i class="bi bi-question-circle text-info"></i>
-                </span>
-              </th>
-              <th class="expert-field">Koordinaten RA DEC</th>
-              <th class="expert-field">Sperre</th>
-              <th class="text-center">Anzahl Bilder</th>
-              <th class="text-center">Bel. Zeit</th>
-              <th class="text-center">Mosaik</th>
-              <th class="expert-field">Startzeit</th>
-              <th class="expert-field">Gain</th>
-              <th class="expert-field">Offset</th>
-              <th class="expert-field">Dither</th>
-              <th class="expert-field">Focus</th>
-            </tr>
-          </thead>
+          <!-- Aufnahmedetails -->
+          <table class="table table-bordered table-striped table-hover mb-0">
+            <thead>
+              <tr>
+                <th class="text-center">Aktionen</th>
+                <th class="text-center">
+                  Filterset
+                  <span data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Die Auswahl von einzelnen oder einer Gruppe Filter.">
+                    <i class="bi bi-question-circle text-info"></i>
+                  </span>
+                </th>
+                <th class="expert-field">Koordinaten RA DEC</th>
+                <th class="expert-field">Sperre</th>
+                <th class="text-center">Anzahl Bilder</th>
+                <th class="text-center">Bel. Zeit</th>
+                <th class="text-center">Mosaik</th>
+                <th class="expert-field">Startzeit</th>
+                <th class="expert-field">Gain</th>
+                <th class="expert-field">Offset</th>
+                <th class="expert-field">Dither</th>
+                <th class="expert-field">Focus</th>
+              </tr>
+            </thead>
 
-          <!-- WICHTIG: KEIN zweiter Loop hier! 1 Block = 1 Zeile -->
-          <tbody class="rows-body">
-    <tr class="pos-row">
-      <td class="text-center">
-        <div class="btn-group" role="group">
-          <button type="button" class="btn btn-sm btn-light" data-row-move="up" title="Zeile nach oben">
-            <i class="bi bi-arrow-up"></i>
-          </button>
-          <button type="button" class="btn btn-sm btn-light" data-row-move="down" title="Zeile nach unten">
-            <i class="bi bi-arrow-down"></i>
-          </button>
-          <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
-            <i class="bi bi-files"></i>
-          </button>
-          <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
-            <i class="bi bi-trash"></i>
-          </button>
-          <button type="button" class="btn btn-sm btn-primary" data-row-add>+ Zeile</button>
+            <tbody class="rows-body">
+              {% for global_idx in block.row_indices %}
+                {% set rowform = form.positions[global_idx] %}
+                <tr class="pos-row" data-global-idx="{{ global_idx }}" data-row-in-block="{{ loop.index }}">
+                  <td class="text-center">
+                    <div class="btn-group" role="group">
+                      <button type="button" class="btn btn-sm btn-light" data-row-move="up" title="Zeile nach oben">
+                        <i class="bi bi-arrow-up"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-light" data-row-move="down" title="Zeile nach unten">
+                        <i class="bi bi-arrow-down"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
+                        <i class="bi bi-files"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-primary" data-row-add>+ Zeile</button>
+                    </div>
+                  </td>
+
+                  <td class="text-center">{{ rowform.filterset(size=1, class_='filterset_box') }}</td>
+                  <td class="expert-field">{{ rowform.target_coordinates }}</td>
+                  <td class="expert-field">{{ rowform.target_coordinates_lock(size=1) }}</td>
+                  <td class="text-center">{{ rowform.exposure_count(size=2) }}</td>
+                  <td class="text-center">{{ rowform.exposure_time(size=2) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
+                  <td class="expert-field">{{ rowform.exposure_gain(size=1) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_offset(size=1) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_dither(size=1) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_focus(size=1) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
         </div>
-      </td>
-
-      <td class="text-center">{{ subform.filterset(size=1, class_='filterset_box') }}</td>
-      <td class="expert-field">{{ subform.target_coordinates }}</td>
-      <td class="expert-field">{{ subform.target_coordinates_lock(size=1) }}</td>
-      <td class="text-center">{{ subform.exposure_count(size=2) }}</td>
-      <td class="text-center">{{ subform.exposure_time(size=2) }}</td>
-      <td class="expert-field">{{ subform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
-      <td class="expert-field">{{ subform.exposure_gain(size=1) }}</td>
-      <td class="expert-field">{{ subform.exposure_offset(size=1) }}</td>
-      <td class="expert-field">{{ subform.exposure_dither(size=1) }}</td>
-      <td class="expert-field">{{ subform.exposure_focus(size=1) }}</td>
-    </tr>
-  </tbody>
-        </table>
-
-      </div>
       {% endfor %}
 
     </div>
@@ -256,7 +267,7 @@
 
   <div id="flatten-hidden" style="display:none;"></div>
   {% endif %}
-  
+
 </form>
 
 <!-- Modal Prüfergebnis -->
@@ -312,18 +323,14 @@ function toggleExpertFields() {
   if (coordBtn) coordBtn.classList.toggle('visible', expertSwitch.checked);
 }
 
-/* ===================== Renumber blocks => positions-0-..., positions-1-... ===================== */
+/* ===================== Schritt 7: Block-Reihenfolge renumbern (NUR data-index!)
+   WICHTIG: KEIN Umbenennen der positions-*- Felder mehr,
+   weil wir global indices (WTForms) + Flattening nutzen.
+===================== */
 function renumberAllBlocks() {
   const blocks = document.querySelectorAll('#positions-root .position-block');
   blocks.forEach((block, idx) => {
-    block.dataset.index = String(idx);
-    block.querySelectorAll('input, select, textarea, label').forEach(el => {
-      if (el.name)    el.name    = el.name.replace(/positions-\d+-/g, `positions-${idx}-`);
-      if (el.id)      el.id      = el.id.replace(/positions-\d+-/g, `positions-${idx}-`);
-      if (el.tagName === 'LABEL' && el.htmlFor) {
-        el.htmlFor = el.htmlFor.replace(/positions-\d+-/g, `positions-${idx}-`);
-      }
-    });
+    block.dataset.index = String(idx); // 0..n (für block_no im Flatten)
   });
 }
 
@@ -340,7 +347,7 @@ function setActive(block) {
     const badge = b.querySelector('.active-badge');
     if (badge) badge.classList.add('d-none');
   });
-    if (block) {
+  if (block) {
     block.classList.add('active','border-primary','shadow');
     block.classList.remove('border-transparent');
     block.setAttribute('aria-selected','true');
@@ -386,7 +393,7 @@ function moveBlockDown(block) {
 function deleteBlock(block) {
   const root = document.getElementById('positions-root');
   const blocks = root.querySelectorAll('.position-block');
-  if (blocks.length <= 1) return; // optional: mindestens 1 behalten
+  if (blocks.length <= 1) return;
   const next = block.nextElementSibling || block.previousElementSibling;
   block.remove();
   if (next && next.classList.contains('position-block')) setActive(next);
@@ -402,6 +409,8 @@ function registerTelescopeBoxListeners(context = document) {
     const listener = function() {
       const block = this.closest('.position-block');
       if (!block) return;
+
+      // Block-weit: wir nehmen die erste filterset_box im Block (Header gibt es hier nicht)
       const filtersetSelect = block.querySelector('.filterset_box');
       if (!filtersetSelect) return;
 
@@ -412,6 +421,7 @@ function registerTelescopeBoxListeners(context = document) {
       })
       .then(r => r.json())
       .then(options => {
+        // Wichtig: nur dieses eine Select updaten (minimal-invasiv)
         filtersetSelect.innerHTML = '';
         options.forEach(opt => {
           const o = document.createElement('option');
@@ -451,7 +461,10 @@ function updateTargetCoordinates(block) {
   const ra  = `${pad2(h)}:${pad2(m)}:${padSec(s)}`;
   const dec = `${sign}${pad2(d)}:${pad2(dm)}:${padSec(ds)}`;
 
-  const targetField = block.querySelector('input[name$="-target_coordinates"]');
+  // Achtung: target_coordinates ist pro Zeile (WTForms)
+  // Minimal: wir schreiben in die erste Zeile des Blocks (falls vorhanden)
+  const firstRow = block.querySelector('tbody.rows-body tr.pos-row');
+  const targetField = firstRow?.querySelector('input[name$="-target_coordinates"]');
   if (targetField) targetField.value = `${ra} ${dec}`;
 }
 
@@ -478,41 +491,7 @@ document.addEventListener('input', (e) => {
   }
 });
 
-/* ===================== In-block buttons + toolbar buttons ===================== */
-document.addEventListener('click', (e) => {
-  const block = e.target.closest('.position-block');
-  if (block) setActive(block);
-
-  const btn = e.target.closest('button');
-  if (!btn) return;
-
-  // Buttons in Aufnahmedetails
-  if (btn.dataset.blockMove === 'up') {
-    const b = btn.closest('.position-block'); if (!b) return;
-    moveBlockUp(b); setActive(b); renumberAllBlocks(); return;
-  }
-  if (btn.dataset.blockMove === 'down') {
-    const b = btn.closest('.position-block'); if (!b) return;
-    moveBlockDown(b); setActive(b); renumberAllBlocks(); return;
-  }
-  if (btn.dataset.blockCopy) {
-    const b = btn.closest('.position-block'); if (!b) return;
-    const clone = deepCloneBlock(b);
-    b.after(clone);
-    registerTelescopeBoxListeners(clone);
-    setActive(clone);
-    renumberAllBlocks();
-    return;
-  }
-  if (btn.dataset.blockDelete) {
-    const b = btn.closest('.position-block'); if (!b) return;
-    if (!confirm('Wirklich löschen?')) return;
-    deleteBlock(b);
-    renumberAllBlocks();
-    return;
-  }
-});
-
+/* ===================== Toolbar buttons ===================== */
 document.getElementById('move-up')?.addEventListener('click', () => {
   const b = getActiveBlock(); if (!b) return;
   moveBlockUp(b); setActive(b); renumberAllBlocks();
@@ -528,6 +507,7 @@ document.getElementById('copy-active')?.addEventListener('click', () => {
   registerTelescopeBoxListeners(clone);
   setActive(clone);
   renumberAllBlocks();
+  renumberRowsInAllBlocks();
 });
 document.getElementById('add-new')?.addEventListener('click', () => {
   const tmpl = document.querySelector('#positions-root .position-block');
@@ -538,12 +518,14 @@ document.getElementById('add-new')?.addEventListener('click', () => {
   registerTelescopeBoxListeners(blank);
   setActive(blank);
   renumberAllBlocks();
+  renumberRowsInAllBlocks();
 });
 document.getElementById('delete-active')?.addEventListener('click', () => {
   const b = getActiveBlock(); if (!b) return;
   if (!confirm('Wirklich löschen?')) return;
   deleteBlock(b);
   renumberAllBlocks();
+  renumberRowsInAllBlocks();
 });
 
 /* ===================== Init ===================== */
@@ -552,13 +534,28 @@ window.addEventListener('DOMContentLoaded', () => {
   registerTelescopeBoxListeners();
   setActive(getActiveBlock());
   renumberAllBlocks();
+  renumberRowsInAllBlocks();
 
-  // Vor jedem Submit renumbern (entscheidend fürs Speichern)
-  document.addEventListener('submit', () => renumberAllBlocks(), true);
+  // Vor jedem Submit: data-index + rowInBlock sicherstellen
+  document.addEventListener('submit', () => {
+    renumberAllBlocks();
+    renumberRowsInAllBlocks();
+  }, true);
 
   const expertSwitch = document.getElementById('expert_switch');
   if (expertSwitch) expertSwitch.addEventListener('change', toggleExpertFields);
 });
+</script>
+
+<script>
+function renumberRowsInAllBlocks() {
+  document.querySelectorAll('#positions-root .position-block').forEach(block => {
+    const rows = block.querySelectorAll('tbody.rows-body tr.pos-row');
+    rows.forEach((row, i) => {
+      row.dataset.rowInBlock = String(i + 1); // 1..n
+    });
+  });
+}
 </script>
 
 <script>
@@ -585,15 +582,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const row = btn.closest('tr');
     const tbody = btn.closest('tbody');
-    console.log("ROW HANDLER:", { hasRow: !!row, hasTbody: !!tbody, rowClass: row?.className });
-
     if (!row || !tbody) return;
 
     // COPY
     if (btn.hasAttribute('data-row-copy')) {
       const clone = row.cloneNode(true);
       row.after(clone);
-      console.log("COPIED ROW");
+      renumberRowsInAllBlocks();
       return;
     }
 
@@ -602,7 +597,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const rows = tbody.querySelectorAll('tr');
       if (rows.length <= 1) return;
       row.remove();
-      console.log("DELETED ROW");
+      renumberRowsInAllBlocks();
       return;
     }
 
@@ -611,13 +606,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (mv === 'up') {
       const prev = row.previousElementSibling;
       if (prev) tbody.insertBefore(row, prev);
-      console.log("MOVED UP");
+      renumberRowsInAllBlocks();
       return;
     }
     if (mv === 'down') {
       const next = row.nextElementSibling;
       if (next) tbody.insertBefore(next, row);
-      console.log("MOVED DOWN");
+      renumberRowsInAllBlocks();
       return;
     }
 
@@ -628,7 +623,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const clone = last.cloneNode(true);
       clearRow(clone);
       tbody.appendChild(clone);
-      console.log("ADDED ROW");
+      renumberRowsInAllBlocks();
       return;
     }
   });
@@ -637,14 +632,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function () {
-  // ===== Helfer: Name-Teil extrahieren (z.B. "exposure_time" aus "positions-3-exposure_time")
   function fieldKeyFromName(name) {
-    // erwartet: positions-<idx>-<key>
     const m = String(name || '').match(/^positions-\d+-(.+)$/);
     return m ? m[1] : null;
   }
 
-  // ===== Helfer: Hidden input anlegen
   function addHidden(container, name, value) {
     const inp = document.createElement('input');
     inp.type = 'hidden';
@@ -653,14 +645,12 @@ window.addEventListener('DOMContentLoaded', () => {
     container.appendChild(inp);
   }
 
-  // ===== Wert lesen (Input/Select/Textarea, Checkbox korrekt)
   function readValue(el) {
     if (!el) return '';
-    if (el.type === 'checkbox') return el.checked ? 'y' : ''; // WTForms BooleanField: "y" passt meist
+    if (el.type === 'checkbox') return el.checked ? 'y' : '';
     return el.value ?? '';
   }
 
-  // ===== Alle Zeilen in allen Blöcken "flatten" => positions-0-..., positions-1-...
   function flattenAllBlocksToHidden() {
     const form = document.getElementById('edit-pos-form');
     if (!form) return;
@@ -668,47 +658,43 @@ window.addEventListener('DOMContentLoaded', () => {
     const hidden = document.getElementById('flatten-hidden');
     if (!hidden) return;
 
-    // Hidden Container leeren
     hidden.innerHTML = '';
 
-    // WICHTIG: CSRF und Head-Felder NICHT anfassen.
-    // Wir erzeugen nur zusätzliche positions-* Hidden Inputs.
-
     const blocks = document.querySelectorAll('#positions-root .position-block');
-
     let globalIdx = 0;
 
-    blocks.forEach((block) => {
-      // Block-Header: telescope + target (wird auf jede Zeile übertragen)
+    blocks.forEach((block, blockIdx) => {
       const telSel = block.querySelector('select.telescope_box');
       const targetInp = block.querySelector('.target_input') || block.querySelector('input[name$="-target"]');
 
       const telescopeVal = readValue(telSel);
       const targetVal = readValue(targetInp);
 
-      // Koordinatenfeld (falls du es im Block hast und auf Zeilen übertragen willst)
-      // Hinweis: Du hast target_coordinates als WTForms Feld IN der Zeile - das kopieren wir zeilenweise,
-      // aber wenn du RA/Dec oben pflegst und in target_coordinates schreibst, passt das.
-      // Wenn du stattdessen ein "Block-Koordinatenfeld" hast, müsstest du es hier holen.
+      // block_no in DB ist INTEGER NOT NULL (Default 1) -> wir schicken 1..n
+      const idx0 = Number(block.dataset.index ?? blockIdx) || 0;
+      const blockNo = idx0 + 1;
 
-      // Zeilen: alle <tr.pos-row> innerhalb des Blocks
       const rows = block.querySelectorAll('tbody.rows-body tr.pos-row');
-      rows.forEach((row) => {
-        // Nimm alle Formcontrols aus der Zeile, die bereits positions-?-<key> Namen tragen
+
+      rows.forEach((row, rowIdx) => {
+        // row_in_block in DB ist INTEGER NOT NULL (Default 1) -> wir schicken 1..n
+        const rowInBlock = Number(row.dataset.rowInBlock ?? row.dataset.rowInblock ?? (rowIdx + 1)) || (rowIdx + 1);
+
         const controls = row.querySelectorAll('input[name], select[name], textarea[name]');
 
-        // Erst: telescope/target immer setzen
+        // telescope/target pro Zeile mitschicken
         addHidden(hidden, `positions-${globalIdx}-telescope`, telescopeVal);
         addHidden(hidden, `positions-${globalIdx}-target`, targetVal);
 
-        // Dann: alle Zeilenfelder übernehmen (filterset, exposure_count, exposure_time, mosaic, etc.)
+        // <<< WICHTIG: Block/Row für UI-Rekonstruktion >>>
+        addHidden(hidden, `positions-${globalIdx}-block_no`, String(blockNo));
+        addHidden(hidden, `positions-${globalIdx}-row_in_block`, String(rowInBlock));
+
         controls.forEach((el) => {
           const key = fieldKeyFromName(el.name);
           if (!key) return;
-
-          // telescope/target überspringen (setzen wir schon fix)
           if (key === 'telescope' || key === 'target') return;
-
+          if (key === 'block_no' || key === 'row_in_block') return; // doppelt vermeiden (falls irgendwann gerendert)
           addHidden(hidden, `positions-${globalIdx}-${key}`, readValue(el));
         });
 
@@ -716,34 +702,27 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Jetzt haben wir eine flache Hidden positions-0..N Liste im Form.
-    // Damit nicht noch "doppelte Original-Inputs" stören:
-    // -> Original-positions-Inputs deaktivieren (nur die dynamischen Positions-Felder!)
+    // Original positions-* deaktivieren
     document.querySelectorAll('#positions-root input[name^="positions-"], #positions-root select[name^="positions-"], #positions-root textarea[name^="positions-"]')
       .forEach(el => { el.disabled = true; });
 
-    // Block-Header Felder (telescope/target) NICHT deaktivieren, denn sie sind auch positions-* Felder!
-    // Wir haben telescope/target im Hidden bereits gesetzt, aber wenn du sie disabled willst, musst du selektiver sein.
-    // Darum: direkt wieder aktivieren, falls sie erwischt wurden:
+    // Header telescope/target wieder aktivieren
     document.querySelectorAll('#positions-root select.telescope_box, #positions-root .target_input, #positions-root input[name$="-target"]')
       .forEach(el => { el.disabled = false; });
   }
 
-  // ===== Hook beim Submit
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('edit-pos-form');
     if (!form) return;
 
-    form.addEventListener('submit', (e) => {
-      // Flatten bauen
+    form.addEventListener('submit', () => {
+      // Wichtig: vor Flattening indices stabilisieren
+      renumberAllBlocks();
+      renumberRowsInAllBlocks();
       flattenAllBlocksToHidden();
-
-      // Debug optional:
-      // console.log('Flattened positions count:', document.querySelectorAll('#flatten-hidden input[name^="positions-"][name$="-filterset"]').length);
     }, true);
   });
 })();
 </script>
-
 
 {% endblock content %}
