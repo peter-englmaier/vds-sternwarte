@@ -16,6 +16,8 @@
     border-color: var(--primary) !important;
     box-shadow: 0 8px 24px rgba(13,110,253,.18) !important;
   }
+
+  .position-block { cursor: pointer; }
 </style>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
@@ -323,10 +325,7 @@ function toggleExpertFields() {
   if (coordBtn) coordBtn.classList.toggle('visible', expertSwitch.checked);
 }
 
-/* ===================== Schritt 7: Block-Reihenfolge renumbern (NUR data-index!)
-   WICHTIG: KEIN Umbenennen der positions-*- Felder mehr,
-   weil wir global indices (WTForms) + Flattening nutzen.
-===================== */
+/* =====================  Block-Reihenfolge ===================== */
 function renumberAllBlocks() {
   const blocks = document.querySelectorAll('#positions-root .position-block');
   blocks.forEach((block, idx) => {
@@ -354,6 +353,26 @@ function setActive(block) {
     const badge = block.querySelector('.active-badge');
     if (badge) badge.classList.remove('d-none');
   }
+}
+
+/* ===================== Activate block on click / focus ===================== */
+function registerActiveBlockHandlers() {
+  const root = document.getElementById('positions-root');
+  if (!root) return;
+
+  // Klick irgendwo im Block -> aktiv
+  root.addEventListener('click', (e) => {
+    const block = e.target.closest('.position-block');
+    if (!block) return;
+    setActive(block);
+  });
+
+  // Tastatur-Fokus (tabindex ist schon gesetzt) -> aktiv
+  root.addEventListener('focusin', (e) => {
+    const block = e.target.closest('.position-block');
+    if (!block) return;
+    setActive(block);
+  });
 }
 
 /* ===================== Clone / Clear block ===================== */
@@ -532,6 +551,10 @@ document.getElementById('delete-active')?.addEventListener('click', () => {
 window.addEventListener('DOMContentLoaded', () => {
   toggleExpertFields();
   registerTelescopeBoxListeners();
+
+  // >>> KORREKTUR: Active-Block-Handler registrieren <<<
+  registerActiveBlockHandlers();
+
   setActive(getActiveBlock());
   renumberAllBlocks();
   renumberRowsInAllBlocks();
