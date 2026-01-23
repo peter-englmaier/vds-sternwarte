@@ -327,6 +327,11 @@ function registerTelescopeBoxListeners(context = document) {
                   <td class="expert-field">{{ rowform.target_coordinates_lock(size=1) }}</td>
                   <td class="text-center">{{ rowform.exposure_count(size=2) }}</td>
                   <td class="text-center">{{ rowform.exposure_time(size=2) }}</td>
+                  <td class="text-center">
+                  <div class="form-check d-flex justify-content-center">
+                  {{ rowform.mosaic(class_="form-check-input") }}
+                  </div>
+                  </td>
                   <td class="expert-field">{{ rowform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
                   <td class="expert-field">{{ rowform.exposure_gain(size=1) }}</td>
                   <td class="expert-field">{{ rowform.exposure_offset(size=1) }}</td>

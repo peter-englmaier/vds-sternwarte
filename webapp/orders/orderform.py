@@ -98,6 +98,7 @@ class ObservationRequestPositionForm(FlaskForm):
     exposure_starttime = TimeField('exposure_starttime', format='%H:%M')
     exposure_count  = IntegerField('Menge', validators=[InputRequired(), NumberRange(min=1)])
     exposure_time   = IntegerField('exposure_time', validators=[InputRequired(), NumberRange(min=1)])
+    mosaic = BooleanField('Mosaik')
     exposure_gain   = IntegerField('exposure_gain', validators=[InputRequired(), NumberRange(min=0)])
     exposure_offset = IntegerField('exposure_offset', validators=[InputRequired(), NumberRange(min=0)])
     exposure_focus  = IntegerField('exposure_focus', validators=[InputRequired(), NumberRange(min=0)])

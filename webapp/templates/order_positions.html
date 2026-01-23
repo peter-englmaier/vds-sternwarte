@@ -17,6 +17,7 @@
             <th>Sperre</th>
             <th>Anzahl Bilder</th>
             <th>Bel. Zeit</th>
+            <th>Mosaik</th>
             <th>Startzeit</th>
             <th>Gain</th>
             <th>Offset</th>
@@ -30,11 +31,12 @@
             <td>{{order_pos.filterset.name}}</td>
             <td>{{order_pos.target_objecttype}}</td>
             <td>{{order_pos.target}}</td>
-            <td>{{order_pos.target_coordinates if order_pos.target_coordinates else '-' }}
+            <td>{{order_pos.target_coordinates if order_pos.target_coordinates else '-' }}</td>
             <td> {{ '✓' if order_pos.target_coordinates_lock == '1' else '✗' }} </td>
             <td>{{order_pos.exposure_count}}</td>
             <td>{{order_pos.exposure_time}}</td>
-            <td>{{ order_pos.exposure_starttime('%H:%M') if order_pos.exposure_starttime else '-' }}
+            <td class="text-center">{{ "✓" if order_pos.mosaic else "" }}</td>
+            <td>{{ order_pos.exposure_starttime('%H:%M') if order_pos.exposure_starttime else '-' }}</td>
             <td>{{order_pos.exposure_gain}}</td>
             <td>{{order_pos.exposure_offset}}</td>
             <td>{{order_pos.exposure_dither}}</td>

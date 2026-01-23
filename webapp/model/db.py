@@ -363,6 +363,7 @@ class ObservationRequestPosition(db.Model):
     target_coordinates_lock: Mapped[str] = mapped_column(db.String(1), unique=False, nullable=True, default='0')
     exposure_count: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True)
     exposure_time: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True)
+    mosaic: Mapped[bool] = mapped_column(db.Boolean, nullable=False, default=False)
     exposure_gain: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True, default='0')
     exposure_offset: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True, default='0')
     exposure_dither: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True, default='1')
