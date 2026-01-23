@@ -1,3 +1,4 @@
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 {% extends "layout_no_sidebar.html" %}
 {% block content %}
 
@@ -19,6 +20,106 @@
 
   .position-block { cursor: pointer; }
 </style>
+
+<script>
+
+
+function toggleExpertFields() {
+
+    const expertSwitch = document.getElementById('expert_switch');
+    const button_coordinates = document.getElementById('coord-btn');
+    const expertFields = document.querySelectorAll('.expert-field');
+    expertFields.forEach(field => {
+        if (expertSwitch.checked) {
+            field.classList.add('visible');
+        } else {
+            field.classList.remove('visible');
+        }
+    });
+        if (expertSwitch.checked) {
+            button_coordinates.classList.add('visible');
+        } else {
+            button_coordinates.classList.remove('visible');
+        }
+}
+
+function registerTelescopeBoxListeners(context = document) {
+    const selects = context.querySelectorAll('.telescope_box');
+    selects.forEach(function(select) {
+        // Vorherigen Listener entfernen (nur wenn vorhanden)
+        if (select._telescopeChangeListener) {
+            select.removeEventListener('change', select._telescopeChangeListener);
+        }
+
+        // Listener-Funktion definieren
+        const listener = function() {
+            // Finde die aktuelle Zeile
+            const tr = this.closest('tr');
+            // Finde die Filterset-Box in derselben Zeile
+            const filtersetSelect = tr.querySelector('.filterset_box');
+
+            if (!filtersetSelect) {
+                console.warn("Keine Filterset-Box in dieser Zeile gefunden!");
+                return;
+            }
+
+            const telescopeId = this.value;
+            fetch('/orders/get_filtersets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telescope_id: telescopeId })
+            })
+            .then(response => response.json())
+            .then(options => {
+                filtersetSelect.innerHTML = '';
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.id;
+                    option.textContent = opt.name;
+                    filtersetSelect.appendChild(option);
+                });
+            });
+        };
+
+        // Listener merken, um ihn ggf. wieder entfernen zu können
+        select._telescopeChangeListener = listener;
+        select.addEventListener('change', listener);
+    });
+}
+
+    // Alle Eingaben pruefen
+    const origInputs = row.querySelectorAll('input, select, textarea');
+    const cloneInputs = clone.querySelectorAll('input, select, textarea');
+
+    origInputs.forEach((input, idx) => {
+        const cloneInput = cloneInputs[idx];
+        if (!cloneInput) return;
+
+        if (input.type === "checkbox" || input.type === "radio") {
+            cloneInput.checked = input.checked;
+        } else if (input.tagName.toLowerCase() === "select") {
+            cloneInput.selectedIndex = input.selectedIndex;
+        } else {
+            cloneInput.value = input.value;
+        }
+    });
+
+    // Sichtbarkeitsstatus der expert-field Felder übernehmen
+    const origExpertFields = row.querySelectorAll('.expert-field');
+    const cloneExpertFields = clone.querySelectorAll('.expert-field');
+
+    origExpertFields.forEach((origField, idx) => {
+        const cloneField = cloneExpertFields[idx];
+        if (!cloneField) return;
+
+        // Sichtbarkeitsbereich aktualisieren
+        if (origField.classList.contains('visible')) {
+            cloneField.classList.add('visible');
+        } else {
+            cloneField.classList.remove('visible');
+        }
+    });
+</script>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
 
@@ -117,13 +218,7 @@
   <div class="container py-4">
     <div id="positions-root">
 
-      {# ============================================================
-         Outer Loop über blocks
-         - Header: telescope/target aus erster Row (global idx)
-         - tbody rows-body: loop über row_indices
-         ============================================================ #}
-
-      {% for block in blocks %}
+        {% for block in blocks %}
         {% set header_idx = block.row_indices[0] %}
         {% set header_form = form.positions[header_idx] %}
 
@@ -272,7 +367,7 @@
 
 </form>
 
-<!-- Modal Prüfergebnis -->
+<!-- Modal  -->
 <div class="modal fade" id="checkPopup" tabindex="-1" aria-labelledby="checkPopupLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -480,8 +575,6 @@ function updateTargetCoordinates(block) {
   const ra  = `${pad2(h)}:${pad2(m)}:${padSec(s)}`;
   const dec = `${sign}${pad2(d)}:${pad2(dm)}:${padSec(ds)}`;
 
-  // Achtung: target_coordinates ist pro Zeile (WTForms)
-  // Minimal: wir schreiben in die erste Zeile des Blocks (falls vorhanden)
   const firstRow = block.querySelector('tbody.rows-body tr.pos-row');
   const targetField = firstRow?.querySelector('input[name$="-target_coordinates"]');
   if (targetField) targetField.value = `${ra} ${dec}`;

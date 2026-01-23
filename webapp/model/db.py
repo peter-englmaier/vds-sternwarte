@@ -140,7 +140,6 @@ class Role(db.Model):
     def __str__(self):
         return f"{self.name}"
 
-
 role_group = db.Table(
     'role_group',
     db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
@@ -162,7 +161,6 @@ class Post(db.Model):
     def __str__(self):
        return f"{self.title}"
 
-
 """
     A site is a place with one or more observatories
 """
@@ -180,7 +178,6 @@ class Site(db.Model):
     def __str__(self):
         return f"{self.name}"
 
-
 """
     An observatory is a place with a mount but potentially multiple telescopes on the mount
 """
@@ -189,10 +186,11 @@ class Observatory(db.Model):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     name: Mapped[str] = mapped_column(db.String(30), unique=True, nullable=False)
     site_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('site.id'), nullable=False)
+    # telescopes = db.relationship('Telescope', back_populates='observatory', lazy='joined')
     telescopes: Mapped[List["Telescope"]] = relationship(
-        'Telescope',
-        back_populates='observatory',
-        lazy='joined'
+    'Telescope',
+    back_populates='observatory',
+    lazy='joined'
     )
     site = db.relationship('Site', back_populates='observatories', lazy='joined')
 
@@ -202,10 +200,26 @@ class Observatory(db.Model):
     def __str__(self):
         return f"{self.name}"
 
-
 """
     A telescope is an Optical Tube Assembly consisting of telescope and camera
 """
+# class Telescope(db.Model):
+#     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+#     name: Mapped[str] = mapped_column(db.String(30), unique=True, nullable=False)
+#     observatory_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('observatory.id'), nullable=False)
+#     aperature_mm: Mapped[float] = mapped_column(db.Float, nullable=False)
+#     focal_length_mm: Mapped[float] = mapped_column(db.Float, nullable=False)
+#     camera_name: Mapped[str] = mapped_column(db.String(30), nullable=False)
+#     status: Mapped[str] = mapped_column(db.String(2), nullable=False, default="0")
+#     __table_args__ = (
+#         UniqueConstraint('id', 'observatory_id', name='uq_id_observatory'),  # Unique über zwei Spalten
+#         {'sqlite_autoincrement': True}
+#     )
+#     observatory = db.relationship('Observatory', back_populates='telescopes', lazy='joined')
+#     filtersets = db.relationship('Filterset',
+#                                  back_populates='telescope',
+#                                  cascade = 'all, delete-orphan',
+#                                  lazy = 'joined')
 class Telescope(db.Model):
     __table_args__ = {'sqlite_autoincrement': True}
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
@@ -230,13 +244,28 @@ class Telescope(db.Model):
         cascade='all, delete-orphan',
         lazy='joined'
     )
-
     def __repr__(self):
        return f"Telescope('{self.name}')"
 
     def __str__(self):
        return f"{self.name}"
 
+
+# class Filterset(db.Model):
+#     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+#     name: Mapped[str] = mapped_column(db.String(50), unique=False, nullable=False)
+#     telescope_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('telescope.id'), nullable=False)
+#     quantity: Mapped[int] = mapped_column(db.Integer, nullable=False, default=1)
+#     __table_args__ = (
+#         UniqueConstraint('id', 'telescope_id', name='uq_id_telescope'),  # Unique über zwei Spalten
+#         CheckConstraint('quantity >= 1', name='check_quantity_min'),
+#         {'sqlite_autoincrement': True}
+#     )
+#     telescope: Mapped[List["Telescope"]] = relationship(
+#         "Telescope",
+#         back_populates="filtersets",
+#         lazy='joined'
+#     )
 
 class Filterset(db.Model):
     __table_args__ = {'sqlite_autoincrement': True}
@@ -253,7 +282,6 @@ class Filterset(db.Model):
         back_populates="filtersets",
         lazy='joined'
     )
-
     def __repr__(self):
        return f"Filterset('{self.name}')"
 
@@ -278,6 +306,17 @@ class Poweruser(db.Model, UserMixin):
 
     def __str__(self):
        return f"{self.name}"
+
+"""
+    An ObservationsRequest is a proposed observation for one or more telescopes
+    It is in one of the following states:
+        - draft: not yet requested
+        - waiting: waiting to be rejected or approved
+        - rejected: an rejected proposal can become draft again or simply deleted
+        - approved: waiting to be performed
+        - documentation needed: the propose was performed and needs to be documented
+        - finished: once the observation is documented it is finished
+"""
 
 
 # ---------------------------------------------------------------
@@ -313,20 +352,15 @@ class ObservationRequest(db.Model):
 class ObservationRequestPosition(db.Model):
     __tablename__ = 'observation_request_position'
     __table_args__ = {'sqlite_autoincrement': True}
-
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
     observation_request_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('observation_request.id'), nullable=False)
-
     row_no: Mapped[int] = mapped_column(db.Integer, nullable=False)
-
     telescope_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('telescope.id'), nullable=False)
     filterset_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('filterset.id'), nullable=True)
-
     target_objecttype: Mapped[str] = mapped_column(db.String(200), unique=False, nullable=True)
     target: Mapped[str] = mapped_column(db.String(200), unique=False, nullable=True)
     target_coordinates: Mapped[str] = mapped_column(db.String(200), unique=False, nullable=True)
     target_coordinates_lock: Mapped[str] = mapped_column(db.String(1), unique=False, nullable=True, default='0')
-
     exposure_count: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True)
     exposure_time: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True)
     exposure_gain: Mapped[int] = mapped_column(db.Integer, unique=False, nullable=True, default='0')

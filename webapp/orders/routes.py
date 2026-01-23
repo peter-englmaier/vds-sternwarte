@@ -68,19 +68,23 @@ def set_user_preference():
     status, message = set_user_preference_service(current_user.id, key, value, default)
 
     if status == 1:
+        # Fehlerfall
         print(f"ERROR: {message}")
         return jsonify(success=False, error="Ein fehler ist aufgetreten; siehe logfile."), 500
-
-    return jsonify(success=True)
+    else:
+    # Erfolg
+        return jsonify(success=True)
 
 
 # --------------------------------------------------------------
 # Teleskope zum Observatorium
 # --------------------------------------------------------------
-@orders.route("/orders/get_telescopes/<int:observatory_id>")
-def get_telescopes(observatory_id):
+@orders.route('/orders/get_telescopes/<int:observatory_id>')
+def get_telescopes():
+    data = request.get_json()
+    observatory_id = data.get('observatory_id')
     telescopes = telescope_query(observatory_id)
-    return jsonify([{"id": t.id, "name": t.name} for t in telescopes])
+    return jsonify([{'id': t.id, 'name': t.name} for t in telescopes])
 
 
 # --------------------------------------------------------------
@@ -96,8 +100,7 @@ def get_filtersets():
 
 
 # --------------------------------------------------------------------
-# Beobachtungsanträge für angemeldeten User auflisten
-# WICHTIG: Endpoint muss "show_orders" heißen, weil layout.html url_for('orders.show_orders') nutzt.
+# Beobachtungsantrag bearbeiten
 # --------------------------------------------------------------------
 @orders.route("/orders", methods=["GET"])
 @login_required
@@ -201,6 +204,10 @@ def actionhandler():
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag bearbeiten, Zeilen hinzufügen oder entfernen
+# Der Kopfsatz muss schon vorhanden sein.
+# Positionen werden, wenn vorhanden aus der DB geladen.
+# Wenn keine Position existiert, wird eine neue mit zum Observatoruim passende
+# Parametern erstellt
 # --------------------------------------------------------------------
 @orders.route("/orders/<int:order_id>/edit", methods=["GET", "POST"])
 @login_required
