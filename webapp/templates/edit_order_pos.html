@@ -580,6 +580,61 @@ function updateTargetCoordinates(block) {
   if (targetField) targetField.value = `${ra} ${dec}`;
 }
 
+function parseTargetCoordinates(val) {
+  // erwartet: "HH:MM:SS.ss +DD:MM:SS.ss" (oder -DD...)
+  if (!val) return null;
+  const s = String(val).trim().replace(/\s+/g, ' ');
+  // erlaubt Sekunden mit/ohne Dezimalteil
+  const m = s.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2}(?:\.\d+)?)\s*([+\-])\s*(\d{1,2}):(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/);
+  if (!m) return null;
+
+  return {
+    ra_h: m[1], ra_m: m[2], ra_s: m[3],
+    dec_sign: m[4],
+    dec_d: m[5], dec_m: m[6], dec_s: m[7],
+  };
+}
+
+function initCoordUIFromSaved(block) {
+  if (!block) return;
+
+  // 1) gespeicherten Wert aus dem WTForms-Feld holen (erste Zeile im Block)
+  const firstRow = block.querySelector('tbody.rows-body tr.pos-row');
+  const targetField = firstRow?.querySelector('input[name$="-target_coordinates"]');
+  const saved = targetField?.value?.trim();
+  if (!saved) return; // nichts gespeichert -> nichts initialisieren
+
+  // 2) parsen
+  const p = parseTargetCoordinates(saved);
+  if (!p) return;
+
+  // 3) UI-Felder setzen
+  const setVal = (sel, v) => {
+    const el = block.querySelector(sel);
+    if (el) el.value = v;
+  };
+
+  setVal('.ra-h', p.ra_h);
+  setVal('.ra-m', p.ra_m);
+  setVal('.ra-s', p.ra_s);
+  setVal('.dec-sign', p.dec_sign);
+  setVal('.dec-d', p.dec_d);
+  setVal('.dec-m', p.dec_m);
+  setVal('.dec-s', p.dec_s);
+
+  // 4) Toggle + Sichtbarkeit aktivieren
+  const toggle = block.querySelector('.coord-toggle');
+  const coords = block.querySelector('.coord-fields');
+  if (toggle) toggle.checked = true;
+  if (coords) coords.classList.remove('d-none');
+}
+
+function initAllBlocksCoordUI() {
+  document.querySelectorAll('#positions-root .position-block').forEach(block => {
+    initCoordUIFromSaved(block);
+  });
+}
+
 document.addEventListener('change', (e) => {
   if (e.target.classList.contains('coord-toggle')) {
     const block = e.target.closest('.position-block');
@@ -651,6 +706,9 @@ window.addEventListener('DOMContentLoaded', () => {
   setActive(getActiveBlock());
   renumberAllBlocks();
   renumberRowsInAllBlocks();
+
+    // >>> gespeicherte Koordinaten in Felder zurückschreiben <<<
+  initAllBlocksCoordUI();
 
   // Vor jedem Submit: data-index + rowInBlock sicherstellen
   document.addEventListener('submit', () => {
