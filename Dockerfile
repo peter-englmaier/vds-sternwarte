@@ -11,6 +11,7 @@ EXPOSE 5000
 COPY webapp webapp/
 COPY migrations migrations/
 COPY prod.py ./
+COPY app.py ./
 COPY docker-startup.sh ./
 
 ENTRYPOINT [ "/bin/sh", "-c" ]

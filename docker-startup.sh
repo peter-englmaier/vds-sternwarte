@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/sh -x
 python --version
-flask db upgrade
+flask --app app.py db upgrade
 cat prod.py
 exec python prod.py
