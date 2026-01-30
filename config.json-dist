@@ -1,0 +1,16 @@
+{
+	"SECRET_KEY": "changeme",
+	"SQLALCHEMY_DATABASE_URI": "sqlite:///site.db",
+	"MAIL_SERVER": "smtp.googlemail.com",
+	"MAIL_PORT": 587,
+	"MAIL_USE_TLS": false,
+	"MAIL_USE_SSL": true,
+	"MAIL_USER": "MAIL_USER",
+	"MAIL_PASS": "MAIL_PASS",
+	"MAIL_REPLYTO": "MAIL_USER",
+	"ADMIN_USER": "admin",
+	"ADMIN_EMAIL": "admin@example.org",
+	"ADMIN_PASSWORD": "changeme"
+	"MAIL_DEBUG": false
+}
+
