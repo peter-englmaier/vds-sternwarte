@@ -9,6 +9,7 @@ webapp/static/profile_pics/*.png
 .obsidian
 # IDE files:
 .idea/
+launch.json
 # local python files
 **/__pycache__/
 venv/
