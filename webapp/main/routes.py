@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from flask import render_template, request, url_for
+from flask import render_template, request, url_for, redirect, flash, abort
 from flask_login import login_required
 from flask_login import current_user
 from webapp.main import main
-from webapp.model.db import db, Post, SystemParameters, ObservationRequest, PoweruserMeldung, User
-from webapp.orders.constants import USER_ROLE_ADMIN, ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
-    ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED
+from webapp.model.db import db, Post, SystemParameters, ObservationRequest, PoweruserMeldung, User, Group
+from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_ROLE_USER, USER_ROLE_GUEST,ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
+    ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
 from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
 from sqlalchemy.exc import IntegrityError
 from collections import defaultdict
@@ -16,7 +16,20 @@ from collections import defaultdict
 def home():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    return render_template('home.html', posts=posts)
+    
+    guest_group = Group.query.filter_by(
+        name=f"{USER_ROLE_GUEST}_group"
+    ).first()
+
+    guest_count = 0
+    if guest_group:
+        guest_count = (
+            User.query.join(User.groups)
+            .filter(Group.id == guest_group.id)
+            .count()
+        )
+
+    return render_template("home.html", posts=posts, guest_count=guest_count)
 
 # -------------------------------------------------------------
 #
@@ -170,3 +183,78 @@ def request_georg():
 @main.route("/add-row")
 def add_row():
     return render_template("aufnahme_zeile.html")
+
+# -------------------------------------------------------------
+@main.route("/gast", methods=["GET"])
+@login_required
+def gast():
+
+    if not (
+        current_user.has_role(USER_ROLE_ADMIN)
+        or current_user.has_role(USER_ROLE_APPROVER)
+    ):
+        abort(403)
+
+    guest_group = Group.query.filter_by(
+        name=f"{USER_ROLE_GUEST}_group"
+    ).first()
+
+    pending_users = []
+
+    if guest_group:
+        pending_users = (
+            User.query.join(User.groups)
+            .filter(Group.id == guest_group.id)
+            .all()
+        )
+
+    #Benutzer ohne Gruppenzuordnung
+    no_group = [u for u in User.query.all() if not u.groups]
+    pending_ids = {u.id for u in pending_users}
+    pending_users.extend([u for u in no_group if u.id not in pending_ids])
+
+    return render_template(
+        "gast.html",
+        title="Neue Benutzer freischalten",
+        pending_users=pending_users,
+    )
+
+
+@main.route("/gast/approve", methods=["POST"])
+@login_required
+def gast_approve():
+
+    if not (
+        current_user.has_role(USER_ROLE_ADMIN)
+        or current_user.has_role(USER_ROLE_APPROVER)
+    ):
+        abort(403)
+
+    user_id = request.form.get("user_id", type=int)
+    if not user_id:
+        flash("Fehlende user_id", "danger")
+        return redirect(url_for("main.gast"))
+
+    user = User.query.get_or_404(user_id)
+
+    guest_group = Group.query.filter_by(
+        name=f"{USER_ROLE_GUEST}_group"
+    ).first()
+    user_group = Group.query.filter_by(
+        name=f"{USER_ROLE_USER}_group"
+    ).first()
+
+    if not user_group:
+        flash("Systemfehler: user_group existiert nicht.", "danger")
+        return redirect(url_for("main.gast"))
+
+    if guest_group and guest_group in user.groups:
+        user.groups.remove(guest_group)
+
+    if user_group not in user.groups:
+        user.groups.append(user_group)
+
+    db.session.commit()
+
+    flash(f"{user.name} wurde freigeschaltet.", "success")
+    return redirect(url_for("main.gast"))

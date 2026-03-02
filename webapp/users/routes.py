@@ -2,39 +2,55 @@ from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from urllib.parse import urlparse
 from webapp import bcrypt, db
-from webapp.model.db import User, Post
+from webapp.model.db import User, Post, Group
 from webapp.users import users
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
 from webapp.users.utils import save_picture, send_reset_email
 from sqlalchemy import func
+from webapp.orders.constants import USER_ROLE_GUEST
 
 
-@users.route("/register", methods=['GET', 'POST'])
+@users.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.home'))
+        return redirect(url_for("main.home"))
+
     form = RegistrationForm()
+
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(name=form.username.data,
-                    email=form.email.data,
-                    password=hashed_password,
-                    firstname=form.firstname.data,
-                    surname=form.surname.data,
-                    vds_number=form.vds_number.data
-                    )
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
+
+        user = User(
+            name=form.username.data,
+            email=form.email.data,
+            password=hashed_password,
+            firstname=form.firstname.data,
+            surname=form.surname.data,
+            vds_number=form.vds_number.data,
+        )
+
+
+        guest_group = Group.query.filter_by(name=f"{USER_ROLE_GUEST}_group").first()
+        if guest_group:
+            user.groups.append(guest_group)
+        else:
+
+            flash("Systemfehler: Guest-Gruppe fehlt (setup_users?).", "danger")
+
         db.session.add(user)
+
         try:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f'Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.', 'error')
+            flash(f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.", "error")
+            return render_template("register.html", title="Register", form=form)
 
-        flash('Ihr Benutzer ist registriert! Sie können sich jetzt anmelden', 'success')
-        return redirect(url_for('users.login'))
-    return render_template('register.html', title='Register', form=form)
+        flash("Ihr Benutzer ist registriert! Sie können sich jetzt anmelden", "success")
+        return redirect(url_for("users.login"))
 
+    return render_template("register.html", title="Register", form=form)
 
 @users.route("/login", methods=['GET', 'POST'])
 def login():
@@ -42,22 +58,22 @@ def login():
         return redirect(url_for('main.home'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter(    # zuerst schauen, ob eine email Adresse eingegeben wurde
+        user = User.query.filter( 
             func.upper(User.email) == form.email.data.upper()
         ).first()
 
-        if not user:   # wenn das nichts bringt, annehmen, dass der Username im Feld steht
+        if not user:
            user = User.query.filter(
                 func.upper(User.name) == form.email.data.upper()
             ).first()
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next', '').replace('\\', '')  # Remove backslashes
-            if not urlparse(next_page).netloc and not urlparse(next_page).scheme: # allow only relative path
-                # relative path, safe to redirect (no protocol and no hostname in url)
+            next_page = request.args.get('next', '').replace('\\', '')  
+            if not urlparse(next_page).netloc and not urlparse(next_page).scheme:
+                
                 return redirect(next_page)
-            # Default to the home page if the next_page is invalid or unsafe
+            
             return redirect(url_for('main.home'))
         else:
             flash('Login nicht erfolgreich. Bitte prüfen Sie ihre Angaben!', 'danger')

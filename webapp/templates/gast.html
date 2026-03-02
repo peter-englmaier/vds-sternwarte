@@ -1,0 +1,48 @@
+{% extends "layout_no_sidebar.html" %}
+
+{% block content %}
+  <h1>Neuzugänge</h1>
+
+  {% if current_user.is_authenticated %}
+    <p>
+      <span style="margin-right:50px;">
+        Genehmiger: {{ current_user.firstname }} {{ current_user.surname }}
+      </span>
+     
+{% if pending_users|length == 0 %}
+  <div class="alert alert-info">Keine neuen Registrierungen vorhanden.</div>
+{% else %}
+  <table class="table table-bordered table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Aktion</th>
+        <th>VdS Nr.</th>
+        <th>Nachname</th>
+        <th>Vorname</th>
+        <th>E-Mail</th>
+        <th>Benutzername</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in pending_users %}
+      <tr>
+        <td>
+            <form method="POST" action="{{ url_for('main.gast_approve') }}">
+            <input type="hidden" name="user_id" value="{{ u.id }}">
+            <button class="btn btn-success btn-sm" type="submit">Freischalten</button>
+          </form></td>
+          <td>{{ u.vds_number }}</td>
+          <td>{{ (u.surname or '') }}</td>
+          <td>{{ (u.firstname or '') }}</td>
+          <td>{{ u.email }}</td>
+        <td>{{ u.name }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %} 
+
+    <a class="btn btn-warning" style="background-color:#007bff; color:white;"
+       href="{{ url_for('main.home') }}">Zur Startseite</a>
+  {% endif %}
+{% endblock content %}
