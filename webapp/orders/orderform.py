@@ -79,7 +79,7 @@ class ObservationRequestHead(FlaskForm):
         ]
 
         # Wenn nur ein Eintrag existiert → automatisch diesen Eintrag setzen, kein „Auswählen“
-        # Wenn mehr als ein Eintrag existiert → Dropdown wie bisher
+        # Wenn mehr als ein Eintrag existiert → Dropdown
         observatories = observatory_query()
         if len(observatories) == 1:
             # Nur ein Eintrag → direkt setzen
@@ -95,11 +95,6 @@ class ObservationRequestHead(FlaskForm):
                ] + [
             (str(x.id), x.name) for x in observatories
             ]
-
-        # Original für observatory von vorher
-        #self.observatory_name.choices = [('', 'Auswählen')] + [
-        #    (str(x.id), x.name) for x in observatory_query()
-        #]
 
         self.poweruser_name.choices = [('', 'Auswählen oder leer lassen')] + [
             (str(x.id), x.name) for x in poweruser_query()
