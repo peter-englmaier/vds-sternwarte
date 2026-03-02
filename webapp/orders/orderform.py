@@ -74,12 +74,33 @@ class ObservationRequestHead(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #self.request_purpose.choices = [('', 'Auswählen oder leer lassen')] + [
-        #    (x.Motivation, x.Motivation) for x in motivation_query()
-        #]
-        self.observatory_name.choices = [('', 'Auswählen')] + [
-            (str(x.id), x.name) for x in observatory_query()
+        self.request_purpose.choices = [('', 'Auswählen oder leer lassen')] + [
+            (x.Motivation, x.Motivation) for x in motivation_query()
         ]
+
+        # Wenn nur ein Eintrag existiert → automatisch diesen Eintrag setzen, kein „Auswählen“
+        # Wenn mehr als ein Eintrag existiert → Dropdown wie bisher
+        observatories = observatory_query()
+        if len(observatories) == 1:
+            # Nur ein Eintrag → direkt setzen
+            single = observatories[0]
+            self.observatory_name.choices = [
+            (str(single.id), single.name)
+            ]
+            self.observatory_name.data = str(single.id)
+        else:
+            # Mehrere Einträge → normale Auswahl mit "Auswählen"
+            self.observatory_name.choices = [
+               ('', 'Auswählen')
+               ] + [
+            (str(x.id), x.name) for x in observatories
+            ]
+
+        # Original für observatory von vorher
+        #self.observatory_name.choices = [('', 'Auswählen')] + [
+        #    (str(x.id), x.name) for x in observatory_query()
+        #]
+
         self.poweruser_name.choices = [('', 'Auswählen oder leer lassen')] + [
             (str(x.id), x.name) for x in poweruser_query()
         ]
