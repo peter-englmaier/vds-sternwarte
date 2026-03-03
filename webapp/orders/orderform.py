@@ -74,9 +74,6 @@ class ObservationRequestHead(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.request_purpose.choices = [('', 'Auswählen oder leer lassen')] + [
-            (x.Motivation, x.Motivation) for x in motivation_query()
-        ]
 
         # Wenn nur ein Eintrag existiert → automatisch diesen Eintrag setzen, kein „Auswählen“
         # Wenn mehr als ein Eintrag existiert → Dropdown
