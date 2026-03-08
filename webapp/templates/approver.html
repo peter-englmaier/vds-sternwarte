@@ -22,7 +22,7 @@
             <th>Datum</th>
             <th>Beteiligte</th>
             <th>Observatorium</th>
-            <th>Motivation</th>
+            <!-- <th>Motivation</th> -->
             <th>Wunsch Poweruser</th>
             <th>Type</th>
             <th>Anmerkungen</th>
@@ -107,7 +107,7 @@
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
-            <td>{{ order.request_purpose }}</td>
+            <!-- <td>{{ order.request_purpose }}</td> -->
             <td>{{ order.poweruser_name if order.poweruser_name else '-' }}
             <td>{{ order.request_type }}</td>
             <td>{{ order.remark }}</td>

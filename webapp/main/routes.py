@@ -75,6 +75,7 @@ def poweruser():
             f'</span>'
         )
 
+    # GET
     all_rows = (
         db.session.query(ObservationRequest, User)
         .outerjoin(User, User.id == ObservationRequest.request_poweruser_id)
@@ -85,6 +86,8 @@ def poweruser():
     all_orders = []
     for order, pu_user in all_rows:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+        pwuser = User.query.get(order.request_poweruser_id)
+        order.poweruser_name = pwuser.name if pwuser else None
 
         # Name des vom Approver zugewiesenen Powerusers (falls vorhanden)
         if pu_user:
@@ -110,7 +113,10 @@ def approver():
         .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED]))
         .all()
     )
-    for order in all_orders: order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+    for order in all_orders:
+        order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+        pwuser = User.query.get(order.request_poweruser_id)
+        order.poweruser_name = pwuser.name if pwuser else None
        
 
     order_ids = [o.id for o in all_orders]
