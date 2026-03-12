@@ -111,8 +111,12 @@ def show_orders():
     user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).all()
     for order in user_orders:
         pwuser = User.query.get(order.request_poweruser_id)
-        order.poweruser_name = pwuser.name if pwuser else None
-        order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+        if pwuser:
+            full_name = f"{pwuser.firstname or ''} {pwuser.surname or ''}".strip()
+            order.poweruser_name = full_name if full_name else pwuser.name
+        else:
+            order.poweruser_name = None
+            order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
     return render_template("orders.html", title="Teleskopzeit Beantragung", orders=user_orders)
 
 
