@@ -115,9 +115,24 @@ def approver():
     )
     for order in all_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
-        pwuser = User.query.get(order.request_poweruser_id)
-        order.poweruser_name = pwuser.name if pwuser else None
-       
+
+        pwuser = None
+        order.poweruser_name = None
+        order.poweruser_display_name = ""
+
+        if order.request_poweruser_id:
+            pwuser = User.query.get(order.request_poweruser_id)
+    
+        if pwuser:
+            display = pwuser.name
+            if (not display) and (pwuser.firstname or pwuser.surname):
+                display = f"{pwuser.firstname or ''} {pwuser.surname or ''}".strip()
+            order.poweruser_name = display or f"User {pwuser.id}"
+            order.poweruser_display_name = order.poweruser_name
+
+        print("order.id =", order.id)
+        print("request_poweruser_id =", getattr(order, "request_poweruser_id", None))
+        print("poweruser_display_name =", order.poweruser_display_name)       
 
     order_ids = [o.id for o in all_orders]
 

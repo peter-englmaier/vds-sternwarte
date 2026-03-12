@@ -97,13 +97,14 @@
   </div>
 {% endif %}
 </td>
-            <td>{{ order.status_label }} {% if order.request_poweruser %}
+            <td>
+            {{ order.status_label }}     
     <br>
+    Zugewiesen:
     <span class="badge bg-info text-dark">
-      {{ order.request_poweruser.firstname }}
-      {{ order.request_poweruser.surname }}
+      {{ order.poweruser_display_name or "-" }}
     </span>
-  {% endif %}</td>            
+</td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
