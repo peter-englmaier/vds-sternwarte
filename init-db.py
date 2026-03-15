@@ -5,7 +5,7 @@ from webapp.model.db import Site, Telescope, Observatory, Filterset
 app=create_app()
 
 with app.app_context():
-    #db.create_all() - has been done already
+    db.create_all()
 
     # SITE
     name='Astro-Farm Hakos, Namibia'
