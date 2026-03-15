@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
@@ -527,3 +527,102 @@ class PoweruserMeldung(db.Model):
 
     request = relationship("ObservationRequest", lazy="joined")
     poweruser = relationship("User", lazy="joined")
+
+"""
+ObservatoryReservation: a Reservation class for observatories
+date: the reservation day (actually the night), time is always 12:00 (noon)
+"""
+class ObservatoryReservation(db.Model):
+    from enum import Enum
+
+    # status values
+    class Status(Enum):
+        UNDEF =    1 # status is undefined
+        RESERVED = 2 # date is reserved, but not yet finally booked
+        BOOKED =   3 # date is booked
+        EXPIRED =  4 # reservation expired
+
+    # reservation constants
+    reservation_maxtime = timedelta(minutes=2) # how long can a date be reserved without submission
+    reservation_time = timedelta(seconds=30) # how long a single reservation lasts without refresh
+
+    __tablename__ = 'observatory_reservation'
+    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
+    date: Mapped[datetime] = mapped_column(db.DateTime, nullable=False, unique=True)
+    observatory_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('observatory.id'), nullable=False)
+    observation_request_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('observation_request.id'), nullable=False)
+    reservation_max: Mapped[datetime] = mapped_column(db.DateTime)
+    reservation_exp: Mapped[datetime] = mapped_column(db.DateTime)
+    status: Mapped[str] = mapped_column(db.String(10), nullable=False, default=Status.UNDEF.name)
+
+    def __repr__(self):
+        return f"ObservatorReservation('{self.observatory_id}, '{self.date}', '{self.status}', '{self.reservation_exp}')"
+
+    def __str__(self):
+        s = self.Status[self.status]
+        if s == self.Status.RESERVED:
+            return f"Reserviert bis {self.reservation_exp}"
+        elif s == self.Status.EXPIRED:
+            return f"Reservierung ist abgelaufen"
+        elif s == self.Status.BOOKED:
+            return f"Reservierung ist definitiv"
+        else:
+            return f"Status unbekannt"
+
+    """
+    date_sanitze: set time to 12:00 (noon) and timezone to UTC and return given datetime object
+    """
+    @staticmethod
+    def date_sanitize(date: datetime):
+        return date.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+
+    def __init__(
+        self,
+        date: datetime,
+        observatory: Observatory,
+        request: ObservationRequest,
+    ):
+        self.date = self.date_sanitize(date),
+        self.observatory_id = observatory.id
+        self.observation_request_id = request.id
+        now = datetime.now()
+        self.reservation_max = now + self.reservation_maxtime
+        self.reservation_exp = now + self.reservation_time
+        self.status = self.Status.RESERVED.name
+
+    def refresh(self):
+        now = datetime.now()
+        self.reservation_exp = max(self.reservation_max, now + self.reservation_time)
+        if self.status == self.Status.RESERVED.name and self.reservation_exp < now:
+            self.status = self.Status.EXPIRED.name
+
+    def cancel(self):
+        self.status = self.Status.EXPIRED
+
+    def is_booked(self):
+        return self.status == self.Status.BOOKED.name
+
+    def is_expired(self):
+        now = datetime.now()
+        if self.status == self.Status.RESERVED.name and self.reservation_exp < now:
+            self.status = self.Status.EXPIRED.name
+        return self.status == self.Status.EXPIRED.name
+
+    # change reservation date - will reset reservation period
+    def set_date(self, newdate):
+        newdate = self.date_sanitize(newdate)
+        if self.date != newdate:
+            self.date = newdate
+            now = datetime.now()
+            self.reservation_max = now + self.reservation_maxtime
+            self.reservation_exp = now + self.reservation_time
+            self.status = self.Status.RESERVED.name
+
+    # change observatory - will reset reservation period
+    def set_observatory(self, observatory):
+        if self.observatory_id != observatory.id:
+            self.observatory_id = observatory.id
+            now = datetime.now()
+            self.reservation_max = now + self.reservation_maxtime
+            self.reservation_exp = now + self.reservation_time
+            self.status = self.Status.RESERVED.name
