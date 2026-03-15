@@ -99,7 +99,9 @@ def create_app(config_class=Config):
         app.register_blueprint(errors)
         app.register_blueprint(orders)
         app.register_blueprint(inout_bp)
-        db.create_all()
-        setup_users()
+        try:
+            setup_users()
+        except:
+            print('WARN: Could not initialize users')
 
     return app
