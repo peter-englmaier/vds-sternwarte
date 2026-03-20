@@ -599,6 +599,10 @@ class ObservatoryReservation(db.Model):
     def cancel(self):
         self.status = self.Status.EXPIRED
 
+    def confirm(self):
+        self.status = self.Status.BOOKED
+
+
     def is_booked(self):
         return self.status == self.Status.BOOKED.name
 
