@@ -5,7 +5,7 @@ from sqlalchemy import func
 import re
 from webapp import db
 from .constants import ORDER_STATUS_CREATED, ORDER_STATUS_APPROVED, ORDER_STATUS_WAITING, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_CONFIRMED
-from webapp.model.db import UserPreferences
+from webapp.model.db import UserPreferences, ObservatoryReservation
 
 # --------------------------------------------------------------------------
 #  Umformung von dezimal Koordinaten in die Stunden / Minuten und Winkelgrad
@@ -251,21 +251,20 @@ def moon_phases(year, month):
 # ------------------------------------------------------------------------------------------------------
 
 def calendar_service(year, month):
-
-    orders = ObservationRequest.query.filter(
-        db.extract('year', ObservationRequest.request_date) == year,
-        db.extract('month', ObservationRequest.request_date) == month,
+    reservations = ObservatoryReservation.query.filter(
+        db.extract('year', ObservatoryReservation.date) == year,
+        db.extract('month', ObservatoryReservation.date) == month,
     ).all()
     approved_days = set()
     planned_days = set()
     # gebuchte Tage
+    for request in reservations:
+        if request.is_booked():
+            approved_days.add(request.date.day)
+        elif not request.is_expired():
+            planned_days.add(request.date.day)
 
-    for order in orders:
-        if order.status in (ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_APPROVED, ORDER_STATUS_CONFIRMED):
-            approved_days.add(order.request_date.day)
-        elif order.status in (ORDER_STATUS_CREATED, ORDER_STATUS_WAITING ):
-            planned_days.add(order.request_date.day)
-# hier einfach ausgerechnet. Besser mit astropy?
+    # hier einfach ausgerechnet. Besser mit astropy?
     new_moon_days, full_moon_days = moon_phases(year, month)
 
     cal = calendar.monthcalendar(year, month)
