@@ -23,6 +23,7 @@
                         hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.request_date.id, display_id='selected_date_display') }}"
                         hx-target="#calendar-container-modal .modal-body"
                         hx-swap="innerHTML"
+                        hx-validate="true"
                         data-bs-toggle="modal" data-bs-target="#calendar-container-modal">
                     Kalender
                 </button>

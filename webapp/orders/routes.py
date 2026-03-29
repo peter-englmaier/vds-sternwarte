@@ -14,7 +14,7 @@ from datetime import date, datetime
 from celery import shared_task
 
 from webapp import db, mail
-from webapp.model.db import User, ObservationRequest, ObservationRequestPosition
+from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
 from . import orders  # Blueprint-Objekt
 from .orderform import (
@@ -187,8 +187,12 @@ def actionhandler():
         order_head = ObservationRequest()
         order_head.user_id = current_user.id
         order_head.request_date = form.request_date.data
-        order_head.name = form.requester_name.data
         order_head.request_observatory_id = form.observatory_name.data
+        observatory = Observatory.query.get(order_head.request_observatory_id)
+        reservation = None
+        if form.request_date.data:
+            reservation = ObservatoryReservation(order_head.request_date,observatory,order_head)
+        order_head.name = form.requester_name.data
         #order_head.request_purpose = form.request_purpose.data
         # find the given power user in the user table
         poweruser_index = form.poweruser_name.data
@@ -209,6 +213,20 @@ def actionhandler():
                 "error",
             )
             return redirect("/orders")
+
+
+        try:
+            if reservation:
+                db.session.add(reservation)
+                db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(
+                f"Datum kann nicht reserviert werden. Bitte anderes Datum wählen.",
+                "error",
+            )
+            return redirect(url_for("orders.edit_order_pos", order_id=order_head.id))
+
 
         return redirect(url_for("orders.edit_order_pos", order_id=order_head.id))
 
@@ -380,6 +398,21 @@ def edit_order_pos(order_id):
     if action == "save_order":
         # Kopf speichern
         order_head.request_date = form.head.request_date.data
+        order_head.request_observatory_id = form.head.observatory_name.data
+        observatory = Observatory.query.get(order_head.request_observatory_id)
+        reservation = ObservatoryReservation.query.filter_by(order_id=order_id).first();
+        if not reservation:
+            reservation = ObservatoryReservation(order_head.request_date,observatory,order_head)
+        else:
+            reservation.set_observatory(observatory).set_date(order_head.request_date)
+        try:
+            db.session.add(reservation)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash("Reservation nicht möglich", "error")
+            return redirect(url_for("orders.edit_order_pos", order_id=order_id))
+
         order_head.name = form.head.requester_name.data
         #order_head.request_purpose = form.head.request_purpose.data
         order_head.request_poweruser_id = form.head.poweruser_name.data or None
