@@ -162,11 +162,14 @@ function unused() {
           <span id="selected_date_display">
             {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
           </span>
-          <button type="button" class="btn btn-sm btn-outline-secondary"
-                  hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
+          <button type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  hx-get="{{ url_for('orders.show_calendar', year=form.head.request_date.data.year, month=form.head.request_date.data.month, picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
                   hx-target="#calendar-container-modal .modal-body"
                   hx-swap="innerHTML"
-                  data-bs-toggle="modal" data-bs-target="#calendar-container-modal">
+                  hx-validate="true"
+                  data-bs-toggle="modal"
+                  data-bs-target="#calendar-container-modal">
             Kalender
           </button>
         </td>
