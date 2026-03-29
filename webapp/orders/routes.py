@@ -400,7 +400,7 @@ def edit_order_pos(order_id):
         order_head.request_date = form.head.request_date.data
         order_head.request_observatory_id = form.head.observatory_name.data
         observatory = Observatory.query.get(order_head.request_observatory_id)
-        reservation = ObservatoryReservation.query.filter_by(order_id=order_id).first();
+        reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
         if not reservation:
             reservation = ObservatoryReservation(order_head.request_date,observatory,order_head)
         else:
