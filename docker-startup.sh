@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Running docker-startup.sh"
-
+export FLASK_APP=prod.py
 # Make sure, parameters are set either true or false
 [ -z "$RUNFLASK" ] && RUNFLASK=true
 [ -z "$RUNCELERY" ] && RUNCELERY=true
