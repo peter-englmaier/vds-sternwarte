@@ -7,7 +7,7 @@ RUN apk update \
     && apk upgrade \
     && apk add build-base libpq libpq-dev
 
-ENV FLASK_APP=prod.py
+ENV FLASK_APP=app.py
 
 WORKDIR /vds
 
@@ -15,6 +15,7 @@ COPY requirements-prod.txt ./requirements.txt
 RUN pip3 install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 COPY webapp webapp/
 COPY migrations migrations/
+COPY datamigrations datamigrations/
 COPY prod.py app.py init-db.py docker-startup.sh make_celery.py ./
 
 EXPOSE 5000/tcp
