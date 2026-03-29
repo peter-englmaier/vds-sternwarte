@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, date, timezone, timedelta
 from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
@@ -570,11 +570,14 @@ class ObservatoryReservation(db.Model):
             return f"Status unbekannt"
 
     """
-    date_sanitze: set time to 12:00 (noon) and timezone to UTC and return given datetime object
+    date_sanitze: strip time and timezone from date
     """
     @staticmethod
-    def date_sanitize(date: datetime):
-        return date.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+    def date_sanitize(adate: datetime):
+        if isinstance(adate, date):
+            return adate
+        else:
+            return adate.date()
 
     def __init__(
         self,
