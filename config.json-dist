@@ -13,6 +13,8 @@
 	"ADMIN_PASSWORD": "changeme",
 	"MAIL_DEBUG": false,
 	"CELERY_BROKER_URL": "redis://localhost:6379",
-	"CELERY_RESULT_BACKEND": "redis://localhost:6379"
+	"CELERY_RESULT_BACKEND": "redis://localhost:6379",
+	"RESERVATION_MAXTIME_MINUTES": "4320",
+	"RESERVATION_TIME_MINUTES": "1440"
 }
 
