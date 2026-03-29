@@ -126,7 +126,7 @@ function unused() {
 
 <form id="edit-pos-form" method="post"
       action="{{ url_for('orders.edit_order_pos', order_id=order_id) }}"
-      hx-disable="true">
+>
   {{ form.hidden_tag() }}
 
   {% if current_user.is_authenticated %}
