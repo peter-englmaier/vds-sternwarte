@@ -37,7 +37,7 @@ def init_new_order_service():
         order.requester_name = f"Unknown ({order.user_id})"
     order.positions = []
     order.date_created = datetime.now()
-    order.request_date = datetime.now()
+    order.request_date = None
     order.status = ORDER_STATUS_CREATED
     order.observatory_name = None
     order.poweruser_name = None
