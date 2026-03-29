@@ -360,9 +360,11 @@ function unused() {
     Beantragung abschicken
   </button>
 
+  {#
   <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
     Überprüfen
   </button>
+  #}
 
   <button id="coord-btn" type="submit" class="btn" name="action" value="resolve_coordinates"
           style="background-color:#f00000; color:white;">
@@ -376,6 +378,7 @@ function unused() {
 
 </form>
 
+{#
 <!-- Modal  -->
 <div class="modal fade" id="checkPopup" tabindex="-1" aria-labelledby="checkPopupLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -391,6 +394,7 @@ function unused() {
     </div>
   </div>
 </div>
+#}
 
 <!-- Kalender-Modal -->
 <div class="modal fade" id="calendar-container-modal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
@@ -909,5 +913,6 @@ function renumberRowsInAllBlocks() {
   });
 })();
 </script>
+
 
 {% endblock content %}
