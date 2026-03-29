@@ -543,8 +543,8 @@ class ObservatoryReservation(db.Model):
         EXPIRED =  4 # reservation expired
 
     # reservation constants
-    reservation_maxtime = timedelta(minutes=2) # how long can a date be reserved without submission
-    reservation_time = timedelta(seconds=30) # how long a single reservation lasts without refresh
+    reservation_maxtime = timedelta(minutes=4320) # how long can a date be reserved without submission
+    reservation_time = timedelta(minutes=1440) # how long a single reservation lasts without refresh
 
     __tablename__ = 'observatory_reservation'
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
