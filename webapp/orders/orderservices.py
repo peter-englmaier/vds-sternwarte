@@ -115,8 +115,11 @@ def copy_order_service(order_id):
 
 def delete_order_service(order_id):
     order = ObservationRequest.query.get_or_404(order_id)
-    db.session.delete(order)
+    reservation=ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
     try:
+        if reservation:
+            db.session.delete(reservation)
+        db.session.delete(order)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
