@@ -86,38 +86,40 @@ function registerTelescopeBoxListeners(context = document) {
     });
 }
 
-    // Alle Eingaben pruefen
-    const origInputs = row.querySelectorAll('input, select, textarea');
-    const cloneInputs = clone.querySelectorAll('input, select, textarea');
+function unused() {
+  // Alle Eingaben pruefen
+  const origInputs = row.querySelectorAll('input, select, textarea');
+  const cloneInputs = clone.querySelectorAll('input, select, textarea');
 
-    origInputs.forEach((input, idx) => {
-        const cloneInput = cloneInputs[idx];
-        if (!cloneInput) return;
+  origInputs.forEach((input, idx) => {
+    const cloneInput = cloneInputs[idx];
+    if (!cloneInput) return;
 
-        if (input.type === "checkbox" || input.type === "radio") {
-            cloneInput.checked = input.checked;
-        } else if (input.tagName.toLowerCase() === "select") {
-            cloneInput.selectedIndex = input.selectedIndex;
-        } else {
-            cloneInput.value = input.value;
-        }
-    });
+    if (input.type === "checkbox" || input.type === "radio") {
+      cloneInput.checked = input.checked;
+    } else if (input.tagName.toLowerCase() === "select") {
+      cloneInput.selectedIndex = input.selectedIndex;
+    } else {
+      cloneInput.value = input.value;
+    }
+  });
 
-    // Sichtbarkeitsstatus der expert-field Felder übernehmen
-    const origExpertFields = row.querySelectorAll('.expert-field');
-    const cloneExpertFields = clone.querySelectorAll('.expert-field');
+  // Sichtbarkeitsstatus der expert-field Felder übernehmen
+  const origExpertFields = row.querySelectorAll('.expert-field');
+  const cloneExpertFields = clone.querySelectorAll('.expert-field');
 
-    origExpertFields.forEach((origField, idx) => {
-        const cloneField = cloneExpertFields[idx];
-        if (!cloneField) return;
+  origExpertFields.forEach((origField, idx) => {
+    const cloneField = cloneExpertFields[idx];
+    if (!cloneField) return;
 
-        // Sichtbarkeitsbereich aktualisieren
-        if (origField.classList.contains('visible')) {
-            cloneField.classList.add('visible');
-        } else {
-            cloneField.classList.remove('visible');
-        }
-    });
+    // Sichtbarkeitsbereich aktualisieren
+    if (origField.classList.contains('visible')) {
+      cloneField.classList.add('visible');
+    } else {
+      cloneField.classList.remove('visible');
+    }
+  });
+}
 </script>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
@@ -394,7 +396,9 @@ function registerTelescopeBoxListeners(context = document) {
       <h5 class="modal-title" id="calendarModalLabel">Datum auswählen</h5>
       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-    <div class="modal-body"></div>
+    <div class="modal-body">
+        <!-- Calendar will be loaded here -->
+    </div>
   </div></div>
 </div>
 
