@@ -624,6 +624,7 @@ class ObservatoryReservation(db.Model):
             self.reservation_max = now + self.reservation_maxtime
             self.reservation_exp = now + self.reservation_time
             self.status = self.Status.RESERVED.name
+        return self
 
     # change observatory - will reset reservation period
     def set_observatory(self, observatory):
@@ -633,3 +634,4 @@ class ObservatoryReservation(db.Model):
             self.reservation_max = now + self.reservation_maxtime
             self.reservation_exp = now + self.reservation_time
             self.status = self.Status.RESERVED.name
+        return self
