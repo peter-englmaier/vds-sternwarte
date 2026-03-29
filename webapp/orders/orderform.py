@@ -44,11 +44,9 @@ def motivation_query():
     return MotivationTypes.query.order_by(MotivationTypes.Motivation).all()
 
 def filterset_query(telescope_id):
-    if telescope_id == 4:
-        x= 8
     return (
         Filterset.query
-        .filter( Filterset.telescope_id == telescope_id)
+        .filter_by(telescope_id=int(telescope_id))
         .order_by(Filterset.name)
         .all()
     )
