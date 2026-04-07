@@ -44,11 +44,13 @@
                     </form>
                 {% endif %}
 
+                <!-- Diesen Teil in Kommentar setzen und hier beschreiben warum das gemacht wurde-->
                 <form method="post" action="{{ url_for('orders.copy_order', order_id=order.id) }}" style="display:inline;">
                   <button type="submit"  class="btn btn-sm btn-success" title="Copy">
                     <i class="bi bi-files"></i>
                   </button>
                 </form>
+                <!-- bis hierhin -->
             </td>
             <td>{{ order.status_label }} 
                 <br>
