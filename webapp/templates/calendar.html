@@ -18,8 +18,10 @@
 
 <h2>Belegungskalender</h2>
 
-<div id="calendar-container" hx-get="{{ url_for('orders.show_calendar', year=year, month=month) }}" hx-trigger="load">
+<div id="calendar-container-modal" hx-target="#calendar-container-modal .modal-body" hx-get="{{ url_for('orders.show_calendar', year=year, month=month) }}" hx-trigger="load">
+  <div class="modal-body">
     <!-- Calendar will be loaded here -->
+  </div>
 </div>
 
 {% endblock content %}
