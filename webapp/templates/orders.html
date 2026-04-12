@@ -44,11 +44,16 @@
                     </form>
                 {% endif %}
 
-                <form method="post" action="{{ url_for('orders.copy_order', order_id=order.id) }}" style="display:inline;">
+                <!-- #92 -->
+                <!-- Wenn Antrag mit Kopierfunktion kopiert wird, Datumsauswahl nicht möglich -->
+                <!-- bis Datumsauswahl möglich, Kopierfunktion in V1 ausblenden -->
+                <!-- Beginn Ausblenden <form method="post" action="{{ url_for('orders.copy_order', order_id=order.id) }}" style="display:inline;">
                   <button type="submit"  class="btn btn-sm btn-success" title="Copy">
                     <i class="bi bi-files"></i>
                   </button>
-                </form>
+                </form> Ende Ausblenden -->
+                <!-- bis hierhin ausblenden -->
+
             </td>
             <td>{{ order.status_label }} 
                 <br>
