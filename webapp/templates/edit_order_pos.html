@@ -1,4 +1,3 @@
-<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 {% extends "layout_no_sidebar.html" %}
 {% block content %}
 
@@ -87,45 +86,47 @@ function registerTelescopeBoxListeners(context = document) {
     });
 }
 
-    // Alle Eingaben pruefen
-    const origInputs = row.querySelectorAll('input, select, textarea');
-    const cloneInputs = clone.querySelectorAll('input, select, textarea');
+function unused() {
+  // Alle Eingaben pruefen
+  const origInputs = row.querySelectorAll('input, select, textarea');
+  const cloneInputs = clone.querySelectorAll('input, select, textarea');
 
-    origInputs.forEach((input, idx) => {
-        const cloneInput = cloneInputs[idx];
-        if (!cloneInput) return;
+  origInputs.forEach((input, idx) => {
+    const cloneInput = cloneInputs[idx];
+    if (!cloneInput) return;
 
-        if (input.type === "checkbox" || input.type === "radio") {
-            cloneInput.checked = input.checked;
-        } else if (input.tagName.toLowerCase() === "select") {
-            cloneInput.selectedIndex = input.selectedIndex;
-        } else {
-            cloneInput.value = input.value;
-        }
-    });
+    if (input.type === "checkbox" || input.type === "radio") {
+      cloneInput.checked = input.checked;
+    } else if (input.tagName.toLowerCase() === "select") {
+      cloneInput.selectedIndex = input.selectedIndex;
+    } else {
+      cloneInput.value = input.value;
+    }
+  });
 
-    // Sichtbarkeitsstatus der expert-field Felder übernehmen
-    const origExpertFields = row.querySelectorAll('.expert-field');
-    const cloneExpertFields = clone.querySelectorAll('.expert-field');
+  // Sichtbarkeitsstatus der expert-field Felder übernehmen
+  const origExpertFields = row.querySelectorAll('.expert-field');
+  const cloneExpertFields = clone.querySelectorAll('.expert-field');
 
-    origExpertFields.forEach((origField, idx) => {
-        const cloneField = cloneExpertFields[idx];
-        if (!cloneField) return;
+  origExpertFields.forEach((origField, idx) => {
+    const cloneField = cloneExpertFields[idx];
+    if (!cloneField) return;
 
-        // Sichtbarkeitsbereich aktualisieren
-        if (origField.classList.contains('visible')) {
-            cloneField.classList.add('visible');
-        } else {
-            cloneField.classList.remove('visible');
-        }
-    });
+    // Sichtbarkeitsbereich aktualisieren
+    if (origField.classList.contains('visible')) {
+      cloneField.classList.add('visible');
+    } else {
+      cloneField.classList.remove('visible');
+    }
+  });
+}
 </script>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
 
 <form id="edit-pos-form" method="post"
       action="{{ url_for('orders.edit_order_pos', order_id=order_id) }}"
-      hx-disable="true">
+>
   {{ form.hidden_tag() }}
 
   {% if current_user.is_authenticated %}
@@ -161,11 +162,14 @@ function registerTelescopeBoxListeners(context = document) {
           <span id="selected_date_display">
             {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
           </span>
-          <button type="button" class="btn btn-sm btn-outline-secondary"
-                  hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
+          <button type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  hx-get="{{ url_for('orders.show_calendar', year=form.head.request_date.data.year, month=form.head.request_date.data.month, picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
                   hx-target="#calendar-container-modal .modal-body"
                   hx-swap="innerHTML"
-                  data-bs-toggle="modal" data-bs-target="#calendar-container-modal">
+                  hx-validate="true"
+                  data-bs-toggle="modal"
+                  data-bs-target="#calendar-container-modal">
             Kalender
           </button>
         </td>
@@ -356,9 +360,11 @@ function registerTelescopeBoxListeners(context = document) {
     Beantragung abschicken
   </button>
 
+  {#
   <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
     Überprüfen
   </button>
+  #}
 
   <button id="coord-btn" type="submit" class="btn" name="action" value="resolve_coordinates"
           style="background-color:#f00000; color:white;">
@@ -372,6 +378,7 @@ function registerTelescopeBoxListeners(context = document) {
 
 </form>
 
+{#
 <!-- Modal  -->
 <div class="modal fade" id="checkPopup" tabindex="-1" aria-labelledby="checkPopupLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -387,6 +394,7 @@ function registerTelescopeBoxListeners(context = document) {
     </div>
   </div>
 </div>
+#}
 
 <!-- Kalender-Modal -->
 <div class="modal fade" id="calendar-container-modal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
@@ -395,7 +403,9 @@ function registerTelescopeBoxListeners(context = document) {
       <h5 class="modal-title" id="calendarModalLabel">Datum auswählen</h5>
       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-    <div class="modal-body"></div>
+    <div class="modal-body">
+        <!-- Calendar will be loaded here -->
+    </div>
   </div></div>
 </div>
 
@@ -903,5 +913,6 @@ function renumberRowsInAllBlocks() {
   });
 })();
 </script>
+
 
 {% endblock content %}
