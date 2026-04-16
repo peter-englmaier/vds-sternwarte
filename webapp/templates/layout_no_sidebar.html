@@ -35,9 +35,11 @@
                     <div class="collapse navbar-collapse" id="navbarToggle">
                         <div class="navbar-nav me-auto">                                                       
                             {% if current_user.is_authenticated %}
+                            {% if current_user.is_authenticated and current_user.has_role("user") %}
                             <a class="nav-item nav-link" href="{{ url_for('orders.show_orders') }}">Antrag</a>
                             <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
-                               
+                            {% endif %}
+                                                           
                                 {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER) %}
                                 <!-- Menü -->
   <div class="dropdown ms-2">
