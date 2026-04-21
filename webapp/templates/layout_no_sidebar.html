@@ -36,9 +36,17 @@
                         <div class="navbar-nav me-auto">                                                       
                             {% if current_user.is_authenticated %}
                             <a class="nav-item nav-link" href="{{ url_for('orders.show_orders') }}">Antrag</a>
-                            <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
+                            <!-- #96 -->
+                            <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
+                            <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
+                            <!-- <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a> -->
                                
                                 {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER) %}
+                                <!-- #96 -->
+                                <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
+                                <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
+                                <!-- daher hier eingefügt--> 
+                                <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
                                 <!-- Menü -->
   <div class="dropdown ms-2">
     <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -51,6 +59,11 @@
   </div>
                                 {% endif %}
                                 {% if current_user.has_role(CONSTANTS.USER_ROLE_APPROVER) %}
+                                <!-- #96 -->
+                                <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
+                                <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
+                                <!-- daher hier eingefügt--> 
+                                <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
                                          <!-- Menü -->         
   <div class="dropdown ms-2">
     <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
