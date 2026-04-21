@@ -1,45 +1,52 @@
 {% extends "layout_no_sidebar.html" %}
 {% block content %}
     <h1>Approver</h1>
-<!-- Bearbeitung #94 -->
+<!-- Bearbeitung #84 -->
 {% if current_user.is_authenticated %}
 <p>
     <span style="margin-right:50px;">
         Genehmiger: {{current_user.firstname}} {{current_user.surname}}
     </span>
-        Zum Genemigen stehen {{orders|length}} Beobachtungsanträge an.
+        Zum Genehmigen stehen {{orders|length}} Beobachtungsanträge an.
 </p>
     <p><a class="btn btn-primary" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
 
 {% if orders|length > 0 %}
 
+    {# Grundebene Festlegung der Statusvarianten #}
+    {% set orders_created = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_CREATED) | list %}
+    {% set orders_approved_open = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_APPROVED) | rejectattr('request_poweruser_id') | list %}
+    {% set orders_pu_assigned = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_ASSIGNED) | list %}
+
+    {# -------------------- ABGESCHICKT -------------------- #}
+    <h3>Abgeschickt</h3>
+    {% if orders_created|length > 0 %}
+
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <th>Aktion</th>
-            <th>Poweruserauswahl</th>
+            <th>Aktion</th>            
             <th>Status</th>
             <th>Datum</th>
             <th>Beteiligte</th>
-            <th>Observatorium</th>
-            <!-- <th>Motivation</th> -->
+            <th>Observatorium</th>            
             <th>Wunsch Poweruser</th>
             <th>Type</th>
             <th>Anmerkungen</th>
         </tr>
     </thead>
     <tbody>
-    {% for order in orders %}
+    {% for order in orders_created %}
         <tr>
             <td>
                 <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}" class="btn btn-sm btn-secondary" title="Show">
                     <i class="bi bi-eye"></i>
                 </a>
-                {% if order.status != CONSTANTS.ORDER_STATUS_CREATED %}
+                
                     <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}" class="btn btn-sm btn-primary" title="Edit">
                         <i class="bi bi-pencil"></i>
                     </a>                    
-                {% endif %}
+                
                  <form method="post" action="{{ url_for('orders.approve_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Du willst diesen genehmigen?');">
                       <button type="submit" class="btn btn-sm btn-success" title="Genehmingen">
                       <i class="bi bi-hand-thumbs-up-fill"></i>
@@ -51,59 +58,12 @@
                       </button>
                     </form>                   
             </td>
-            <td>
-  {% set meldungen = pu_meldungen_by_order.get(order.id, []) %}
-
-  {% if meldungen|length == 0 %}
-    <span class="text-muted">Keine Rückmeldungen</span>
-  {% else %}
-  <div id="pu-select-{{ order.id }}" class="d-flex flex-column gap-1">
-
-    {% for m in meldungen %}
-      <label class="d-flex align-items-center gap-2">
-<input type="radio"
-       name="poweruser_user_id"
-       value="{{ m.user_id }}"
-       class="form-check-input">
-
-        <span>{{ m.name }}</span>
-
-        {% if m.availability == 1 %}
-          <span class="badge bg-success">Möglich</span>
-        {% elif m.availability == 2 %}
-          <span class="badge bg-warning text-dark">Vielleicht</span>
-        {% elif m.availability == 3 %}
-          <span class="badge bg-danger">Nein</span>
-        {% else %}
-          <span class="badge bg-secondary">?</span>
-        {% endif %}
-      </label>
-    {% endfor %}
-
-<span id="pu-assign-slot-{{ order.id }}">
-  <button id="pu-assign-btn-{{ order.id }}"
-          type="button"
-          class="btn btn-sm btn-outline-primary mt-1"
-          hx-post="{{ url_for('orders.approver_assign_poweruser') }}"
-          hx-include="#pu-select-{{ order.id }} input, #order-id-{{ order.id }}"
-          hx-target="#pu-assign-slot-{{ order.id }}"
-          hx-swap="outerHTML">
-    Poweruser zuweisen
-  </button>
-</span>
-
-<input type="hidden" id="order-id-{{ order.id }}" name="order_id" value="{{ order.id }}">
-
-  </div>
-{% endif %}
-</td>
-            <td>
-            {{ order.status_label }}     
-    <br>
-    Zugewiesen:
-    <span class="badge bg-info text-dark">
-      {{ order.poweruser_display_name or "-" }}
-    </span>
+            <td> 
+    <span class="badge bg-secondary">Abgeschickt</span><br>
+                    Zugewiesen:
+                    <span class="badge bg-info text-dark">
+                        {{ order.poweruser_display_name or "-" }}
+                    </span>
 </td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
@@ -116,8 +76,176 @@
     {% endfor %}
     </tbody>
 </table>
-{% endif %}
-<br>
+{% else %}
+        <p class="text-muted">Keine Anträge mit Status „Abgeschickt“.</p>
+    {% endif %}
+
+    <br>
+
+    {# wenn genehmigt: Zuweisung noch nicht erfolgt #}
+    <h3>Genehmigt – Zuweisung offen</h3>
+    {% if orders_approved_open|length > 0 %}
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Aktion</th>
+                <th>Poweruserauswahl</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th>Beteiligte</th>
+                <th>Observatorium</th>
+                <th>Wunsch Poweruser</th>
+                <th>Type</th>
+                <th>Anmerkungen</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for order in orders_approved_open %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
+                       class="btn btn-sm btn-secondary" title="Show">
+                        <i class="bi bi-eye"></i>
+                    </a>
+
+                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}"
+                       class="btn btn-sm btn-primary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+
+                    <form method="post"
+                          action="{{ url_for('orders.reject_order', order_id=order.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Du willst diesen Antrag ablehnen?');">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Ablehnen">
+                            <i class="bi bi-hand-thumbs-down"></i>
+                        </button>
+                    </form>
+                </td>
+
+                <td>
+                    {% set meldungen = pu_meldungen_by_order.get(order.id, []) %}
+
+                    {% if meldungen|length == 0 %}
+                        <span class="text-muted">Keine Rückmeldungen</span>
+                    {% else %}
+                    <div id="pu-select-{{ order.id }}" class="d-flex flex-column gap-1">
+
+                        {% for m in meldungen %}
+                            <label class="d-flex align-items-center gap-2">
+                                <input type="radio"
+                                       name="poweruser_user_id"
+                                       value="{{ m.user_id }}"
+                                       class="form-check-input">
+
+                                <span>{{ m.name }}</span>
+
+                                {% if m.availability == 1 %}
+                                    <span class="badge bg-success">Möglich</span>
+                                {% elif m.availability == 2 %}
+                                    <span class="badge bg-warning text-dark">Vielleicht</span>
+                                {% elif m.availability == 3 %}
+                                    <span class="badge bg-danger">Nein</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">?</span>
+                                {% endif %}
+                            </label>
+                        {% endfor %}
+
+                        <span id="pu-assign-slot-{{ order.id }}">
+                            <button id="pu-assign-btn-{{ order.id }}"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-primary mt-1"
+                                    hx-post="{{ url_for('orders.approver_assign_poweruser') }}"
+                                    hx-include="#pu-select-{{ order.id }} input, #order-id-{{ order.id }}"
+                                    hx-target="#pu-assign-slot-{{ order.id }}"
+                                    hx-swap="outerHTML">
+                                <i class="bi bi-person-arms-up"></i> Poweruser zuweisen
+                            </button>
+                        </span>
+
+                        <input type="hidden" id="order-id-{{ order.id }}" name="order_id" value="{{ order.id }}">
+                    </div>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <span class="badge bg-success">Genehmigt – Zuweisung offen</span><br>
+                    Zugewiesen:
+                    <span class="badge bg-info text-dark">
+                        {{ order.poweruser_display_name or "-" }}
+                    </span>
+                </td>
+
+                <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
+                <td>{{ order.name }}</td>
+                <td>{{ order.observatory_name }}</td>
+                <td>{{ order.poweruser_name if order.poweruser_name else '-' }}</td>
+                <td>{{ order.request_type }}</td>
+                <td>{{ order.remark }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-muted">Keine Anträge mit Status „Genehmigt – Zuweisung offen“.</p>
+    {% endif %}
+
+    <br>
+
+    {# Poweruser ist zugewiesen #}
+    <h3>PU zugewiesen</h3>
+    {% if orders_pu_assigned|length > 0 %}
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Aktion</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th>Beteiligte</th>
+                <th>Observatorium</th>
+                <th>Wunsch Poweruser</th>
+                <th>Type</th>
+                <th>Anmerkungen</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for order in orders_pu_assigned %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
+                       class="btn btn-sm btn-secondary" title="Show">
+                        <i class="bi bi-eye"></i>
+                    </a>
+
+                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}"
+                       class="btn btn-sm btn-primary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </td>
+
+                <td>
+                    <span class="badge bg-primary">PU zugewiesen</span><br>
+                    Zugewiesen:
+                    <span class="badge bg-info text-dark">
+                        {{ order.poweruser_display_name or "-" }}
+                    </span>
+                </td>
+
+                <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
+                <td>{{ order.name }}</td>
+                <td>{{ order.observatory_name }}</td>
+                <td>{{ order.poweruser_name if order.poweruser_name else '-' }}</td>
+                <td>{{ order.request_type }}</td>
+                <td>{{ order.remark }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="text-muted">Keine Anträge mit Status „PU zugewiesen“.</p>
+    {% endif %}
+  {% endif %}
 
 <form method="post" action="{{ url_for('main.poweruser') }}">
 
