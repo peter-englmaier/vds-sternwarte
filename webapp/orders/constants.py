@@ -8,6 +8,7 @@ ORDER_STATUS_APPROVED = '2'       # Anfrage ist akzeptiert
 ORDER_STATUS_REJECTED = '3'       # Anfrage ist abgelehnt
 ORDER_STATUS_PU_ASSIGNED = '4'    # Anfrage ist Poweruser zugewiesen
 ORDER_STATUS_PU_ACCEPTED = '5'    # Poweruser hat Anfrage akzeptiert
+ORDER_STATUS_PU_ACTION_REQUIRED = 'pu_action' # Poweruser kann nachtr. die Betreeung nicht wahrnehmen
 ORDER_STATUS_PU_REJECTED = '6'    # Poweruser hat Anfrage abgelehnt
 ORDER_STATUS_CONFIRMED = '7'      # User ist benachrichtigt
 ORDER_STATUS_CANCELLED = '8'      # Anfrage ist storniert

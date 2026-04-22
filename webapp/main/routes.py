@@ -6,10 +6,11 @@ from flask_login import current_user
 from webapp.main import main
 from webapp.model.db import db, Post, SystemParameters, ObservationRequest, PoweruserMeldung, User, Group
 from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_ROLE_USER, USER_ROLE_GUEST,ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
-    ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
+    ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_ACTION_REQUIRED
 from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
 from sqlalchemy.exc import IntegrityError
 from collections import defaultdict
+from sqlalchemy import case
 
 @main.route("/")
 @main.route("/home")
@@ -110,7 +111,14 @@ def approver():
 
     all_orders = (
         ObservationRequest.query
-        .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED]))
+        .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED, ORDER_STATUS_PU_ACTION_REQUIRED]))
+        .order_by(
+        case(
+            (ObservationRequest.status == ORDER_STATUS_PU_ACTION_REQUIRED, 0),
+            else_=1
+        ),
+        ObservationRequest.id.desc()
+    )
         .all()
     )
     for order in all_orders:

@@ -30,6 +30,7 @@ from .constants import (
     ORDER_STATUS_WAITING,
     ORDER_STATUS_PU_ACCEPTED,
     ORDER_STATUS_REJECTED,
+    ORDER_STATUS_PU_ACTION_REQUIRED,
     USER_ROLE_ADMIN,
     ORDER_STATUS_APPROVED,
     ORDER_STATUS_PU_ASSIGNED,
@@ -634,6 +635,31 @@ def approver_assign_poweruser():
   </button>
 </span>
 """
+
+# --------------------------------------------------------------------
+# Termin kann nicht wahrgenommen werden
+# --------------------------------------------------------------------
+
+@orders.route("/poweruser/cannot_take_order", methods=["POST"])
+@login_required
+def poweruser_cannot_take_order():
+    order_id = int(request.form["order_id"])
+    note = request.form.get("poweruser_note", "").strip()
+
+    order = ObservationRequest.query.get_or_404(order_id)
+
+    # nur der zugewiesene Poweruser darf den Antrag zurückgeben
+    if order.request_poweruser_id != current_user.id:
+        abort(403)
+
+    order.status = ORDER_STATUS_PU_ACTION_REQUIRED
+    order.poweruser_feedback = note
+    order.poweruser_feedback_at = datetime.utcnow()
+
+    db.session.commit()
+
+    flash("Der Antrag wurde an den Genehmiger zur erneuten Bearbeitung zurückgegeben.", "warning")
+    return redirect(url_for("main.poweruser"))
 
 # --------------------------------------------------------------------
 # Der Kontrolleur (Approver) weist Antrag zurück

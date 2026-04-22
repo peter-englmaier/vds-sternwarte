@@ -13,6 +13,15 @@
 
 {% if orders|length > 0 %}
 
+{% if order.status == ORDER_STATUS_PU_ACTION_REQUIRED %}
+    <span class="badge bg-danger">Action required</span>
+    {% if order.poweruser_feedback %}
+        <div class="small text-muted mt-1">
+            Rückmeldung Poweruser: {{ order.poweruser_feedback }}
+        </div>
+    {% endif %}
+{% endif %}
+
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
