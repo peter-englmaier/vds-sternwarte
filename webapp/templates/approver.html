@@ -7,7 +7,7 @@
     <span style="margin-right:50px;">
         Genehmiger: {{current_user.firstname}} {{current_user.surname}}
     </span>
-        Zum Genehmigen stehen {{orders|length}} Beobachtungsanträge an.
+        Aktuell gibt es {{orders|length}} Beobachtungsanträge.
 </p>
     <p><a class="btn btn-primary" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
 
@@ -19,7 +19,7 @@
     {% set orders_pu_assigned = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_ASSIGNED) | list %}
 
     {# -------------------- ABGESCHICKT -------------------- #}
-    <h3>Abgeschickt</h3>
+    <h3>von FG Mitglied an Approver abgeschickt</h3>
     {% if orders_created|length > 0 %}
 
 <table class="table table-bordered table-striped table-hover">
