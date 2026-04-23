@@ -825,3 +825,50 @@ def show_calendar():
         target_id=target_id,
         display_id=display_id,
     )
+
+# --------------------------------------------------------------------
+# Observation Requests Gesamt
+# --------------------------------------------------------------------
+
+@orders.route("/obs_requests")
+@login_required
+def obs_request_complete():
+    orders = ObservationRequest.query.order_by(ObservationRequest.id.desc()).all()
+
+    for order in orders:
+        # Status-Label
+        order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+
+        # Poweruser-Anzeige
+        order.display_poweruser_name = "-"
+        if order.request_poweruser_id:
+            pwuser = User.query.get(order.request_poweruser_id)
+            if pwuser:
+                full_name = f"{pwuser.firstname or ''} {pwuser.surname or ''}".strip()
+                order.display_poweruser_name = full_name if full_name else pwuser.name
+
+        # Observatorium-Anzeige
+        order.display_observatory_name = "-"
+        if order.request_observatory_id:
+            observatory = Observatory.query.get(order.request_observatory_id)
+            if observatory:
+                order.display_observatory_name = observatory.name
+
+        # Antragsteller-Anzeige
+        order.display_requester_name = order.name if order.name else "-"
+        if not order.display_requester_name and order.user_id:
+            user = User.query.get(order.user_id)
+            if user:
+                full_name = f"{user.firstname or ''} {user.surname or ''}".strip()
+                order.display_requester_name = full_name if full_name else user.name
+
+    return render_template(
+        "obs_request_complete.html",
+        orders=orders,
+        ORDER_STATUS_CREATED=ORDER_STATUS_CREATED,
+        ORDER_STATUS_WAITING=ORDER_STATUS_WAITING,
+        ORDER_STATUS_APPROVED=ORDER_STATUS_APPROVED,
+        ORDER_STATUS_REJECTED=ORDER_STATUS_REJECTED,
+        ORDER_STATUS_PU_ASSIGNED=ORDER_STATUS_PU_ASSIGNED,
+        ORDER_STATUS_PU_ACCEPTED=ORDER_STATUS_PU_ACCEPTED,
+    )

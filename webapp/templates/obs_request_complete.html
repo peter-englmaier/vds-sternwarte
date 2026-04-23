@@ -1,0 +1,92 @@
+{% extends "layout_no_sidebar.html" %}
+{% block content %}
+
+<h1>Gesamtliste der Beobachtungsanträge</h1>
+
+{% if orders|length > 0 %}
+
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Aktion</th>
+            <th>Status</th>
+            <th>Datum</th>
+            <th>Beteiligte</th>
+            <th>Observatorium</th>
+            <th>Wunsch Poweruser</th>
+            <th>Type</th>
+            <th>Anmerkungen</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+        <tr>
+            <td>
+                <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
+                   class="btn btn-sm btn-secondary" title="Show">
+                    <i class="bi bi-eye"></i>
+                </a>
+
+                <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}"
+                   class="btn btn-sm btn-primary" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </a>
+
+                <form method="post"
+                      action="{{ url_for('orders.approve_order', order_id=order.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('Du willst diesen genehmigen?');">
+                    <button type="submit" class="btn btn-sm btn-success" title="Genehmigen">
+                        <i class="bi bi-hand-thumbs-up-fill"></i>
+                    </button>
+                </form>
+
+                <form method="post"
+                      action="{{ url_for('orders.reject_order', order_id=order.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('Du willst diesen Antrag zurückweisen?');">
+                    <button type="submit" class="btn btn-sm btn-danger" title="Ablehnen">
+                        <i class="bi bi-hand-thumbs-down"></i>
+                    </button>
+                </form>
+            </td>
+
+            <td>
+                {% if order.status == ORDER_STATUS_CREATED %}
+                    <span class="badge bg-secondary">Erstellt</span>
+                {% elif order.status == ORDER_STATUS_WAITING %}
+                    <span class="badge bg-warning text-dark">Wartet</span>
+                {% elif order.status == ORDER_STATUS_APPROVED %}
+                    <span class="badge bg-success">Genehmigt</span>
+                {% elif order.status == ORDER_STATUS_REJECTED %}
+                    <span class="badge bg-danger">Abgelehnt</span>
+                {% elif order.status == ORDER_STATUS_PU_ASSIGNED %}
+                    <span class="badge bg-info text-dark">PU zugewiesen</span>
+                {% elif order.status == ORDER_STATUS_PU_ACCEPTED %}
+                    <span class="badge bg-primary">PU angenommen</span>
+                {% else %}
+                    <span class="badge bg-dark">{{ order.status_label }}</span>
+                {% endif %}
+                <br>
+                Zugewiesen:
+                <span class="badge bg-info text-dark">
+                    {{ order.display_poweruser_name or "-" }}
+                </span>
+            </td>
+
+            <td>{{ order.request_date.strftime('%d.%m.%Y') if order.request_date else '-' }}</td>
+            <td>{{ order.display_requester_name or '-' }}</td>
+            <td>{{ order.display_observatory_name or '-' }}</td>
+            <td>{{ order.display_poweruser_name or '-' }}</td>
+            <td>{{ order.request_type or '-' }}</td>
+            <td>{{ order.remark or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>Keine Anträge vorhanden.</p>
+{% endif %}
+
+{% endblock content %}
