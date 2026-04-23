@@ -7,10 +7,16 @@
     <span style="margin-right:50px;">
         Genehmiger: {{current_user.firstname}} {{current_user.surname}}
     </span>
-        Aktuell gibt es {{orders|length}} Beobachtungsanträge.
 </p>
     <p><a class="btn btn-primary" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
-
+<p>
+    <span style="margin-right:50px;">
+        Insgesamt gibt es 
+        <a href="{{ url_for('orders.obs_request_complete') }}">
+            {{ orders|length }} Beobachtungsanträge
+        </a>.
+    </span>
+</p>
 {% if orders|length > 0 %}
 
     {# Grundebene Festlegung der Statusvarianten #}
