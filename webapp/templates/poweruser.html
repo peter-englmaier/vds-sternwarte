@@ -54,10 +54,7 @@
   <option value="3" {% if order.my_pu_meldung_availability == 3 %}selected{% endif %}>Nicht möglich</option>
 </select>
 
-<form method="post" action="{{ url_for('orders.poweruser_cannot_take_order') }}">
-    <input type="hidden" name="order_id" value="{{ order.id }}">
-    <textarea name="poweruser_note" class="form-control"
-              placeholder="Optionaler Hinweis für den Genehmiger"></textarea>
+<form method="post" action="{{ url_for('orders.poweruser_cannot_take_order') }}">    
     <button type="submit" class="btn btn-warning mt-2">
         Kann Termin nicht wahrnehmen
     </button>
