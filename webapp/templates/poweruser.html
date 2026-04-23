@@ -54,6 +54,12 @@
   <option value="3" {% if order.my_pu_meldung_availability == 3 %}selected{% endif %}>Nicht möglich</option>
 </select>
 
+<form method="post" action="{{ url_for('orders.poweruser_cannot_take_order') }}">    
+    <button type="submit" class="btn btn-warning mt-2">
+        Kann Termin nicht wahrnehmen
+    </button>
+</form>
+
 <button type="button" class="btn btn-sm btn-outline-primary"
         hx-post="{{ url_for('main.poweruser') }}"
         hx-include="#action-{{ order.id }},#order-{{ order.id }},#availability-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
