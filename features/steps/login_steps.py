@@ -25,7 +25,7 @@ def login_user(context,user,password):
 
 @when(u'I enter the admin credentials')
 def login_admin(context):
-    login_user(context, context.config.ADMIN_USER, context.config.ADMIN_PASSWORD)
+    login_user(context, context.app_config.ADMIN_USER, context.app_config.ADMIN_PASSWORD)
 
 @then(u'I am logged in')
 def i_am_logged_in(context):
