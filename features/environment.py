@@ -1,19 +1,25 @@
 # features/environment.py
-use_selenium = True
+webserver_port = 5123 # use this port for the test web server
 
 from behave import fixture, use_fixture
-from webapp.config import Config
 
-
-# ---------------------------------------------------------------------------
-# Selenium setup (used for scenarios WITHOUT the @db tag)
-# ---------------------------------------------------------------------------
-if use_selenium:
-    from selenium import webdriver
-
+import threading
+from wsgiref import simple_server
+from wsgiref.simple_server import WSGIRequestHandler
 
 # ---------------------------------------------------------------------------
-# Flask test-client config (used for scenarios tagged @db)
+# Selenium browser setup
+# ---------------------------------------------------------------------------
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument('--no-proxy-server')
+chrome_options.add_argument("--proxy-server='direct://'")
+chrome_options.add_argument("--proxy-bypass-list=*")
+
+# ---------------------------------------------------------------------------
+# Flask test-client config
 # ---------------------------------------------------------------------------
 class TestConfig:
     SECRET_KEY = 'test-secret-key-for-behave'
@@ -39,11 +45,13 @@ class TestConfig:
     ADMIN_PASSWORD = 'TestAdmin1!'
 
 
+# ---------------------------------------------------------------------------
+# Startup web server on port 5123 with in-memory db and browser
+# ---------------------------------------------------------------------------
 def before_all(context):
-    # Selenium driver for non-@db scenarios
-    if use_selenium:
-        context.driver = webdriver.Chrome()
-        context.app_config = Config()
+    context.driver = webdriver.Chrome(options=chrome_options)
+    context.driver.implicitly_wait(1) # Always wait up to this amount of seconds when searching an element
+    context.app_config = TestConfig()
 
     # Flask test app — created ONCE to avoid duplicate blueprint registration
     # (Flask-Admin's module-level Admin() singleton accumulates views on each
@@ -51,32 +59,35 @@ def before_all(context):
     from webapp import create_app, db as _db
     context._flask_app = create_app(TestConfig)
     context._flask_db = _db
+    # start server
+    context.server = simple_server.WSGIServer(("localhost", webserver_port), WSGIRequestHandler)
+    context.server.set_app(context._flask_app)
+    context.pa_app = threading.Thread(target=context.server.serve_forever)
+    context.pa_app.start()
 
 
 def after_all(context):
-    if use_selenium:
-        try:
-            context.driver.quit()
-        except Exception:
-            pass
-
+    try:
+        context.driver.quit()
+    except Exception:
+        pass
+    context.server.shutdown()
+    context.pa_app.join()
 
 def before_scenario(context, scenario):
-    if 'db' in scenario.effective_tags:
-        # Push an app context that stays alive for the whole scenario so that
-        # step code can use db.session directly without extra context managers.
-        context._app_ctx = context._flask_app.app_context()
-        context._app_ctx.push()
-        context._flask_db.create_all()
-        # Populate roles and groups (user_group, admin_group, etc.) so
-        # fixture steps can assign users to groups.
-        from webapp.users.setup_users import setup_users
-        setup_users()
-        context.client = context._flask_app.test_client()
+    # Push an app context that stays alive for the whole scenario so that
+    # step code can use db.session directly without extra context managers.
+    context._app_ctx = context._flask_app.app_context()
+    context._app_ctx.push()
+    context._flask_db.create_all()
+    # Populate roles and groups (user_group, admin_group, etc.) so
+    # fixture steps can assign users to groups.
+    from webapp.users.setup_users import setup_users
+    setup_users()
+    context.client = context._flask_app.test_client()
 
 
 def after_scenario(context, scenario):
-    if 'db' in scenario.effective_tags:
-        context._flask_db.session.remove()
-        context._flask_db.drop_all()
-        context._app_ctx.pop()
+    context._flask_db.session.remove()
+    context._flask_db.drop_all()
+    context._app_ctx.pop()
