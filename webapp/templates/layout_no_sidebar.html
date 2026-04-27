@@ -34,7 +34,7 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarToggle">
                         <div class="navbar-nav me-auto">                                                       
-                            {% if current_user.is_authenticated %}
+                            {% if current_user.is_authenticated  and current_user.has_role("user") %}
                             <a class="nav-item nav-link" href="{{ url_for('orders.show_orders') }}">Antrag</a>
                             <!-- #96 -->
                             <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
