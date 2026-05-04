@@ -8,6 +8,7 @@
     <!-- jQuery first, then Bootstrap JS -->
     <link href="{{ url_for('static', filename='bootstrap-5.3.3.min.css')}}" rel="stylesheet" integrity="sha384-J7XvR9bYiQw3uAsOM+Fb6h8cviYhGfsktO93j9pyeHxh69xwDyB0VYmszxrzafbC" crossorigin="anonymous">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons/font/bootstrap-icons.css') }}">
     <script defer src="{{ url_for('static', filename='htmx-2.0.3.min.js') }}"></script>
     <script defer src="{{ url_for('static', filename='jquery-3.2.1.slim.min.js') }}" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script defer src="{{ url_for('static', filename='bootstrap.bundle-5.3.3.min.js') }}" integrity="sha384-5FgqaIraNQm5MiWvLwoH1jzRCUDttx0J35wHBQRUt37DNCv+XDWYJVYdri0f/Qfa" crossorigin="anonymous"></script>
@@ -25,30 +26,28 @@
         <header class="site-header">
             <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
                 <div class="container">
-                     <a class="navbar-brand d-flex align-items-center" href="/"><img src="https://sternfreunde.de/wp-content/uploads/2021/12/REMOTE-STERNWARTEN-FG-LOGO.jpg" alt="{{ g.site_title }}" height="55" class="me-2 rounded">      
-    </a>
+                    <a class="navbar-brand d-flex align-items-center" href="/"><img src="https://sternfreunde.de/wp-content/uploads/2021/12/REMOTE-STERNWARTEN-FG-LOGO.jpg" alt="{{ g.site_title }}" height="55" class="me-2 rounded">      
+    </a>                    
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle"
                             aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarToggle">
-                        <div class="navbar-nav me-auto align-items-center gap-2">                                                       
-                            {% if current_user.is_authenticated %}
-                            {% if current_user.is_authenticated and current_user.has_role("user") %}
+                        <div class="navbar-nav me-auto">                                                       
+                            {% if current_user.is_authenticated  and current_user.has_role("user") %}
                             <a class="nav-item nav-link" href="{{ url_for('orders.show_orders') }}">Antrag</a>
                             <!-- #96 -->
                             <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
                             <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
                             <!-- <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a> -->
-                            {% endif %}                   
-                                
-                                    {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER) %}
+                               
+                                {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER) %}
                                 <!-- #96 -->
                                 <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
                                 <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
                                 <!-- daher hier eingefügt--> 
                                 <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
-<!-- Menü -->
+                                <!-- Menü -->
   <div class="dropdown ms-2">
     <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
     Poweruser
@@ -57,16 +56,15 @@
       <li><a class="nav-item nav-link" href="{{ url_for('main.poweruser') }}">Beantragungsliste</a><li>                                
       <li><a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">Neuigkeiten ver&ouml;ffentlichen</a></li>      
     </ul>
-  </div>                         
-                                         
-                                    {% endif %}
-                                    {% if current_user.has_role(CONSTANTS.USER_ROLE_APPROVER) %}
+  </div>
+                                {% endif %}
+                                {% if current_user.has_role(CONSTANTS.USER_ROLE_APPROVER) %}
                                 <!-- #96 -->
                                 <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
                                 <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
                                 <!-- daher hier eingefügt--> 
                                 <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
-<!-- Menü -->         
+                                         <!-- Menü -->         
   <div class="dropdown ms-2">
     <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
     Genehmiger
@@ -75,14 +73,12 @@
       <li><a class="nav-item nav-link" href="{{ url_for('main.approver') }}">Approve</a></li>
       <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.fgrequest') }}">FG Antrag</a><li>
       <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a></a></li>
-      <li><a class="dropdown-item" href="{{ url_for('main.gast') }}">Neuregistrierungen</a></li>
+      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.gast') }}">Neuregistrierungen</a></a></li>
     </ul>
-  </div>                                         
-                                    {% endif %}
-                                                                
-                                                                
-                                {% if current_user.has_role("admin") %}
-<!-- Menü -->
+  </div>   
+                                {% endif %}
+                                 {% if current_user.has_role("admin") %}
+                                   <!-- Menü -->
   <div class="dropdown ms-2">
     <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
     Admin & Programmierteam
@@ -91,10 +87,10 @@
       <li><a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a></li>
       <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.fgrequest') }}">FG Antrag</a><li>                                
       <li><a class="dropdown-item" href="#"> <a class="nav-item nav-link" href="{{ url_for('main.servicerequest') }}">Wartung Antrag</a></a></li>
-      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a></a></li>
+      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a></a></li>      
     </ul>
-  </div>                              
-                                {% endif %}
+  </div>          
+                                {% endif %}                                
                             {% endif %}
 
                         </div>
@@ -163,12 +159,9 @@
                 </div>
             </nav>
         </header>
-        <!--
-        <main role="main" class="container"> -->
-            <br>                                         
-               <div class="col-md-12">
-                        <h3 class="text-center mt-0">Aktuelles</h3>
-                        <p class="text-muted text-center mt-0">Hier findet Ihr alle Neuigkeiten:                        
+        <main role="main" class="container mt-5 pt-5">
+            <div class="row">
+                <div class="col-md-12">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             {% for category, message in messages %}
@@ -180,7 +173,7 @@
                     {% endwith %}
                     {% block content %}{% endblock %}
                 </div>
-                </div>            
+            </div>
         </main>
     </body>
 </html>
