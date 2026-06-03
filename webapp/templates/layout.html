@@ -98,10 +98,14 @@
                         <div class="navbar-nav ms-auto">
                             {% if current_user.is_authenticated %}
                                 <a class="nav-item nav-link" href="{{ url_for('main.faq') }}">FAQ</a>
+                                <!-- issue #116 About in Menüleiste -->
+                                <a class="nav-item nav-link" href="{{ url_for('main.about') }}">About</a>
                                 <a class="nav-item nav-link" href="{{ url_for('users.account') }}">Profil</a>
                                 <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Abmelden</a>
                             {% else %}
                                 <a class="nav-item nav-link" href="{{ url_for('main.faq') }}">FAQ</a>
+                                <!-- issue #116 About in Menüleiste -->
+                                <a class="nav-item nav-link" href="{{ url_for('main.about') }}">About</a>
                                 <a class="nav-item nav-link" href="{{ url_for('users.login') }}">Anmelden</a>
                                 <a class="nav-item nav-link" href="{{ url_for('users.register') }}">Registrieren</a>
                             {% endif %}

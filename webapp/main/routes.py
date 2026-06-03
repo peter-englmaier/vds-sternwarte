@@ -177,6 +177,16 @@ def faq():
         vds_link = "#"
     return render_template('faq.html', title='FAQ', vds_link=vds_link)
 
+# issue #116 About in Menüleiste
+@main.route("/about")
+def about():
+    vds_link = SystemParameters.query.filter_by(parameter='vds_link').first()
+    if vds_link:
+        vds_link = vds_link.value
+    else:
+        vds_link = "#"
+    return render_template('about.html', title='About', vds_link=vds_link)
+
 @main.route("/status")
 def status():
     from flask import session
