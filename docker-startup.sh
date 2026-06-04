@@ -4,6 +4,7 @@ export FLASK_APP=prod.py
 # Make sure, parameters are set either true or false
 [ -z "$RUNFLASK" ] && RUNFLASK=true
 [ -z "$RUNCELERY" ] && RUNCELERY=true
+[ -z "$RUNBEAT" ] && RUNBEAT=true
 
 if [  "$RUNFLASK" != "true" -a "$RUNFLASK" != "false" ]; then
   echo "WRONG PARAMETER RUNFLASK=$RUNFLASK"
@@ -15,12 +16,22 @@ if [  "$RUNCELERY" != "true" -a "$RUNCELERY" != "false" ]; then
   exit 1
 fi
 
+
 if $RUNCELERY; then
-  echo "Run celery"
+  echo "Run celery worker"
   if $RUNFLASK; then #run in background
     celery -A make_celery worker -l info &
   else
     exec celery -A make_celery worker -l info
+  fi
+fi
+
+if $RUNBEAT; then
+  echo "Run celery beat"
+  if $RUNFLASK; then #run in background
+    celery -A make_celery beat -l info -s instance/celerybeat-schedule  &
+  else
+    exec celery -A make_celery beat -l info -s instance/celerybeat-schedule
   fi
 fi
 

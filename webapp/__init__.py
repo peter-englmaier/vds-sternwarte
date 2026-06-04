@@ -11,7 +11,7 @@ from celery import Celery, Task
 from webapp.config import Config
 from webapp.admin.utils import init_admin
 from webapp.orders import constants
-
+from celery.schedules import crontab
 
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -64,6 +64,12 @@ def create_app(config_class=Config):
             broker_url=app.config['CELERY_BROKER_URL'],
             result_backend=app.config['CELERY_RESULT_BACKEND'],
             task_ignore_result=True, # default is to ignore result, i.e. when sending emails
+            beat_schedule={
+               'expire-reservations-task': {
+                    'task': 'webapp.tasks.expire_reservations_task',
+                    'schedule': 10.0, # run every 10 seconds
+               },
+            },
         ),
     )
     app.config.from_prefixed_env()
@@ -103,5 +109,8 @@ def create_app(config_class=Config):
             setup_users()
         except:
             print('WARN: Could not initialize users')
+
+    # Ensure tasks are imported so they are registered
+    import webapp.tasks
 
     return app
