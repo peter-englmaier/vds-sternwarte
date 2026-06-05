@@ -604,7 +604,11 @@ def approver_assign_poweruser():
 
     order.request_poweruser_id = poweruser_user_id
     order.status = ORDER_STATUS_PU_ASSIGNED
-
+    # find corresponding reservation
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
+    reservation.confirm()
+    db.session.add(reservation)
+    db.session.add(order)
     db.session.commit()
 
     pu_user = User.query.get(poweruser_user_id)
