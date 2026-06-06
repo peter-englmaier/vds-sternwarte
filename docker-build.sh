@@ -1,6 +1,6 @@
 #!/bin/bash
-# specify options if needed
-echo docker build -t vds-sternwarte:latest . $@
-docker build -t vds-sternwarte:latest . $@
-echo docker tag vds-sternwarte:latest penglmaier/vds-sternwarte:latest
-docker tag vds-sternwarte:latest penglmaier/vds-sternwarte:latest
+# specify options if needed (i.e. --no-cache)
+LOCAL=vds-sternwarte
+
+echo docker build -t $LOCAL . $@
+docker build -t $LOCAL . $@

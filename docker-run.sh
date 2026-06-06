@@ -6,4 +6,4 @@ docker run --rm -t -i \
 	-p 5000:5000 \
 	-e TRUSTED_PROXY="127.0.0.1" \
 	-e TRUSTED_PROXY_HEADERS="forwarded" \
-	penglmaier/vds-sternwarte
+	vds-sternwarte

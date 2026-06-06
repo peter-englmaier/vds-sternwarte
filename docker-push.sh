@@ -1,9 +1,16 @@
 #!/bin/bash
-echo docker push penglmaier/vds-sternwarte:latest
-docker push penglmaier/vds-sternwarte:latest
+REGISTRY=docker.io
+REPOSITORY=penglmaier/vds-sternwarte
+LOCAL=vds-sternwarte
+REMOTE=$REGISTRY/$REPOSITORY
+
+echo docker tag $LOCAL:latest $REMOTE:latest
+docker tag $LOCAL:latest $REMOTE:latest
+echo docker push $REMOTE:latest
+docker push $REMOTE:latest
 if [ -n "$1" ]; then
-  echo docker tag penglmaier/vds-sternwarte penglmaier/vds-sternwarte:$1
-  docker tag penglmaier/vds-sternwarte penglmaier/vds-sternwarte:$1
-  echo docker push penglmaier/vds-sternwarte:$1
-  docker push penglmaier/vds-sternwarte:$1
+  echo docker tag $REMOTE $REMOTE:$1
+  docker tag $REMOTE $REMOTE:$1
+  echo docker push $REMOTE:$1
+  docker push $REMOTE:$1
 fi
