@@ -4,7 +4,6 @@ FROM python:3.14-alpine
 RUN addgroup -S flask && adduser -S flask -G flask -h /vds
 
 RUN apk update \
-    && apk upgrade \
     && apk add build-base libpq libpq-dev
 
 ENV FLASK_APP=app.py

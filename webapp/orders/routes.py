@@ -593,7 +593,7 @@ def approver_assign_poweruser():
 
     print(">>> ASSIGN RAW", request.get_data(as_text=True))
     print(">>> ASSIGN FORM", dict(request.form))
-    
+
     order_id = request.form.get("order_id", type=int)
     poweruser_user_id = request.form.get("poweruser_user_id", type=int)
 
@@ -607,9 +607,14 @@ def approver_assign_poweruser():
     # find corresponding reservation
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
     reservation.confirm()
-    db.session.add(reservation)
-    db.session.add(order)
-    db.session.commit()
+    try:
+        db.session.rollback()  # why is this needed?
+        pass
+        db.session.add(reservation)
+        db.session.add(order)
+        db.session.commit()
+    except Exception as e:
+        print(f"Es ist ein Fehler aufgetreten: {e}.")
 
     pu_user = User.query.get(poweruser_user_id)
     pu_name = pu_user.name if pu_user else None
