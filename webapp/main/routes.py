@@ -3,6 +3,8 @@ from datetime import datetime
 from flask import render_template, request, url_for, redirect, flash, abort
 from flask_login import login_required
 from flask_login import current_user
+
+from webapp import Config
 from webapp.main import main
 from webapp.model.db import db, Post, SystemParameters, ObservationRequest, PoweruserMeldung, User, Group
 from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_ROLE_USER, USER_ROLE_GUEST,ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
@@ -185,7 +187,13 @@ def about():
         vds_link = vds_link.value
     else:
         vds_link = "#"
-    return render_template('about.html', title='About', vds_link=vds_link)
+    if Config.APPVERSION != "":
+        version = f"{Config.APPVERSION} (commit id: {Config.GITCOMMIT})"
+    else:
+        version = f"unversionierter Zwischenstand; commit id: {Config.GITCOMMIT}"
+    if Config.CLEANBUILD != "true":
+        version = version + " - UNCLEAN BUILD"
+    return render_template('about.html', title='About', vds_link=vds_link, version=version)
 
 @main.route("/status")
 def status():
