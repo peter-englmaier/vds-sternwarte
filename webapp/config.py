@@ -1,4 +1,5 @@
 import json
+import os
 
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -21,3 +22,6 @@ class Config:
     CELERY_RESULT_BACKEND = config.get('CELERY_RESULT_BACKEND')
     RESERVATION_MAXTIME_MINUTES = config.get('RESERVATION_MAXTIME_MINUTES')
     RESERVATION_TIME_MINUTES = config.get('RESERVATION_TIME_MINUTES')
+    APPVERSION=os.environ.get('APPVERSION', 'local')
+    GITCOMMIT=os.environ.get('GITCOMMIT', '')
+    CLEANBUILD=os.environ.get('CLEANBUILD', '')

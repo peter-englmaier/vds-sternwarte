@@ -1,4 +1,4 @@
-{% extends "layout_no_sidebar.html" %}
+{% extends "layout.html" %}
 {% block content %}
 
 <style>
@@ -40,50 +40,6 @@ function toggleExpertFields() {
         } else {
             button_coordinates.classList.remove('visible');
         }
-}
-
-function registerTelescopeBoxListeners(context = document) {
-    const selects = context.querySelectorAll('.telescope_box');
-    selects.forEach(function(select) {
-        // Vorherigen Listener entfernen (nur wenn vorhanden)
-        if (select._telescopeChangeListener) {
-            select.removeEventListener('change', select._telescopeChangeListener);
-        }
-
-        // Listener-Funktion definieren
-        const listener = function() {
-            // Finde die aktuelle Zeile
-            const tr = this.closest('tr');
-            // Finde die Filterset-Box in derselben Zeile
-            const filtersetSelect = tr.querySelector('.filterset_box');
-
-            if (!filtersetSelect) {
-                console.warn("Keine Filterset-Box in dieser Zeile gefunden!");
-                return;
-            }
-
-            const telescopeId = this.value;
-            fetch('/orders/get_filtersets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telescope_id: telescopeId })
-            })
-            .then(response => response.json())
-            .then(options => {
-                filtersetSelect.innerHTML = '';
-                options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt.id;
-                    option.textContent = opt.name;
-                    filtersetSelect.appendChild(option);
-                });
-            });
-        };
-
-        // Listener merken, um ihn ggf. wieder entfernen zu können
-        select._telescopeChangeListener = listener;
-        select.addEventListener('change', listener);
-    });
 }
 
 function unused() {
@@ -539,9 +495,9 @@ function registerTelescopeBoxListeners(context = document) {
       const block = this.closest('.position-block');
       if (!block) return;
 
-      // Block-weit: wir nehmen die erste filterset_box im Block (Header gibt es hier nicht)
-      const filtersetSelect = block.querySelector('.filterset_box');
-      if (!filtersetSelect) return;
+      // Block-weit: wir nehmen alle filterset_box im Block
+      const filtersetSelects = block.querySelectorAll('.filterset_box');
+      if (filtersetSelects.length === 0) return;
 
       fetch('/orders/get_filtersets', {
         method: 'POST',
@@ -550,13 +506,15 @@ function registerTelescopeBoxListeners(context = document) {
       })
       .then(r => r.json())
       .then(options => {
-        // Wichtig: nur dieses eine Select updaten (minimal-invasiv)
-        filtersetSelect.innerHTML = '';
-        options.forEach(opt => {
-          const o = document.createElement('option');
-          o.value = opt.id;
-          o.textContent = opt.name;
-          filtersetSelect.appendChild(o);
+        // Wichtig: alle Selects in diesem Block updaten
+        filtersetSelects.forEach(filtersetSelect => {
+          filtersetSelect.innerHTML = '';
+          options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.id;
+            o.textContent = opt.name;
+            filtersetSelect.appendChild(o);
+          });
         });
       });
     };

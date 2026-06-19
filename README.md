@@ -21,7 +21,7 @@ Python kann man hier lernen:
 
 # Entwicklungsumgebung einrichten
 
-Zunächst sollte die aktuelle Version von Python installiert sein (Version 3.12.4). Das in der Regel ebenfalls vorhandene Python 2.x.x kann man ignorieren und man sollte es auch nicht aus dem System entfernen. Download von Python von: [www.python.org](https://www.python.org/downloads/release/python-3124/).
+Zunächst sollte die aktuelle Version von Python installiert sein (Version 3.14.3). Das in der Regel ebenfalls vorhandene Python 2.x.x kann man ignorieren und man sollte es auch nicht aus dem System entfernen. Download von Python von: [www.python.org](https://www.python.org/downloads/release/python-3143/).
 
 Um zum Source Code beitragen zu können, muss man zunächst einen Github Account anlegen, seinen public SSH key in github hinterlegen und das Repository in Github "Forken". Dadurch erhält man einen eigenen Arbeitsbereich bei Github, in dem man den Sourcecode munter anpassen und Änderungen später per "Pull Request" in das Haupt-Repository einfügen kann.
 
@@ -59,7 +59,7 @@ Nachdem man dieses Repository 'geforked' hat, kann man seine Version in ein loka
   $ python --version
   Python 2.7.15
   $ python3 --version
-  Python 3.12.4
+  Python 3.14.3
   $ git clone git@github.com:GITHUBUSER/vds-sternwarte.git
   $ cd vds-sternwarte
   $ python3 -m venv venv

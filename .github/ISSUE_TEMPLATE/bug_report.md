@@ -10,7 +10,7 @@ assignees: ''
 **Originator:**
 Wer hat diesen Vorschlag/Fehler gemeldet?
 
-**Ist:*
+**Ist:**
 Beschreibe Schritt für Schritt das Verhalten wie es aktuell ist.
 
 **Soll:**
