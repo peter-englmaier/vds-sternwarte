@@ -183,17 +183,31 @@ def faq():
 @main.route("/about")
 def about():
     vds_link = SystemParameters.query.filter_by(parameter='vds_link').first()
+    commit = Config.GITCOMMIT
+
+    # when running outside docker, we read git commit hash from local git
+    if [ Config.GITCOMMIT == "" ]:
+        import git
+        repo = git.Repo(search_parent_directories=True)
+        commit = repo.head.object.hexsha[0:7]
+
     if vds_link:
         vds_link = vds_link.value
     else:
         vds_link = "#"
     if Config.APPVERSION != "":
-        version = f"{Config.APPVERSION} (commit id: {Config.GITCOMMIT})"
+        version = f"{Config.APPVERSION} (commit id: {commit})"
+
     else:
-        version = f"unversionierter Zwischenstand; commit id: {Config.GITCOMMIT}"
+        version = f"keine; commit id: {commit}"
     if Config.CLEANBUILD != "true":
-        version = version + " - UNCLEAN BUILD"
-    return render_template('about.html', title='About', vds_link=vds_link, version=version)
+        version = version + " - plus your local changes"
+
+    if Config.ENVIRONMENT == "LOCAL":
+        server = "Running on your local machine"
+    else:
+        server = f"{Config.ENVIRONMENT}"
+    return render_template('about.html', title='About', vds_link=vds_link, version=version, server=server)
 
 @main.route("/status")
 def status():
