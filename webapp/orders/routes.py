@@ -13,7 +13,7 @@ from flask_mail import Message
 from datetime import date, datetime
 from celery import shared_task
 
-from webapp import db, mail
+from webapp import db, mail, Config
 from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
 from . import orders  # Blueprint-Objekt
@@ -738,23 +738,35 @@ def send_approve_email(order_id,approver_id,order_url):
     approver_greeting = greeting_string(approver)
     pu_greeting = greeting_string(pu)
 
+    if config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email}, {approver.email} und {pu.email}
+    '''
+        recipients = [config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email, approver.email, pu.email]
+
     msg = Message('Antrag genehmigt',
                   sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email, approver.email, pu.email])
+                  recipients=recipients)
+
     msg.body = f'''
-    Hallo {user_greeting},
-        
-    Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
-    Deine Beobachtung wird betreut durch: PU {pu_greeting}
-    Link zum Antrag: {order_url}
+Hallo {user_greeting},
     
-    Wie geht es nun weiter?
-    - Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
-    - Halte alle Informationen bereit
-    - Informiere dich über das Wetter vor Ort
-    - Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
-    
-    Gruss, {approver_greeting}
+Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
+Deine Beobachtung wird betreut durch: PU {pu_greeting}
+Link zum Antrag: {order_url}
+
+Wie geht es nun weiter?
+- Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
+- Halte alle Informationen bereit
+- Informiere dich über das Wetter vor Ort
+- Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
+
+Gruss, {approver_greeting}
+{ps}
 '''
     try:
         mail.send(msg)
@@ -776,9 +788,19 @@ def send_reject_email(order_id, approver_id,order_url):
     user_greeting = greeting_string(user)
     approver_greeting = greeting_string(approver)
 
+    if config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email} und {approver.email}
+    '''
+        recipients = [config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email, approver.email]
+
     msg = Message('Antrag abgelehnt',
                   sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email, approver.email])
+                  recipients=recipients)
     msg.body = f'''
     Hallo {user_greeting},
 
@@ -789,6 +811,7 @@ def send_reject_email(order_id, approver_id,order_url):
     - Versuche einen neuen Antrag
 
     Gruss, {approver_greeting}
+    {ps}
 '''
     try:
         mail.send(msg)

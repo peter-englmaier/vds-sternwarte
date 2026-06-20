@@ -39,12 +39,24 @@ def save_picture(form_picture):
 
 def send_reset_email(user):
     token = user.get_reset_token()
+
+    if config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email}
+    '''
+        recipients = [config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email]
+
     msg = Message('Password Reset Request',
                   sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email])
+                  recipients=recipients)
     msg.body = f'''To reset your password, visit the following link:
 {url_for('users.reset_token', token=token, _external=True)}
 
 If you did not make this request then simply ignore this email and no changes will be made.
+{ps}
 '''
     mail.send(msg)
