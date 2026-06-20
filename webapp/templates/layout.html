@@ -33,66 +33,56 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarToggle">
-                        <div class="navbar-nav me-auto">                                                       
-                            {% if current_user.is_authenticated  and current_user.has_role("user") %}
-                            <a class="nav-item nav-link" href="{{ url_for('orders.show_orders') }}">Antrag</a>
-                            <!-- #96 -->
-                            <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
-                            <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
-                            <!-- <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a> -->
-                               
-                                {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER) %}
-                                <!-- #96 -->
-                                <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
-                                <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
-                                <!-- daher hier eingefügt--> 
-                                <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
-                                <!-- Menü -->
-  <div class="dropdown ms-2">
-    <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Poweruser
-    </button>
-    <ul class="dropdown-menu">      
-      <li><a class="nav-item nav-link" href="{{ url_for('main.poweruser') }}">Beantragungsliste</a><li>                                
-      <li><a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">Neuigkeiten ver&ouml;ffentlichen</a></li>      
-    </ul>
-  </div>
+                        <div class="navbar-nav me-auto">
+                            {% if current_user.is_authenticated %}
+                                {% if current_user.has_role("user") or current_user.has_role("admin") %}
+                                <a class="nav-item nav-link" href="{{ url_for('orders.show_orders') }}">Antrag</a>
                                 {% endif %}
-                                {% if current_user.has_role(CONSTANTS.USER_ROLE_APPROVER) %}
-                                <!-- #96 -->
                                 <!-- Kalender in Navigationsleiste nur für Approver und Poweruser -->
-                                <!-- Antragsteller benötigen in V1 noch keinen Kalender -->
-                                <!-- daher hier eingefügt--> 
-                                <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
-                                         <!-- Menü -->         
-  <div class="dropdown ms-2">
-    <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Genehmiger
-    </button>
-    <ul class="dropdown-menu">
-      <li><a class="nav-item nav-link" href="{{ url_for('main.approver') }}">Approve</a></li>
-      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.fgrequest') }}">FG Antrag</a><li>
-      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a></a></li>
-      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.gast') }}">Neuregistrierungen</a></a></li>
-    </ul>
-  </div>   
+                                {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER)
+                                   or current_user.has_role(CONSTANTS.USER_ROLE_APPROVER)
+                                   or current_user.has_role("admin") %}
+                                    <a class="nav-item nav-link" href="{{ url_for('orders.show_calendar') }}">Kalender</a>
                                 {% endif %}
-                                 {% if current_user.has_role("admin") %}
-                                   <!-- Menü -->
-  <div class="dropdown ms-2">
-    <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Admin & Programmierteam
-    </button>
-    <ul class="dropdown-menu">
-      <li><a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a></li>
-      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.fgrequest') }}">FG Antrag</a><li>                                
-      <li><a class="dropdown-item" href="#"> <a class="nav-item nav-link" href="{{ url_for('main.servicerequest') }}">Wartung Antrag</a></a></li>
-      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a></a></li>      
-    </ul>
-  </div>          
-                                {% endif %}                                
+                                {% if current_user.has_role(CONSTANTS.USER_ROLE_POWERUSER) or current_user.has_role("admin") %}
+                                  <!-- Poweruser Menü -->
+                                  <div class="dropdown ms-2">
+                                    <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Poweruser
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                      <li><a class="nav-item nav-link" href="{{ url_for('main.poweruser') }}">Beantragungsliste</a><li>
+                                      <li><a class="nav-item nav-link" href="{{ url_for('posts.new_post') }}">Neuigkeiten ver&ouml;ffentlichen</a></li>
+                                    </ul>
+                                  </div>
+                                {% endif %}
+                                {% if current_user.has_role(CONSTANTS.USER_ROLE_APPROVER) or current_user.has_role("admin") %}
+                                  <!-- Approver Menü -->
+                                  <div class="dropdown ms-2">
+                                    <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Genehmiger
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                      <li><a class="nav-item nav-link" href="{{ url_for('main.approver') }}">Approve</a></li>
+                                      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.fgrequest') }}">FG Antrag</a><li>
+                                      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.request_georg') }}">Blockfunktion Georg</a></a></li>
+                                      <li><a class="dropdown-item" href="#"><a class="nav-item nav-link" href="{{ url_for('main.gast') }}">Neuregistrierungen</a></a></li>
+                                    </ul>
+                                  </div>
+                                {% endif %}
+                                {% if current_user.has_role("admin") %}
+                                      <!-- Admin Menü -->
+                                      <div class="dropdown ms-2">
+                                        <button class="btn bg-steel dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Admin & Programmierteam
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a></li>
+                                          <li><a class="dropdown-item" href="#"> <a class="nav-item nav-link" href="{{ url_for('main.servicerequest') }}">Wartung Antrag</a></a></li>
+                                        </ul>
+                                      </div>
+                                {% endif %}
                             {% endif %}
-
                         </div>
                         <!-- Navbar Right Side -->
                         <div class="navbar-nav ms-auto">
