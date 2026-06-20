@@ -186,10 +186,13 @@ def about():
     commit = Config.GITCOMMIT
 
     # when running outside docker, we read git commit hash from local git
-    if [ Config.GITCOMMIT == "" ]:
-        import git
-        repo = git.Repo(search_parent_directories=True)
-        commit = repo.head.object.hexsha[0:7]
+    if [ commit == "" ]:
+            try:
+                import git
+                repo = git.Repo(search_parent_directories=True)
+                commit = repo.head.object.hexsha[0:7]
+            except Exception as e:
+                print(e)
 
     if vds_link:
         vds_link = vds_link.value
