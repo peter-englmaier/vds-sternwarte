@@ -13,7 +13,7 @@ from flask_mail import Message
 from datetime import date, datetime
 from celery import shared_task
 
-from webapp import db, mail, Config
+from webapp import db, mail
 from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
 from . import orders  # Blueprint-Objekt
@@ -742,12 +742,12 @@ def send_approve_email(order_id,approver_id,order_url):
     approver_greeting = greeting_string(approver)
     pu_greeting = greeting_string(pu)
 
-    if config.ENVIRONMENT != "PRODUCTION":
+    if current_app.config.ENVIRONMENT != "PRODUCTION":
         ps = f'''
-    P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+    P.S.: diese Email wurde von {current_app.config.ENVIRONMENT} verschickt. Sie sollte gehen an:
         {user.email}, {approver.email} und {pu.email}
     '''
-        recipients = [config.ADMIN_EMAIL]
+        recipients = [current_app.config.ADMIN_EMAIL]
     else:
         ps = ""
         recipients = [user.email, approver.email, pu.email]
@@ -792,12 +792,12 @@ def send_reject_email(order_id, approver_id,order_url):
     user_greeting = greeting_string(user)
     approver_greeting = greeting_string(approver)
 
-    if config.ENVIRONMENT != "PRODUCTION":
+    if current_app.config.ENVIRONMENT != "PRODUCTION":
         ps = f'''
-    P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+    P.S.: diese Email wurde von {current_app.config.ENVIRONMENT} verschickt. Sie sollte gehen an:
         {user.email} und {approver.email}
     '''
-        recipients = [config.ADMIN_EMAIL]
+        recipients = [current_app.config.ADMIN_EMAIL]
     else:
         ps = ""
         recipients = [user.email, approver.email]
