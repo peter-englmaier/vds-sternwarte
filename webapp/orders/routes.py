@@ -601,7 +601,6 @@ def approver_assign_poweruser():
     order = ObservationRequest.query.get_or_404(order_id)
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
     try:
-        #db.session.rollback()  # why is this needed?
         order.request_poweruser_id = poweruser_user_id
         order.status = ORDER_STATUS_PU_ASSIGNED
         if reservation:
