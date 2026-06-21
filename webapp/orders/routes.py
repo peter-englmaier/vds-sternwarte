@@ -44,6 +44,7 @@ from .orderservices import (
     set_user_preference_service,
     get_user_preference_service,
 )
+from ..users.utils import role_required
 
 
 # ------------------------------------------------------------------
@@ -589,6 +590,7 @@ def pu_accept(order_id):
 # --------------------------------------------------------------------
 @orders.route("/approver/assign_poweruser", methods=["POST"])
 @login_required
+@role_required("approver")
 def approver_assign_poweruser():
 
     print(">>> ASSIGN RAW", request.get_data(as_text=True))
@@ -606,11 +608,13 @@ def approver_assign_poweruser():
     order.status = ORDER_STATUS_PU_ASSIGNED
     # find corresponding reservation
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
-    reservation.confirm()
+    if reservation:
+        reservation.confirm()
     try:
         db.session.rollback()  # why is this needed?
         pass
-        db.session.add(reservation)
+        if reservation:
+            db.session.add(reservation)
         db.session.add(order)
         db.session.commit()
     except Exception as e:
