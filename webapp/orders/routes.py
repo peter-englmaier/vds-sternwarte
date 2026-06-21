@@ -592,10 +592,6 @@ def pu_accept(order_id):
 @login_required
 @role_required("approver")
 def approver_assign_poweruser():
-
-    print(">>> ASSIGN RAW", request.get_data(as_text=True))
-    print(">>> ASSIGN FORM", dict(request.form))
-
     order_id = request.form.get("order_id", type=int)
     poweruser_user_id = request.form.get("poweruser_user_id", type=int)
 
@@ -603,17 +599,13 @@ def approver_assign_poweruser():
         return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
 
     order = ObservationRequest.query.get_or_404(order_id)
-
-    order.request_poweruser_id = poweruser_user_id
-    order.status = ORDER_STATUS_PU_ASSIGNED
-    # find corresponding reservation
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
-    if reservation:
-        reservation.confirm()
     try:
-        db.session.rollback()  # why is this needed?
-        pass
+        #db.session.rollback()  # why is this needed?
+        order.request_poweruser_id = poweruser_user_id
+        order.status = ORDER_STATUS_PU_ASSIGNED
         if reservation:
+            reservation.confirm()
             db.session.add(reservation)
         db.session.add(order)
         db.session.commit()
