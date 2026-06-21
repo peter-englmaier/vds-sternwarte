@@ -45,7 +45,7 @@ def send_reset_email(user):
     P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
         {user.email}
     '''
-        recipients = [config.ADMIN_EMAIL]
+        recipients = [user.email, config.ADMIN_EMAIL]
     else:
         ps = ""
         recipients = [user.email]
