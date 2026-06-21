@@ -27,7 +27,10 @@
 
 	<li><b>Software</b>
 	<ul>
-		<li>vds-sternwarte Version {{ version }}</li>
+		<li>vds-sternwarte Version {{ version }} (commit: <a href="https://github.com/peter-englmaier/vds-sternwarte/commit/{{ commit }}" target="_blank">{{ commit }}</a>)</li>
+		{% if isDirty %}
+		<strong>Source Code wurde verändert!</strong>
+		{% endif %}
 		{% if server != "" %}
 		<li>{{ server }}</li>
 		{% endif %}
