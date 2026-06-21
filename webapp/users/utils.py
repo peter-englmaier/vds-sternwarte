@@ -3,7 +3,7 @@ import secrets
 from PIL import Image
 from flask import url_for, current_app, flash, redirect
 from flask_mail import Message
-from webapp import mail
+from webapp import mail, Config
 from functools import wraps
 from flask_login import current_user
 
@@ -40,18 +40,18 @@ def save_picture(form_picture):
 def send_reset_email(user):
     token = user.get_reset_token()
 
-    if config.ENVIRONMENT != "PRODUCTION":
+    if Config.ENVIRONMENT != "PRODUCTION":
         ps = f'''
-    P.S.: diese Email wurde von {config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
         {user.email}
     '''
-        recipients = [user.email, config.ADMIN_EMAIL]
+        recipients = [user.email, Config.ADMIN_EMAIL]
     else:
         ps = ""
         recipients = [user.email]
 
     msg = Message('Password Reset Request',
-                  sender=current_app.config['MAIL_REPLYTO'],
+                  sender=Config.MAIL_REPLYTO,
                   recipients=recipients)
     msg.body = f'''To reset your password, visit the following link:
 {url_for('users.reset_token', token=token, _external=True)}
