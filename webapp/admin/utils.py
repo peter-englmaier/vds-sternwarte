@@ -44,7 +44,7 @@ class GenericModelView(ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
-        return redirect(url_for('main.home', next=request.url))
+        return redirect(url_for('main.home'))
 
 class UserModelView(GenericModelView):
     column_list: tuple[str, ...] = ('name', 'surname', 'firstname', 'email', 'vds_number', 'groups')
