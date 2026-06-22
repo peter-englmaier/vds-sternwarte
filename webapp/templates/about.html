@@ -27,7 +27,13 @@
 
 	<li><b>Software</b>
 	<ul>
-		<li>vds-sternwarte Version {{ version }}</li>
+		<li>vds-sternwarte Version {{ version }} (commit: <a href="https://github.com/peter-englmaier/vds-sternwarte/commit/{{ commit }}" target="_blank">{{ commit }}</a>)</li>
+		{% if isDirty %}
+		<strong>Source Code wurde verändert!</strong>
+		{% endif %}
+		{% if server != "" %}
+		<li>{{ server }}</li>
+		{% endif %}
 		<li>Open Source mit GPL 3.0 Lizenz</li>
 		<li><a href="https://github.com/peter-englmaier/vds-sternwarte" target="_blank" rel="noopener noreferrer">Quellcode auf github</a></li>
 	</ul>
@@ -37,21 +43,15 @@
 	<ul>
 		<li>Thomas Appel</li>
         <li>Yves Bastian</li>
-    	<li>Bernd Christensen</li>
+    	<li>Dr. Bernd Christensen</li>
     	<li>Dr. Kai-Oliver Detken</li>
     	<li>Dr. Janina Dynowski</li>
     	<li>Dr. Peter Englmaier</li>
-    	<li>Dr. Jost Jahn</li>
+    	<li>Jost Jahn</li>
     	<li>Peter Jankowski</li>
     	<li>Dr. Martin Junius</li>
     	<li>Ulf Kriese</li>
-    	<li>Dr. Georg Piehler</li>
-	</ul>
-    </li><br>
-
-	<li><b>Anleitung</b>
-	<ul>
-		<li>in Vorbereitung</li>
+    	<li>Dr. Georg M. Piehler</li>
 	</ul>
     </li><br>
 

@@ -13,7 +13,7 @@ from flask_mail import Message
 from datetime import date, datetime
 from celery import shared_task
 
-from webapp import db, mail
+from webapp import db, mail, Config
 from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
 from . import orders  # Blueprint-Objekt
@@ -44,6 +44,7 @@ from .orderservices import (
     set_user_preference_service,
     get_user_preference_service,
 )
+from ..users.utils import role_required
 
 
 # ------------------------------------------------------------------
@@ -589,11 +590,8 @@ def pu_accept(order_id):
 # --------------------------------------------------------------------
 @orders.route("/approver/assign_poweruser", methods=["POST"])
 @login_required
+@role_required("approver")
 def approver_assign_poweruser():
-
-    print(">>> ASSIGN RAW", request.get_data(as_text=True))
-    print(">>> ASSIGN FORM", dict(request.form))
-
     order_id = request.form.get("order_id", type=int)
     poweruser_user_id = request.form.get("poweruser_user_id", type=int)
 
@@ -601,16 +599,13 @@ def approver_assign_poweruser():
         return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
 
     order = ObservationRequest.query.get_or_404(order_id)
-
-    order.request_poweruser_id = poweruser_user_id
-    order.status = ORDER_STATUS_PU_ASSIGNED
-    # find corresponding reservation
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
-    reservation.confirm()
     try:
-        db.session.rollback()  # why is this needed?
-        pass
-        db.session.add(reservation)
+        order.request_poweruser_id = poweruser_user_id
+        order.status = ORDER_STATUS_PU_ASSIGNED
+        if reservation:
+            reservation.confirm()
+            db.session.add(reservation)
         db.session.add(order)
         db.session.commit()
     except Exception as e:
@@ -738,23 +733,35 @@ def send_approve_email(order_id,approver_id,order_url):
     approver_greeting = greeting_string(approver)
     pu_greeting = greeting_string(pu)
 
+    if Config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email}, {approver.email} und {pu.email}
+    '''
+        recipients = [Config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email, approver.email, pu.email]
+
     msg = Message('Antrag genehmigt',
-                  sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email, approver.email, pu.email])
+                  sender=Config.MAIL_REPLYTO,
+                  recipients=recipients)
+
     msg.body = f'''
-    Hallo {user_greeting},
-        
-    Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
-    Deine Beobachtung wird betreut durch: PU {pu_greeting}
-    Link zum Antrag: {order_url}
+Hallo {user_greeting},
     
-    Wie geht es nun weiter?
-    - Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
-    - Halte alle Informationen bereit
-    - Informiere dich über das Wetter vor Ort
-    - Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
-    
-    Gruss, {approver_greeting}
+Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
+Deine Beobachtung wird betreut durch: PU {pu_greeting}
+Link zum Antrag: {order_url}
+
+Wie geht es nun weiter?
+- Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
+- Halte alle Informationen bereit
+- Informiere dich über das Wetter vor Ort
+- Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
+
+Gruss, {approver_greeting}
+{ps}
 '''
     try:
         mail.send(msg)
@@ -776,9 +783,19 @@ def send_reject_email(order_id, approver_id,order_url):
     user_greeting = greeting_string(user)
     approver_greeting = greeting_string(approver)
 
+    if Config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email} und {approver.email}
+    '''
+        recipients = [Config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email, approver.email]
+
     msg = Message('Antrag abgelehnt',
-                  sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email, approver.email])
+                  sender=Config.MAIL_REPLYTO,
+                  recipients=recipients)
     msg.body = f'''
     Hallo {user_greeting},
 
@@ -789,6 +806,7 @@ def send_reject_email(order_id, approver_id,order_url):
     - Versuche einen neuen Antrag
 
     Gruss, {approver_greeting}
+    {ps}
 '''
     try:
         mail.send(msg)

@@ -25,3 +25,4 @@ class Config:
     APPVERSION=os.environ.get('APPVERSION', 'local')
     GITCOMMIT=os.environ.get('GITCOMMIT', '')
     CLEANBUILD=os.environ.get('CLEANBUILD', '')
+    ENVIRONMENT = config.get('ENVIRONMENT', 'LOCAL')
