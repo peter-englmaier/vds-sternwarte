@@ -44,7 +44,7 @@ class GenericModelView(ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         # redirect to login page if user doesn't have access
-        return redirect(url_for('home', next=request.url))
+        return redirect(url_for('main.home', next=request.url))
 
 class UserModelView(GenericModelView):
     column_list: tuple[str, ...] = ('name', 'surname', 'firstname', 'email', 'vds_number', 'groups')
@@ -212,6 +212,12 @@ class MyHomeView(AdminIndexView):
     @expose('/')
     def index(self):
         return self.render('admin/index.html')
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.has_role(USER_ROLE_ADMIN)
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('main.home'))
 
 class OrderModelView(GenericModelView):
 #   column_exclude_list = form_excluded_columns = column_details_exclude_list = ['id']
