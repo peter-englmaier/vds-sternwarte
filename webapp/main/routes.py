@@ -31,7 +31,20 @@ def home():
             .count()
         )
 
-    return render_template("home.html", posts=posts, guest_count=guest_count)
+    # freigeschaltete Benutzer
+    if current_user.is_authenticated and not current_user.has_role(USER_ROLE_GUEST):
+        return render_template(
+            "home_intern.html",
+            posts=posts,
+            guest_count=guest_count
+        )
+
+    # keine Fachgruppenmitglieder
+    return render_template(
+        "home.html",
+        posts=posts,
+        guest_count=guest_count
+    )
 
 # -------------------------------------------------------------
 #
