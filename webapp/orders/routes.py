@@ -598,19 +598,28 @@ def approver_assign_poweruser():
     if not order_id or not poweruser_user_id:
         return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
 
+    print("Try to find order and assing power user")
+    order = ObservationRequest.query.get_or_404(order_id)
     try:
-        db.session.rollback() # make sure db is clean
-        order = ObservationRequest.query.get_or_404(order_id)
-        reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
         order.request_poweruser_id = poweruser_user_id
         order.status = ORDER_STATUS_PU_ASSIGNED
         db.session.add(order)
-        if reservation:
-            reservation.confirm()
-            db.session.add(reservation)
         db.session.commit()
     except Exception as e:
+        db.session.rollback()
         print(f"Es ist ein Fehler aufgetreten: {e}.")
+
+    print("Try to find reservation and commit it")
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
+    if reservation:
+        try:
+            reservation.confirm()
+            db.session.add(reservation)
+            db.session.commit()
+        except Exception as e:
+            print(f"Es ist ein Fehler aufgetreten: {e}.")
+            db.session.rollback()
+    print("Prepare emails")
 
     pu_user = User.query.get(poweruser_user_id)
     pu_name = pu_user.name if pu_user else None
