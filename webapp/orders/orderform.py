@@ -62,7 +62,7 @@ class ObservationRequestHead(FlaskForm):
         csrf = False
 
     status_label = HiddenField()
-    request_date = DateField('Datum', format='%Y-%m-%d', validators=[DataRequired() ])
+    request_date = DateField('Datum', format='%Y-%m-%d', validators=[DataRequired(), date_in_future])
     requester_name = StringField('Beteiligte', validators=[DataRequired()])
     observatory_name = SelectField('Observatorium', choices=[], validators=[DataRequired()])
     #request_purpose = SelectField('Motivation', choices=[])

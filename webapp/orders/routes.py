@@ -47,6 +47,46 @@ from .orderservices import (
 from ..users.utils import role_required
 
 
+CALENDAR_YEAR_MIN = 1900
+CALENDAR_YEAR_MAX = 2100
+
+
+def parse_int_query_arg(name, default, min_value=None, max_value=None):
+    raw_value = request.args.get(name)
+
+    if raw_value is None:
+        value = default
+    else:
+        raw_value = raw_value.strip()
+        if raw_value == "":
+            abort(400, description=f"Ungueltiger Wert fuer {name}")
+        try:
+            value = int(raw_value)
+        except ValueError:
+            abort(400, description=f"Ungueltiger Wert fuer {name}")
+
+    if min_value is not None and value < min_value:
+        abort(400, description=f"Ungueltiger Wert fuer {name}")
+
+    if max_value is not None and value > max_value:
+        abort(400, description=f"Ungueltiger Wert fuer {name}")
+
+    return value
+
+
+def validate_request_date_not_in_past(request_date):
+    if request_date is None:
+        abort(400, description="Datum fehlt.")
+
+    if hasattr(request_date, "date"):
+        request_date = request_date.date()
+
+    if request_date <= date.today():
+        abort(400, description="Das Datum muss in der Zukunft liegen.")
+
+    return request_date
+
+
 # ------------------------------------------------------------------
 # User preference laden
 # ------------------------------------------------------------------
@@ -187,7 +227,8 @@ def actionhandler():
     if action == "save_order":
         order_head = ObservationRequest()
         order_head.user_id = current_user.id
-        order_head.request_date = form.request_date.data
+        request_date = validate_request_date_not_in_past(form.request_date.data)
+        order_head.request_date = request_date
         order_head.request_observatory_id = form.observatory_name.data
         observatory = Observatory.query.get(order_head.request_observatory_id)
         order_head.name = form.requester_name.data
@@ -400,7 +441,8 @@ def edit_order_pos(order_id):
     # -------------------------
     if action == "save_order":
         # Kopf speichern
-        order_head.request_date = form.head.request_date.data
+        request_date = validate_request_date_not_in_past(form.head.request_date.data)
+        order_head.request_date = request_date
         order_head.request_observatory_id = form.head.observatory_name.data
         observatory = Observatory.query.get(order_head.request_observatory_id)
         reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
@@ -834,8 +876,19 @@ def send_reject_email(order_id, approver_id,order_url):
 # --------------------------------------------------------------------
 @orders.route("/orders/show_calendar", methods=["GET"])
 def show_calendar():
-    year = request.args.get("year", default=datetime.now().year, type=int)
-    month = request.args.get("month", default=datetime.now().month, type=int)
+    year = parse_int_query_arg(
+        "year",
+        default=datetime.now().year,
+        min_value=CALENDAR_YEAR_MIN,
+        max_value=CALENDAR_YEAR_MAX,
+    )
+    month = parse_int_query_arg(
+        "month",
+        default=datetime.now().month,
+        min_value=1,
+        max_value=12,
+    )
+
     picker = request.args.get("picker", default=False, type=bool)
     target_id = request.args.get("target_id", default="request_date", type=str)
     display_id = request.args.get("display_id", default="selected_date_display", type=str)
