@@ -537,10 +537,11 @@ class ObservatoryReservation(db.Model):
 
     # status values
     class Status(Enum):
-        UNDEF =    1 # status is undefined
+        UNDEF    = 1 # status is undefined
         RESERVED = 2 # date is reserved, but not yet finally booked
-        BOOKED =   3 # date is booked
-        EXPIRED =  4 # reservation expired
+        BOOKED   = 3 # date is booked
+        EXPIRED  = 4 # reservation expired
+        FROZEN   = 5 # reservation is not final, but it has been submitted
 
     # reservation constants
     reservation_maxtime = timedelta(minutes=4320) # how long can a date be reserved without submission
@@ -566,6 +567,8 @@ class ObservatoryReservation(db.Model):
             return f"Reservierung ist abgelaufen"
         elif s == self.Status.BOOKED:
             return f"Reservierung ist definitiv"
+        elif s == self.Status.FROZEN:
+            return f"Reservierung ist provisorisch"
         else:
             return f"Status unbekannt"
 
@@ -594,20 +597,28 @@ class ObservatoryReservation(db.Model):
         self.status = self.Status.RESERVED.name
 
     def refresh(self):
-        now = datetime.now()
-        self.reservation_exp = max(self.reservation_max, now + self.reservation_time)
-        if self.status == self.Status.RESERVED.name and self.reservation_exp < now:
-            self.status = self.Status.EXPIRED.name
+        if self.status = self.Status.RESERVED.name:
+            now = datetime.now()
+            self.reservation_exp = max(self.reservation_max, now + self.reservation_time)
+            if self.reservation_exp < now:
+                self.status = self.Status.EXPIRED.name
 
     def cancel(self):
-        self.status = self.Status.EXPIRED
+        self.status = self.Status.EXPIRED.name
+
+    def freeze(self):
+        if self.status = self.Status.RESERVED.name:
+            self.status = self.Status.FROZEN.name
 
     def confirm(self):
-        self.status = self.Status.BOOKED
+        self.status = self.Status.BOOKED.name
 
 
     def is_booked(self):
         return self.status == self.Status.BOOKED.name
+
+    def is_frozen(self):
+        return self.status == self.status.FROZEN.name
 
     def is_expired(self):
         now = datetime.now()
