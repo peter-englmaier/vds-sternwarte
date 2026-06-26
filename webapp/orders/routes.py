@@ -1,3 +1,5 @@
+from smtplib import SMTPAuthenticationError
+
 from flask import (
     render_template,
     url_for,
@@ -777,7 +779,7 @@ Gruss, {approver_greeting}
         mail.send(msg)
     except SMTPAuthenticationError as exc:
         if exc.smtp_code == 454:
-            print(e)
+            print(exc)
             raise self.retry(exc=exc)
         else:
             raise exc
@@ -822,7 +824,7 @@ def send_reject_email(order_id, approver_id,order_url):
         mail.send(msg)
     except SMTPAuthenticationError as exc:
         if exc.smtp_code == 454:
-            print(e)
+            print(exc)
             raise self.retry(exc=exc)
         else:
             raise exc
