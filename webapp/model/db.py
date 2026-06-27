@@ -597,37 +597,43 @@ class ObservatoryReservation(db.Model):
         self.status = self.Status.RESERVED.name
 
     def refresh(self):
-        if self.status = self.Status.RESERVED.name:
+        "Extend the reservation if possible"
+        if self.status == self.Status.RESERVED.name:
             now = datetime.now()
             self.reservation_exp = max(self.reservation_max, now + self.reservation_time)
             if self.reservation_exp < now:
                 self.status = self.Status.EXPIRED.name
 
     def cancel(self):
+        "Cancel the reservation"
         self.status = self.Status.EXPIRED.name
 
     def freeze(self):
-        if self.status = self.Status.RESERVED.name:
+        "Freeze the reservation - will no longer expire"
+        if self.status == self.Status.RESERVED.name:
             self.status = self.Status.FROZEN.name
 
     def confirm(self):
+        "Confirm the reservation (fully booked)"
         self.status = self.Status.BOOKED.name
 
-
     def is_booked(self):
+        "Date is fully booked"
         return self.status == self.Status.BOOKED.name
 
     def is_frozen(self):
-        return self.status == self.status.FROZEN.name
+        "Reservation will not expire, but is not yet fully booked"
+        return self.status == self.Status.FROZEN.name
 
     def is_expired(self):
+        "Reservation has expired and is no longer valid"
         now = datetime.now()
         if self.status == self.Status.RESERVED.name and self.reservation_exp < now:
             self.status = self.Status.EXPIRED.name
         return self.status == self.Status.EXPIRED.name
 
-    # change reservation date - will reset reservation period
     def set_date(self, newdate):
+        "change reservation date - will reset reservation period"
         newdate = self.date_sanitize(newdate)
         if self.date != newdate:
             self.date = newdate
@@ -637,8 +643,8 @@ class ObservatoryReservation(db.Model):
             self.status = self.Status.RESERVED.name
         return self
 
-    # change observatory - will reset reservation period
     def set_observatory(self, observatory):
+        "change observatory - will reset reservation period"
         if self.observatory_id != observatory.id:
             self.observatory_id = observatory.id
             now = datetime.now()

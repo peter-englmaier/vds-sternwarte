@@ -549,6 +549,21 @@ def edit_order_pos(order_id):
                 f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
                 "error",
             )
+        # freeze reservation
+        reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
+        if reservation:
+            try:
+                reservation.freeze()
+                db.session.add(reservation)
+                db.session.commit()
+            except Exception as e:
+                print(f"Es ist ein Fehler aufgetreten: {e}.")
+                db.session.rollback()
+                flash(
+                    f"Die reservation ist bereits abgelaufen und kann nicht mehr aufrechterhalten werden",
+                    "warning"
+                )
+
         return redirect("/orders")
 
     return redirect("/orders")
@@ -600,7 +615,6 @@ def approver_assign_poweruser():
     if not order_id or not poweruser_user_id:
         return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
 
-    print("Try to find order and assing power user")
     order = ObservationRequest.query.get_or_404(order_id)
     try:
         order.request_poweruser_id = poweruser_user_id
@@ -611,7 +625,6 @@ def approver_assign_poweruser():
         db.session.rollback()
         print(f"Es ist ein Fehler aufgetreten: {e}.")
 
-    print("Try to find reservation and commit it")
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
     if reservation:
         try:
@@ -621,7 +634,6 @@ def approver_assign_poweruser():
         except Exception as e:
             print(f"Es ist ein Fehler aufgetreten: {e}.")
             db.session.rollback()
-    print("Prepare emails")
 
     pu_user = User.query.get(poweruser_user_id)
     pu_name = pu_user.name if pu_user else None
