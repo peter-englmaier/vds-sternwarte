@@ -15,7 +15,7 @@ def role_required(role_name):
             if not current_user.is_authenticated:
                 flash('Please log in to access this page.', 'info')
                 return redirect(url_for('users.login'))
-            if not current_user.has_role(role_name):
+            if not current_user.has_role(role_name) and not current_user.has_role("admin"):
                 flash('You do not have permission to access this page.', 'danger')
                 return redirect(url_for('main.home'))
             return f(*args, **kwargs)
