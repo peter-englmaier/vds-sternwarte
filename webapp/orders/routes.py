@@ -18,15 +18,15 @@ from celery import shared_task
 from webapp import db, mail, Config
 from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
-from . import orders  # Blueprint-Objekt
-from .orderform import (
+from webapp.orders import orders  # Blueprint-Objekt
+from webapp.orders.orderform import (
     ObservationRequestPositionsForm,
     ObservationRequestHead,
     telescope_query,
     filterset_query,
     poweruser_query,
 )
-from .constants import (
+from webapp.orders.constants import (
     ORDER_STATUS_LABELS,
     ORDER_STATUS_CREATED,
     ORDER_STATUS_WAITING,
@@ -36,7 +36,7 @@ from .constants import (
     ORDER_STATUS_APPROVED,
     ORDER_STATUS_PU_ASSIGNED,
 )
-from .orderservices import (
+from webapp.orders.orderservices import (
     copy_order_service,
     delete_order_service,
     calendar_service,
@@ -46,7 +46,7 @@ from .orderservices import (
     set_user_preference_service,
     get_user_preference_service,
 )
-from ..users.utils import role_required
+from webapp.users.utils import role_required
 
 
 # ------------------------------------------------------------------
