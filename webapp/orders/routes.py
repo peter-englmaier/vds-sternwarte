@@ -174,44 +174,35 @@ def actionhandler():
         order_head = ObservationRequest.query.get(order_id)
         if order_head.user_id != current_user.id:
             abort(403)
-        order_head.status = ORDER_STATUS_WAITING
         try:
+            order_head.status = ORDER_STATUS_WAITING
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(
-                f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-                "error",
-            )
+            flash(f"Datum wurde nicht ausgef&uuml;llt","error")
         return redirect("/orders")
 
     # Read entries from gui and save as new observation request (no positions so far)
     if action == "save_order":
-        order_head = ObservationRequest()
-        order_head.user_id = current_user.id
-        order_head.request_date = form.request_date.data
-        order_head.request_observatory_id = form.observatory_name.data
-        observatory = Observatory.query.get(order_head.request_observatory_id)
-        order_head.name = form.requester_name.data
-        #order_head.request_purpose = form.request_purpose.data
-        # find the given power user in the user table
-        poweruser_index = form.poweruser_name.data
-        if poweruser_index != '':
-            poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
-            order_head.request_poweruser_id = User.query.filter_by(name=poweruser).first().id
-        order_head.request_type = form.request_type.data
-        order_head.remark = form.remark.data
-        order_head.status = ORDER_STATUS_CREATED
-        db.session.add(order_head)
-
         try:
+            order_head = ObservationRequest()
+            order_head.user_id = current_user.id
+            order_head.request_date = form.request_date.data
+            order_head.request_observatory_id = form.observatory_name.data
+            observatory = Observatory.query.get(order_head.request_observatory_id)
+            order_head.name = form.requester_name.data
+            poweruser_index = form.poweruser_name.data
+            if poweruser_index != '':
+                poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
+                order_head.request_poweruser_id = User.query.filter_by(name=poweruser).first().id
+            order_head.request_type = form.request_type.data
+            order_head.remark = form.remark.data
+            order_head.status = ORDER_STATUS_CREATED
+            db.session.add(order_head)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(
-                f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-                "error",
-            )
+            flash(f"Datum wurde nicht ausgef&uuml;llt", "error")
             return redirect("/orders")
 
         # Reservation is created after the first commit so that order_head.id
