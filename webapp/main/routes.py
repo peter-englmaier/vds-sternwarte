@@ -12,6 +12,7 @@ from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_RO
 from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
 from sqlalchemy.exc import IntegrityError
 from collections import defaultdict
+from ..users.utils import role_required
 
 @main.route("/")
 @main.route("/home")
@@ -51,6 +52,7 @@ def home():
 # -------------------------------------------------------------
 @main.route("/poweruser", methods=['GET','POST'])
 @login_required
+@role_required("poweruser")
 def poweruser():
 
     if request.method == "POST":
@@ -121,6 +123,7 @@ def poweruser():
 # -------------------------------------------------------------
 @main.route("/approver", methods=["GET"])
 @login_required
+@role_required("approver")
 def approver():
 
     all_orders = (
