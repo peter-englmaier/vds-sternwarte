@@ -569,6 +569,7 @@ def show_order_positions(order_id):
 # --------------------------------------------------------------------
 @orders.route("/poweruser/<int:order_id>/pu_accept", methods=["POST"])
 @login_required
+@role_required("poweruser")
 def pu_accept(order_id):
     order_head = ObservationRequest.query.get(order_id)
     order_head.status = ORDER_STATUS_PU_ACCEPTED
@@ -656,6 +657,7 @@ def approver_assign_poweruser():
 # --------------------------------------------------------------------
 @orders.route("/approver/<int:order_id>/reject", methods=["POST"])
 @login_required
+@role_required("approver")
 def reject_order(order_id):
     order_head = ObservationRequest.query.get(order_id)
     order_head.status = ORDER_STATUS_REJECTED
@@ -680,6 +682,7 @@ def reject_order(order_id):
 # --------------------------------------------------------------------
 @orders.route("/approver/<int:order_id>/approve", methods=["POST"])
 @login_required
+@role_required("approver")
 def approve_order(order_id):
     order_head = ObservationRequest.query.get(order_id)
     order_head.status = ORDER_STATUS_APPROVED
@@ -697,6 +700,7 @@ def approve_order(order_id):
 
 @orders.route("/approver/assign_poweruser_form", methods=["GET"])
 @login_required
+@role_required("approver")
 def approver_assign_poweruser_form():
     order_id = request.args.get("order_id", type=int)
     if not order_id:
