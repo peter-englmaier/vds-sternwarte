@@ -842,6 +842,8 @@ def send_reject_email(order_id, approver_id,order_url):
 # Belegungskalender anzeigen
 # --------------------------------------------------------------------
 @orders.route("/orders/show_calendar", methods=["GET"])
+@login_required
+@role_required("user")
 def show_calendar():
     year = request.args.get("year", default=datetime.now().year, type=int)
     month = request.args.get("month", default=datetime.now().month, type=int)
