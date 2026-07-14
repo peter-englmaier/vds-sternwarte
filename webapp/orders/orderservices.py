@@ -262,7 +262,7 @@ def calendar_service(year, month):
     planned_days = set()
     # gebuchte Tage
     for request in reservations:
-        if request.is_booked():
+        if request.is_booked() or request.is_frozen():
             approved_days.add(request.date.day)
         elif not request.is_expired():
             planned_days.add(request.date.day)

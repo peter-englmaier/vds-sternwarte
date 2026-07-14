@@ -1,3 +1,5 @@
+from smtplib import SMTPAuthenticationError
+
 from flask import (
     render_template,
     url_for,
@@ -13,18 +15,18 @@ from flask_mail import Message
 from datetime import date, datetime
 from celery import shared_task
 
-from webapp import db, mail
+from webapp import db, mail, Config
 from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
-from . import orders  # Blueprint-Objekt
-from .orderform import (
+from webapp.orders import orders  # Blueprint-Objekt
+from webapp.orders.orderform import (
     ObservationRequestPositionsForm,
     ObservationRequestHead,
     telescope_query,
     filterset_query,
     poweruser_query,
 )
-from .constants import (
+from webapp.orders.constants import (
     ORDER_STATUS_LABELS,
     ORDER_STATUS_CREATED,
     ORDER_STATUS_WAITING,
@@ -34,7 +36,7 @@ from .constants import (
     ORDER_STATUS_APPROVED,
     ORDER_STATUS_PU_ASSIGNED,
 )
-from .orderservices import (
+from webapp.orders.orderservices import (
     copy_order_service,
     delete_order_service,
     calendar_service,
@@ -44,6 +46,7 @@ from .orderservices import (
     set_user_preference_service,
     get_user_preference_service,
 )
+from webapp.users.utils import role_required
 
 
 # ------------------------------------------------------------------
@@ -171,44 +174,35 @@ def actionhandler():
         order_head = ObservationRequest.query.get(order_id)
         if order_head.user_id != current_user.id:
             abort(403)
-        order_head.status = ORDER_STATUS_WAITING
         try:
+            order_head.status = ORDER_STATUS_WAITING
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(
-                f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-                "error",
-            )
+            flash(f"Datum wurde nicht ausgef&uuml;llt","error")
         return redirect("/orders")
 
     # Read entries from gui and save as new observation request (no positions so far)
     if action == "save_order":
-        order_head = ObservationRequest()
-        order_head.user_id = current_user.id
-        order_head.request_date = form.request_date.data
-        order_head.request_observatory_id = form.observatory_name.data
-        observatory = Observatory.query.get(order_head.request_observatory_id)
-        order_head.name = form.requester_name.data
-        #order_head.request_purpose = form.request_purpose.data
-        # find the given power user in the user table
-        poweruser_index = form.poweruser_name.data
-        if poweruser_index != '':
-            poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
-            order_head.request_poweruser_id = User.query.filter_by(name=poweruser).first().id
-        order_head.request_type = form.request_type.data
-        order_head.remark = form.remark.data
-        order_head.status = ORDER_STATUS_CREATED
-        db.session.add(order_head)
-
         try:
+            order_head = ObservationRequest()
+            order_head.user_id = current_user.id
+            order_head.request_date = form.request_date.data
+            order_head.request_observatory_id = form.observatory_name.data
+            observatory = Observatory.query.get(order_head.request_observatory_id)
+            order_head.name = form.requester_name.data
+            poweruser_index = form.poweruser_name.data
+            if poweruser_index != '':
+                poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
+                order_head.request_poweruser_id = User.query.filter_by(name=poweruser).first().id
+            order_head.request_type = form.request_type.data
+            order_head.remark = form.remark.data
+            order_head.status = ORDER_STATUS_CREATED
+            db.session.add(order_head)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(
-                f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-                "error",
-            )
+            flash(f"Datum wurde nicht ausgef&uuml;llt", "error")
             return redirect("/orders")
 
         # Reservation is created after the first commit so that order_head.id
@@ -546,6 +540,21 @@ def edit_order_pos(order_id):
                 f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
                 "error",
             )
+        # freeze reservation
+        reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
+        if reservation:
+            try:
+                reservation.freeze()
+                db.session.add(reservation)
+                db.session.commit()
+            except Exception as e:
+                print(f"Es ist ein Fehler aufgetreten: {e}.")
+                db.session.rollback()
+                flash(
+                    f"Die reservation ist bereits abgelaufen und kann nicht mehr aufrechterhalten werden",
+                    "warning"
+                )
+
         return redirect("/orders")
 
     return redirect("/orders")
@@ -568,6 +577,7 @@ def show_order_positions(order_id):
 # --------------------------------------------------------------------
 @orders.route("/poweruser/<int:order_id>/pu_accept", methods=["POST"])
 @login_required
+@role_required("poweruser")
 def pu_accept(order_id):
     order_head = ObservationRequest.query.get(order_id)
     order_head.status = ORDER_STATUS_PU_ACCEPTED
@@ -589,11 +599,8 @@ def pu_accept(order_id):
 # --------------------------------------------------------------------
 @orders.route("/approver/assign_poweruser", methods=["POST"])
 @login_required
+@role_required("approver")
 def approver_assign_poweruser():
-
-    print(">>> ASSIGN RAW", request.get_data(as_text=True))
-    print(">>> ASSIGN FORM", dict(request.form))
-
     order_id = request.form.get("order_id", type=int)
     poweruser_user_id = request.form.get("poweruser_user_id", type=int)
 
@@ -601,20 +608,24 @@ def approver_assign_poweruser():
         return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
 
     order = ObservationRequest.query.get_or_404(order_id)
-
-    order.request_poweruser_id = poweruser_user_id
-    order.status = ORDER_STATUS_PU_ASSIGNED
-    # find corresponding reservation
-    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
-    reservation.confirm()
     try:
-        db.session.rollback()  # why is this needed?
-        pass
-        db.session.add(reservation)
+        order.request_poweruser_id = poweruser_user_id
+        order.status = ORDER_STATUS_PU_ASSIGNED
         db.session.add(order)
         db.session.commit()
     except Exception as e:
+        db.session.rollback()
         print(f"Es ist ein Fehler aufgetreten: {e}.")
+
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
+    if reservation:
+        try:
+            reservation.confirm()
+            db.session.add(reservation)
+            db.session.commit()
+        except Exception as e:
+            print(f"Es ist ein Fehler aufgetreten: {e}.")
+            db.session.rollback()
 
     pu_user = User.query.get(poweruser_user_id)
     pu_name = pu_user.name if pu_user else None
@@ -651,6 +662,7 @@ def approver_assign_poweruser():
 # --------------------------------------------------------------------
 @orders.route("/approver/<int:order_id>/reject", methods=["POST"])
 @login_required
+@role_required("approver")
 def reject_order(order_id):
     order_head = ObservationRequest.query.get(order_id)
     order_head.status = ORDER_STATUS_REJECTED
@@ -675,6 +687,7 @@ def reject_order(order_id):
 # --------------------------------------------------------------------
 @orders.route("/approver/<int:order_id>/approve", methods=["POST"])
 @login_required
+@role_required("approver")
 def approve_order(order_id):
     order_head = ObservationRequest.query.get(order_id)
     order_head.status = ORDER_STATUS_APPROVED
@@ -692,6 +705,7 @@ def approve_order(order_id):
 
 @orders.route("/approver/assign_poweruser_form", methods=["GET"])
 @login_required
+@role_required("approver")
 def approver_assign_poweruser_form():
     order_id = request.args.get("order_id", type=int)
     if not order_id:
@@ -738,29 +752,41 @@ def send_approve_email(order_id,approver_id,order_url):
     approver_greeting = greeting_string(approver)
     pu_greeting = greeting_string(pu)
 
+    if Config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email}, {approver.email} und {pu.email}
+    '''
+        recipients = [Config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email, approver.email, pu.email]
+
     msg = Message('Antrag genehmigt',
-                  sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email, approver.email, pu.email])
+                  sender=Config.MAIL_REPLYTO,
+                  recipients=recipients)
+
     msg.body = f'''
-    Hallo {user_greeting},
-        
-    Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
-    Deine Beobachtung wird betreut durch: PU {pu_greeting}
-    Link zum Antrag: {order_url}
+Hallo {user_greeting},
     
-    Wie geht es nun weiter?
-    - Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
-    - Halte alle Informationen bereit
-    - Informiere dich über das Wetter vor Ort
-    - Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
-    
-    Gruss, {approver_greeting}
+Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
+Deine Beobachtung wird betreut durch: PU {pu_greeting}
+Link zum Antrag: {order_url}
+
+Wie geht es nun weiter?
+- Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
+- Halte alle Informationen bereit
+- Informiere dich über das Wetter vor Ort
+- Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
+
+Gruss, {approver_greeting}
+{ps}
 '''
     try:
         mail.send(msg)
     except SMTPAuthenticationError as exc:
         if exc.smtp_code == 454:
-            print(e)
+            print(exc)
             raise self.retry(exc=exc)
         else:
             raise exc
@@ -776,9 +802,19 @@ def send_reject_email(order_id, approver_id,order_url):
     user_greeting = greeting_string(user)
     approver_greeting = greeting_string(approver)
 
+    if Config.ENVIRONMENT != "PRODUCTION":
+        ps = f'''
+    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
+        {user.email} und {approver.email}
+    '''
+        recipients = [Config.ADMIN_EMAIL]
+    else:
+        ps = ""
+        recipients = [user.email, approver.email]
+
     msg = Message('Antrag abgelehnt',
-                  sender=current_app.config['MAIL_REPLYTO'],
-                  recipients=[user.email, approver.email])
+                  sender=Config.MAIL_REPLYTO,
+                  recipients=recipients)
     msg.body = f'''
     Hallo {user_greeting},
 
@@ -789,12 +825,13 @@ def send_reject_email(order_id, approver_id,order_url):
     - Versuche einen neuen Antrag
 
     Gruss, {approver_greeting}
+    {ps}
 '''
     try:
         mail.send(msg)
     except SMTPAuthenticationError as exc:
         if exc.smtp_code == 454:
-            print(e)
+            print(exc)
             raise self.retry(exc=exc)
         else:
             raise exc

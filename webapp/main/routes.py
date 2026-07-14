@@ -12,6 +12,7 @@ from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_RO
 from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
 from sqlalchemy.exc import IntegrityError
 from collections import defaultdict
+from ..users.utils import role_required
 
 @main.route("/")
 @main.route("/home")
@@ -31,13 +32,27 @@ def home():
             .count()
         )
 
-    return render_template("home.html", posts=posts, guest_count=guest_count)
+    # freigeschaltete Benutzer
+    if current_user.is_authenticated and not current_user.has_role(USER_ROLE_GUEST):
+        return render_template(
+            "home_intern.html",
+            posts=posts,
+            guest_count=guest_count
+        )
+
+    # keine Fachgruppenmitglieder
+    return render_template(
+        "home.html",
+        posts=posts,
+        guest_count=guest_count
+    )
 
 # -------------------------------------------------------------
 #
 # -------------------------------------------------------------
 @main.route("/poweruser", methods=['GET','POST'])
 @login_required
+@role_required("poweruser")
 def poweruser():
 
     if request.method == "POST":
@@ -108,6 +123,7 @@ def poweruser():
 # -------------------------------------------------------------
 @main.route("/approver", methods=["GET"])
 @login_required
+@role_required("approver")
 def approver():
 
     all_orders = (
@@ -183,17 +199,31 @@ def faq():
 @main.route("/about")
 def about():
     vds_link = SystemParameters.query.filter_by(parameter='vds_link').first()
+    commit = Config.GITCOMMIT
+
+    # when running outside docker, we read git commit hash from local git
+    if [ commit == "" ]:
+            try:
+                import git
+                repo = git.Repo(search_parent_directories=True)
+                commit = repo.head.object.hexsha[0:7]
+            except Exception as e:
+                print(e)
+
     if vds_link:
         vds_link = vds_link.value
     else:
         vds_link = "#"
     if Config.APPVERSION != "":
-        version = f"{Config.APPVERSION} (commit id: {Config.GITCOMMIT})"
+        version = f"{Config.APPVERSION}"
     else:
-        version = f"unversionierter Zwischenstand; commit id: {Config.GITCOMMIT}"
-    if Config.CLEANBUILD != "true":
-        version = version + " - UNCLEAN BUILD"
-    return render_template('about.html', title='About', vds_link=vds_link, version=version)
+        version = f"keine"
+    isDirty = Config.CLEANBUILD != "true"
+    if Config.ENVIRONMENT == "LOCAL":
+        server = "Running on your local machine"
+    else:
+        server = f"{Config.ENVIRONMENT}"
+    return render_template('about.html', title='About', vds_link=vds_link, version=version, server=server, commit=commit, isDirty=isDirty)
 
 @main.route("/status")
 def status():

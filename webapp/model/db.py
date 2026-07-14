@@ -332,7 +332,7 @@ class ObservationRequest(db.Model):
     request_date: Mapped[datetime] = mapped_column(db.DateTime, nullable=False)
     request_observatory_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('observatory.id'), nullable=False)
     request_type: Mapped[str] = mapped_column(db.String(10), unique=False, nullable=False)  # Beobachtung, Führung, Wartung ...
-    #request_purpose: Mapped[str] = mapped_column(db.String(100), unique=False, nullable=False)  # Pritty pictures, Wissenschaft, Forschung ..
+    #request_purpose: Mapped[str] = mapped_column(db.String(100), unique=False, nullable=False)  # Pritty pictures, Wissenschaft, Forschung ...
     request_poweruser_id: Mapped[str] = mapped_column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     remark: Mapped[str] = mapped_column(db.String(2000), nullable=True)
     status: Mapped[str] = mapped_column(db.String(10), nullable=False, default='0')
@@ -516,7 +516,7 @@ class PoweruserMeldung(db.Model):
         db.ForeignKey("user.id"),
         nullable=False
     )
-    # 1 = ist möglich, 2 = vielleicht möglich , 3 = nein
+    # 1 = ist möglich, 2 = vielleicht möglich, 3 = nein
     availability: Mapped[int] = mapped_column(db.Integer, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -537,10 +537,11 @@ class ObservatoryReservation(db.Model):
 
     # status values
     class Status(Enum):
-        UNDEF =    1 # status is undefined
+        UNDEF    = 1 # status is undefined
         RESERVED = 2 # date is reserved, but not yet finally booked
-        BOOKED =   3 # date is booked
-        EXPIRED =  4 # reservation expired
+        BOOKED   = 3 # date is booked
+        EXPIRED  = 4 # reservation expired
+        FROZEN   = 5 # reservation is not final, but it has been submitted
 
     # reservation constants
     reservation_maxtime = timedelta(minutes=4320) # how long can a date be reserved without submission
@@ -566,6 +567,8 @@ class ObservatoryReservation(db.Model):
             return f"Reservierung ist abgelaufen"
         elif s == self.Status.BOOKED:
             return f"Reservierung ist definitiv"
+        elif s == self.Status.FROZEN:
+            return f"Reservierung ist provisorisch"
         else:
             return f"Status unbekannt"
 
@@ -594,29 +597,43 @@ class ObservatoryReservation(db.Model):
         self.status = self.Status.RESERVED.name
 
     def refresh(self):
-        now = datetime.now()
-        self.reservation_exp = max(self.reservation_max, now + self.reservation_time)
-        if self.status == self.Status.RESERVED.name and self.reservation_exp < now:
-            self.status = self.Status.EXPIRED.name
+        """Extend the reservation if possible"""
+        if self.status == self.Status.RESERVED.name:
+            now = datetime.now()
+            self.reservation_exp = max(self.reservation_max, now + self.reservation_time)
+            if self.reservation_exp < now:
+                self.status = self.Status.EXPIRED.name
 
     def cancel(self):
-        self.status = self.Status.EXPIRED
+        """Cancel the reservation"""
+        self.status = self.Status.EXPIRED.name
+
+    def freeze(self):
+        """Freeze the reservation - will no longer expire"""
+        if self.status == self.Status.RESERVED.name:
+            self.status = self.Status.FROZEN.name
 
     def confirm(self):
-        self.status = self.Status.BOOKED
-
+        """Confirm the reservation (fully booked)"""
+        self.status = self.Status.BOOKED.name
 
     def is_booked(self):
+        """Date is fully booked"""
         return self.status == self.Status.BOOKED.name
 
+    def is_frozen(self):
+        """Reservation will not expire, but is not yet fully booked"""
+        return self.status == self.Status.FROZEN.name
+
     def is_expired(self):
+        """Reservation has expired and is no longer valid"""
         now = datetime.now()
         if self.status == self.Status.RESERVED.name and self.reservation_exp < now:
             self.status = self.Status.EXPIRED.name
         return self.status == self.Status.EXPIRED.name
 
-    # change reservation date - will reset reservation period
     def set_date(self, newdate):
+        """change reservation date - will reset reservation period"""
         newdate = self.date_sanitize(newdate)
         if self.date != newdate:
             self.date = newdate
@@ -626,8 +643,8 @@ class ObservatoryReservation(db.Model):
             self.status = self.Status.RESERVED.name
         return self
 
-    # change observatory - will reset reservation period
     def set_observatory(self, observatory):
+        """change observatory - will reset reservation period"""
         if self.observatory_id != observatory.id:
             self.observatory_id = observatory.id
             now = datetime.now()

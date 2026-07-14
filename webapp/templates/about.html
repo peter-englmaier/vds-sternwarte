@@ -27,7 +27,13 @@
 
 	<li><b>Software</b>
 	<ul>
-		<li>vds-sternwarte Version {{ version }}</li>
+		<li>vds-sternwarte Version {{ version }} (commit: <a href="https://github.com/peter-englmaier/vds-sternwarte/commit/{{ commit }}" target="_blank">{{ commit }}</a>)</li>
+		{% if isDirty %}
+		<strong>Source Code wurde verändert!</strong>
+		{% endif %}
+		{% if server != "" %}
+		<li>{{ server }}</li>
+		{% endif %}
 		<li>Open Source mit GPL 3.0 Lizenz</li>
 		<li><a href="https://github.com/peter-englmaier/vds-sternwarte" target="_blank" rel="noopener noreferrer">Quellcode auf github</a></li>
 	</ul>
