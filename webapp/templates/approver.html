@@ -68,14 +68,14 @@
     <span class="badge bg-secondary">Abgeschickt</span><br>
                     Zugewiesen:
                     <span class="badge bg-info text-dark">
-                        {{ order.poweruser_display_name or "-" }}
+                        {{ order.poweruser_name or '-' }}
                     </span>
 </td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
             <!-- <td>{{ order.request_purpose }}</td> -->
-            <td>{{ order.poweruser_name if order.poweruser_name else '-' }}
+            <td>{{ order.poweruser_name or '-' }}
             <td>{{ order.request_type }}</td>
             <td>{{ order.remark }}</td>
         </tr>
@@ -180,14 +180,14 @@
                     <span class="badge bg-success">Genehmigt</span><br>
                     Zugewiesen:
                     <span class="badge bg-info text-dark">
-                        {{ order.poweruser_display_name or "-" }}
+                        {{ order.poweruser_name or '-' }}
                     </span>
                 </td>
 
                 <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
                 <td>{{ order.name }}</td>
                 <td>{{ order.observatory_name }}</td>
-                <td>{{ order.poweruser_name if order.poweruser_name else '-' }}</td>
+                <td>{{ order.poweruser_name or '-' }}</td>
                 <td>{{ order.request_type }}</td>
                 <td>{{ order.remark }}</td>
             </tr>
@@ -234,14 +234,14 @@
                     <span class="badge bg-primary">PU zugewiesen</span><br>
                     Zugewiesen:
                     <span class="badge bg-info text-dark">
-                        {{ order.poweruser_display_name or "-" }}
+                        {{ order.poweruser_name or '-' }}
                     </span>
                 </td>
 
                 <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
                 <td>{{ order.name }}</td>
                 <td>{{ order.observatory_name }}</td>
-                <td>{{ order.poweruser_name if order.poweruser_name else '-' }}</td>
+                <td>{{ order.poweruser_name or '-' }}</td>
                 <td>{{ order.request_type }}</td>
                 <td>{{ order.remark }}</td>
             </tr>

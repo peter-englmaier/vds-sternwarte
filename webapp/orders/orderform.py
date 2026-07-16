@@ -92,7 +92,7 @@ class ObservationRequestHead(FlaskForm):
             ]
 
         self.poweruser_name.choices = [('', 'Auswählen oder leer lassen')] + [
-            (str(x.id), x.name) for x in poweruser_query()
+            (str(x.id), x.display_name()) for x in poweruser_query()
         ]
 
 

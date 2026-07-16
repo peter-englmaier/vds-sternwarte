@@ -627,14 +627,10 @@ def approver_assign_poweruser():
             print(f"Es ist ein Fehler aufgetreten: {e}.")
             db.session.rollback()
 
-    pu_user = User.query.get(poweruser_user_id)
-    pu_name = pu_user.name if pu_user else None
-
-    if pu_user and (not pu_name) and (pu_user.firstname or pu_user.surname):
-        pu_name = f"{pu_user.firstname or ''} {pu_user.surname or ''}".strip()
-
-    if not pu_name:
-        pu_name = f"User {poweruser_user_id}"
+    if pu_user:
+        pu_name = pu_user.display_name()
+    else:
+        pu_name = None
 
     # notify requester and poweruser
     order_url = url_for('orders.show_order_positions', order_id=order_id)

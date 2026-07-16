@@ -61,6 +61,16 @@ class User(db.Model, UserMixin):
     def __str__(self):
        return f"{self.name}"
 
+    def display_name(self):
+        """
+        Name of user used for display
+        :return: display name
+        """
+        display = f"{self.firstname or ''} {self.surname or ''}".strip()
+        if display == '':
+            return self.name
+        return display
+
     def __init__(
         self,
         name: str,

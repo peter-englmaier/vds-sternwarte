@@ -104,17 +104,7 @@ def poweruser():
     for order, pu_user in all_rows:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
         pwuser = User.query.get(order.request_poweruser_id)
-        order.poweruser_name = pwuser.name if pwuser else None
-
-        # Name des vom Approver zugewiesenen Powerusers (falls vorhanden)
-        if pu_user:
-            display = pu_user.name
-            if (not display) and (pu_user.firstname or pu_user.surname):
-                display = f"{pu_user.firstname or ''} {pu_user.surname or ''}".strip()
-            order.assigned_poweruser_display = display or f"User {pu_user.id}"
-        else:
-            order.assigned_poweruser_display = None
-
+        order.poweruser_name = pwuser.display_name() if pwuser else None
         all_orders.append(order)
 
     return render_template("poweruser.html", title="Poweruser", orders=all_orders)
@@ -134,23 +124,8 @@ def approver():
     for order in all_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
 
-        pwuser = None
-        order.poweruser_name = None
-        order.poweruser_display_name = ""
-
         if order.request_poweruser_id:
-            pwuser = User.query.get(order.request_poweruser_id)
-    
-        if pwuser:
-            display = pwuser.name
-            if (not display) and (pwuser.firstname or pwuser.surname):
-                display = f"{pwuser.firstname or ''} {pwuser.surname or ''}".strip()
-            order.poweruser_name = display or f"User {pwuser.id}"
-            order.poweruser_display_name = order.poweruser_name
-
-        print("order.id =", order.id)
-        print("request_poweruser_id =", getattr(order, "request_poweruser_id", None))
-        print("poweruser_display_name =", order.poweruser_display_name)       
+            order.poweruser_name = User.query.get(order.request_poweruser_id).display_name()
 
     order_ids = [o.id for o in all_orders]
 
