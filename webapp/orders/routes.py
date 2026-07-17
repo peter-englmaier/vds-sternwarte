@@ -116,12 +116,7 @@ def show_orders():
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
         poweruser = User.query.get(order.request_poweruser_id)
         
-        if poweruser:
-            full_name = f"{poweruser.firstname or ''} {poweruser.surname or ''}".strip()
-            order.poweruser_name = full_name if full_name else poweruser.name
-        else:
-            order.poweruser_name = None
-            order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+        order.poweruser_name = poweruser.display_name() if poweruser else None
     return render_template("orders.html", title="Teleskopzeit Beantragung", orders=user_orders)
 
 
