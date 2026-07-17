@@ -118,8 +118,6 @@ def show_orders():
         pwuser = User.query.get(order.request_poweruser_id)
         if pwuser:
             order.poweruser_name = pwuser.display_name()
-        else:
-            order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
     return render_template("orders.html", title="Teleskopzeit Beantragung", orders=user_orders)
 
 
