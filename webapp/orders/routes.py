@@ -16,7 +16,7 @@ from datetime import date, datetime
 from celery import shared_task
 
 from webapp import db, mail, Config
-from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
+from webapp.model.db import User, Group, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
 from webapp.orders import orders  # Blueprint-Objekt
 from webapp.orders.orderform import (
@@ -110,15 +110,14 @@ def get_filtersets():
 # --------------------------------------------------------------------
 @orders.route("/orders", methods=["GET"])
 @login_required
+@role_required("user")
 def show_orders():
     user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).all()
     for order in user_orders:
         pwuser = User.query.get(order.request_poweruser_id)
         if pwuser:
-            full_name = f"{pwuser.firstname or ''} {pwuser.surname or ''}".strip()
-            order.poweruser_name = full_name if full_name else pwuser.name
+            order.poweruser_name = pwuser.display_name()
         else:
-            order.poweruser_name = None
             order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
     return render_template("orders.html", title="Teleskopzeit Beantragung", orders=user_orders)
 
@@ -128,6 +127,7 @@ def show_orders():
 # --------------------------------------------------------------------
 @orders.route("/orders/<int:order_id>/copy_order", methods=["POST"])
 @login_required
+@role_required("user")
 def copy_order(order_id):
     order = ObservationRequest.query.get_or_404(order_id)
     if order.user_id != current_user.id:
@@ -143,6 +143,7 @@ def copy_order(order_id):
 # --------------------------------------------------------------------
 @orders.route("/orders/<int:order_id>/delete_order", methods=["POST"])
 @login_required
+@role_required("user")
 def delete_order(order_id):
     order = ObservationRequest.query.get_or_404(order_id)
     if order.user_id != current_user.id:
@@ -158,6 +159,7 @@ def delete_order(order_id):
 # --------------------------------------------------------------------
 @orders.route("/actionhandler", methods=["POST"])
 @login_required
+@role_required("user")
 def actionhandler():
     action = request.form.get("action")
     order_id = request.form.get("order_id")
@@ -179,7 +181,7 @@ def actionhandler():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f"Datum wurde nicht ausgef&uuml;llt","error")
+            flash(f"Datum wurde nicht ausgefüllt","error")
         return redirect("/orders")
 
     # Read entries from gui and save as new observation request (no positions so far)
@@ -194,7 +196,12 @@ def actionhandler():
             poweruser_index = form.poweruser_name.data
             if poweruser_index != '':
                 poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
-                order_head.request_poweruser_id = User.query.filter_by(name=poweruser).first().id
+                # poweruser now holds the display_name, not the name of the power user
+                pw_users = User.by_role('poweruser')
+                for pwuser in pw_users:
+                    if pwuser.display_name() == poweruser:
+                        order_head.request_poweruser_id = pwuser.id
+                        break
             order_head.request_type = form.request_type.data
             order_head.remark = form.remark.data
             order_head.status = ORDER_STATUS_CREATED
@@ -202,7 +209,7 @@ def actionhandler():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f"Datum wurde nicht ausgef&uuml;llt", "error")
+            flash(f"Datum wurde nicht ausgefüllt", "error")
             return redirect("/orders")
 
         # Reservation is created after the first commit so that order_head.id
@@ -239,7 +246,6 @@ def actionhandler():
 @orders.route("/orders/<int:order_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_order_pos(order_id):
-    app = current_app  # noqa: F841 (falls du es für Logging brauchst)
     action = request.form.get("action")
 
     order_head = ObservationRequest.query.get(order_id)
@@ -370,7 +376,7 @@ def edit_order_pos(order_id):
         # Poweruser choices
         selected_poweruser_id = str(order_head.request_poweruser_id)
         form.head.poweruser_name.choices = [("", "Auswählen oder leer lassen")] + [
-            (str(x.id), x.name) for x in poweruser_query()
+            (str(x.id), x.display_name()) for x in poweruser_query()
         ]
         if selected_poweruser_id:
             form.head.poweruser_name.data = selected_poweruser_id
@@ -411,7 +417,15 @@ def edit_order_pos(order_id):
 
         order_head.name = form.head.requester_name.data
         #order_head.request_purpose = form.head.request_purpose.data
-        order_head.request_poweruser_id = form.head.poweruser_name.data or None
+        poweruser_index = form.head.poweruser_name.data
+        if poweruser_index != '':
+            poweruser = next((name for i, name in form.head.poweruser_name.choices if i == poweruser_index), None)
+            # poweruser now holds the display_name, not the name of the power user
+            pw_users = User.by_role('poweruser')
+            for pwuser in pw_users:
+                if pwuser.display_name() == poweruser:
+                    order_head.request_poweruser_id = pwuser.id
+                    break
         order_head.request_type = form.head.request_type.data
         order_head.remark = form.head.remark.data
 
@@ -721,22 +735,6 @@ def approver_assign_poweruser_form():
     </span>
     """
 
-"""
-greeting_string(user): creates a greeting string for given user. Uses only firstname, surname if available
-or falls back to login name
-"""
-def greeting_string(user):
-    # set up user greeting
-    if user.firstname and user.surname:
-        user_greeting = f"{user.firstname} {user.surname}"
-    elif user.firstname:
-        user_greeting = user.firstname
-    elif user.surname:
-        user_greeting = user.surname
-    else:
-        user_greeting = user.name
-    return user_greeting
-
 @shared_task
 def send_approve_email(order_id,approver_id,order_url):
     antrag = ObservationRequest.query.get(order_id)
@@ -744,9 +742,9 @@ def send_approve_email(order_id,approver_id,order_url):
     approver = User.query.get(approver_id)
     pu = User.query.get(antrag.request_poweruser_id)
 
-    user_greeting = greeting_string(user)
-    approver_greeting = greeting_string(approver)
-    pu_greeting = greeting_string(pu)
+    user_greeting = user.display_name()
+    approver_greeting = approver.display_name()
+    pu_greeting = pu.display_name()
 
     if Config.ENVIRONMENT != "PRODUCTION":
         ps = f'''
@@ -795,8 +793,8 @@ def send_reject_email(order_id, approver_id,order_url):
     user = User.query.get(antrag.user_id)
     approver = User.query.get(approver_id)
 
-    user_greeting = greeting_string(user)
-    approver_greeting = greeting_string(approver)
+    user_greeting = user.display_name()
+    approver_greeting = approver.display_name()
 
     if Config.ENVIRONMENT != "PRODUCTION":
         ps = f'''
@@ -890,8 +888,7 @@ def obs_request_complete():
         if order.request_poweruser_id:
             pwuser = User.query.get(order.request_poweruser_id)
             if pwuser:
-                full_name = f"{pwuser.firstname or ''} {pwuser.surname or ''}".strip()
-                order.display_poweruser_name = full_name if full_name else pwuser.name
+                order.display_poweruser_name = pwuser.display_name()
 
         # Observatorium-Anzeige
         order.display_observatory_name = "-"
