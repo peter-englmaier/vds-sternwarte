@@ -641,6 +641,7 @@ def approver_assign_poweruser():
             print(f"Es ist ein Fehler aufgetreten: {e}.")
             db.session.rollback()
 
+    pu_user = User.query.get(poweruser_user_id)
     if pu_user:
         pu_name = pu_user.display_name()
     else:
