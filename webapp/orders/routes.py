@@ -846,12 +846,14 @@ def show_calendar():
     target_id = request.args.get("target_id", default="request_date", type=str)
     display_id = request.args.get("display_id", default="selected_date_display", type=str)
 
-    cal, planned_days, approved_days, new_moon_days, full_moon_days = calendar_service(year, month)
+    (cal, planned_days, approved_days,
+     new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
+     full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days) = calendar_service(year, month)
     today = date.today()
     referrer = request.referrer
 
     template = "_calendar.html" if request.headers.get("HX-Request") else "calendar.html"
-
+    month_name = [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" ]
     return render_template(
         template,
         datetime=datetime,
@@ -859,7 +861,13 @@ def show_calendar():
         planned_days=planned_days,
         approved_days=approved_days,
         full_moon_days=full_moon_days,
+        phase1_moon_days=phase1_moon_days,
+        phase2_moon_days=phase2_moon_days,
+        phase3_moon_days=phase3_moon_days,
         new_moon_days=new_moon_days,
+        phase5_moon_days=phase5_moon_days,
+        phase6_moon_days=phase6_moon_days,
+        phase7_moon_days=phase7_moon_days,
         month=month,
         year=year,
         today_day=today.day,
@@ -869,6 +877,7 @@ def show_calendar():
         picker=picker,
         target_id=target_id,
         display_id=display_id,
+        month_name=month_name
     )
 
 # --------------------------------------------------------------------

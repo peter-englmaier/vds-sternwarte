@@ -1,37 +1,11 @@
-
+<h2>{{month_name[month]}} {{year}}</h2>
+{% set open_fg_color="white" %}
+{% set open_bg_color="#02a007" %}
+{% set planned_fg_color="black" %}
+{% set planned_bg_color="#c2b280" %}
+{% set approved_fg_color="white" %}
+{% set approved_bg_color="#a00a02" %}
 <div id="calendar-container">
-<p>
-<span style="margin-right:50px;">
-    Belegung für {{ month }}.{{ year }}
-    <span style="color: #007bff;">geplant:</span>
-    {% if planned_days %}
-        <span style="color: #007bff;">{{ planned_days|list|sort|join(', ') }}</span>
-    {% else %}
-        <span style="color: #007bff;">keine</span>
-    {% endif %}
-    &nbsp;
-    <span style="color: #a00a02;">reserviert:</span>
-    {% if approved_days %}
-        <span style="color: #a00a02;">{{ approved_days|list|sort|join(', ') }}</span>
-    {% else %}
-        <span style="color: #a00a02;">keine</span>
-    {% endif %}
-    &nbsp;
-    <span style="color: #343a40;">🌑 Neumond:</span>
-    {% if new_moon_days %}
-        <span style="color: #343a40;">{{ new_moon_days|list|sort|join(', ') }}</span>
-    {% else %}
-        <span style="color: #343a40;">keiner</span>
-    {% endif %}
-    &nbsp;
-    <span style="color: #ffe066;">🌕 Vollmond:</span>
-    {% if full_moon_days %}
-        <span style="color: #ffe066;">{{ full_moon_days|list|sort|join(', ') }}</span>
-    {% else %}
-        <span style="color: #ffe066;">keiner</span>
-    {% endif %}
-</span>
-</p>
 
 <table class="calendar-table">
   <tr>
@@ -52,34 +26,51 @@
           {% if picker and not is_past and day not in approved_days and day not in planned_days %}
               data-day="{{ day }}" data-month="{{ month }}" data-year="{{ year }}"
               onclick="selectDate(this, '{{ target_id }}', '{{ display_id }}')"
-              style="cursor: pointer; background-color: #02a007; color: white;"
+              style="cursor: pointer; background-color: {{ open_bg_color }}; color: {{ open_fg_color }};"
           {% else %}
               style="
                 {% if is_past %}
                   background-color: #d3d3d3; color: #666;
                 {% else %}
-                  {% if day in approved_days %} background-color: #a00a02; color: white;
-                  {% elif day in planned_days %}  background-color: #c2b280; color: black;
-                  {% elif day in full_moon_days %} background-color: #ffe066; color: #333; font-weight: bold;
-                  {% elif day in new_moon_days %} background-color: #343a40; color: #fff; font-weight: bold;
+                  {% if day in approved_days %} background-color: {{ approved_bg_color }}; color: {{ approved_fg_color }};
+                  {% elif day in planned_days %}  background-color: {{ planned_bg_color }}; color: {{ planned_fg_color }};
                   {% else %} background-color: #02a007; color: white;
                   {% endif %}
                 {% endif %}
               "
-          {% endif %}
-        >
-          {{ day }}
-          {% if day in full_moon_days %}🌕{% endif %}
-          {% if day in new_moon_days %}🌑{% endif %}
+          {% endif %} >
+            <table style="border:none;"><tr style="border:none;"><td style="border:none;">
+          {% if day in new_moon_days %}&#x1F311;{% endif %}
+          {% if day in phase1_moon_days %}&#x1F312;{% endif %}
+          {% if day in phase2_moon_days %}&#x1F313;{% endif %}
+          {% if day in phase3_moon_days %}&#x1F314;{% endif %}
+          {% if day in full_moon_days %}&#x1F315;{% endif %}
+          {% if day in phase5_moon_days %}&#x1F316;{% endif %}
+          {% if day in phase6_moon_days %}&#x1F317;{% endif %}
+          {% if day in phase7_moon_days %}&#x1F318;{% endif %}
+          </td><td style="border:none;">
+          <div style="text-align: right; vertical-align: top" >{{ day }}</div>
+            </td>
           {% if day in approved_days %}<span title="reserviert"></span>{% endif %}
           {% if day in planned_days %}<span title="geplant"></span>{% endif %}
+            </tr></table>
         </td>
         {% endif %}
       {% endfor %}
     </tr>
   {% endfor %}
 </table>
-
+<br/>
+<p>
+<span style="margin-right:50px;">
+    Legende:
+    <span style="padding:5px; color: {{open_fg_color}}; background-color: {{open_bg_color}}"> frei </span>
+    &nbsp;
+    <span style="padding:5px; color: {{planned_fg_color}}; background-color: {{planned_bg_color}}"> geplant </span>
+    &nbsp;
+    <span style="padding:5px; color: {{approved_fg_color}}; background-color: {{approved_bg_color}}"> reserviert </span>
+</span>
+</p>
 <div class="mt-3">
     <a class="btn btn-primary"
        hx-get="{{ url_for('orders.show_calendar', year=year-1, month=month, picker=picker, target_id=target_id, display_id=display_id) }}"

@@ -222,8 +222,14 @@ def moon_phases(year, month):
         end_date = datetime(year, month + 1, 1)
 
     # Suche nach Neumond und Vollmond im gewünschten Monat
-    new_moon_days = set()
-    full_moon_days = set()
+    new_moon_days = set()    # mond unbeleuchtet
+    phase1_moon_days = set() # mond 25% beleuchtet
+    phase2_moon_days = set() # mond 50% beleuchtet
+    phase3_moon_days = set() # mond 75% beleuchtet
+    full_moon_days = set() # mond 100% beleuchtet
+    phase5_moon_days = set() # mond 75% beleuchtet
+    phase6_moon_days = set() # mond 50% beleuchtet
+    phase7_moon_days = set() # mond 25% beleuchtet
 
     # Wir durchsuchen einen Zeitraum von 2 Monaten um den Zielmonat herum
     days_before = 30
@@ -240,13 +246,39 @@ def moon_phases(year, month):
         # Neumond im Zielmonat?
         if new_moon.year == year and new_moon.month == month:
             new_moon_days.add(new_moon.day)
-        # Vollmond ca. 14.77 Tage nach Neumond
+        # 1/4 Mond
+        phase1_moon = new_moon + timedelta(days=synodic_month * 1 / 8)
+        if phase1_moon.year == year and phase1_moon.month == month:
+            phase1_moon_days.add(phase1_moon.day)
+        # 1/2 Mond
+        phase2_moon = new_moon + timedelta(days=synodic_month * 2 / 8)
+        if phase2_moon.year == year and phase2_moon.month == month:
+            phase2_moon_days.add(phase2_moon.day)
+        # 3/4 Mond
+        phase3_moon = new_moon + timedelta(days=synodic_month * 3 / 8)
+        if phase3_moon.year == year and phase3_moon.month == month:
+            phase3_moon_days.add(phase3_moon.day)
+        # full moon
         full_moon = new_moon + timedelta(days=synodic_month / 2)
         if full_moon.year == year and full_moon.month == month:
             full_moon_days.add(full_moon.day)
+        # 3/4 Mond (abnehmend)
+        phase5_moon = new_moon + timedelta(days=synodic_month * 5 / 8)
+        if phase5_moon.year == year and phase5_moon.month == month:
+            phase5_moon_days.add(phase5_moon.day)
+        # 1/2 Mond (abnehmend)
+        phase6_moon = new_moon + timedelta(days=synodic_month * 6 / 8)
+        if phase6_moon.year == year and phase6_moon.month == month:
+            phase6_moon_days.add(phase6_moon.day)
+        # 1/4 Mond (abnehmend)
+        phase7_moon = new_moon + timedelta(days=synodic_month * 7 / 8)
+        if phase7_moon.year == year and phase7_moon.month == month:
+            phase7_moon_days.add(phase7_moon.day)
+
         k += 1
 
-    return new_moon_days, full_moon_days
+    return (new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
+            full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days)
 
 # ------------------------------------------------------------------------------------------------------
 # Kalender, der die gebuchten und in Planung befindlichen Tage sowohl Voll- und Neumond Tage in einem
@@ -268,8 +300,11 @@ def calendar_service(year, month):
             planned_days.add(request.date.day)
 
     # hier einfach ausgerechnet. Besser mit astropy?
-    new_moon_days, full_moon_days = moon_phases(year, month)
+    (new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
+     full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days) = moon_phases(year, month)
 
     cal = calendar.monthcalendar(year, month)
-    return cal, planned_days, approved_days, new_moon_days, full_moon_days
+    return (cal, planned_days, approved_days,
+            new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
+            full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days)
 
