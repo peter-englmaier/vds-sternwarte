@@ -15,11 +15,12 @@ ORDER_STATUS_FAILED = '9'         # Auftrag konnte nicht ausgeführt werden
 ORDER_STATUS_EXECUTED = '10'      # Auftrag ist ausgeführt
 ORDER_STATUS_PICURES_READY = '11' # Die aufgenommenen Bilder sind verfügbar
 ORDER_STATUS_DOCUMENTED = '12'    # Auftrag ist abgeschlossen und dokumentiert
+ORDER_STATUS_ARCHIVED = '13'     # Auftrag ist archiviert
 
 ORDER_STATUS_CHOICES = [
     (ORDER_STATUS_CREATED, 'Entwurf'),
     (ORDER_STATUS_WAITING, 'Abgeschickt'),
-    (ORDER_STATUS_APPROVED, 'Genehmigt'),
+    (ORDER_STATUS_APPROVED, 'Rückmeldung offen'),
     (ORDER_STATUS_REJECTED, 'Abgelehnt'),
     (ORDER_STATUS_PU_ASSIGNED, 'PU zugewiesen'),
     (ORDER_STATUS_PU_REJECTED, 'PU abgelehnt'),
@@ -29,7 +30,8 @@ ORDER_STATUS_CHOICES = [
     (ORDER_STATUS_FAILED, 'Fehlerhaft'),
     (ORDER_STATUS_EXECUTED, 'Ausgeführt'),
     (ORDER_STATUS_PICURES_READY, 'Bilder verfügbar'),
-    (ORDER_STATUS_DOCUMENTED, 'Dokumentiert')
+    (ORDER_STATUS_DOCUMENTED, 'Dokumentiert'),
+    (ORDER_STATUS_ARCHIVED, 'Archiviert')
 ]
 
 ORDER_STATUS_LABELS = dict(ORDER_STATUS_CHOICES)
