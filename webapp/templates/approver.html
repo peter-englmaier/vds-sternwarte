@@ -64,13 +64,7 @@
                       </button>
                     </form>                   
             </td>
-            <td> 
-    <span class="badge bg-secondary">Abgeschickt</span><br>
-                    Zugewiesen:
-                    <span class="badge bg-info text-dark">
-                        {{ order.poweruser_name or '-' }}
-                    </span>
-</td>            
+            <td><span class="badge bg-secondary">Abgeschickt</span></td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
@@ -177,12 +171,16 @@
                 </td>
 
                 <td>
-                    <span class="badge bg-success">Genehmigt</span><br>
-                    Zugewiesen:
-                    <span class="badge bg-info text-dark">
-                        {{ order.poweruser_name or '-' }}
-                    </span>
-                </td>
+    <span class="badge bg-success">Genehmigt</span><br>
+    Zugewiesen:
+    <span class="badge bg-info text-dark">
+        {% if order.request_poweruser %}
+            {{ order.request_poweruser.display_name() }}
+        {% else %}
+            -
+        {% endif %}
+    </span>
+</td>
 
                 <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
                 <td>{{ order.name }}</td>
