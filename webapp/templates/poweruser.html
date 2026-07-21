@@ -7,12 +7,12 @@
     <span style="margin-right:50px;">
         Poweruser: {{current_user.firstname}} {{current_user.surname}}
     </span>
-        Zum Übernehmen stehen {{orders|length}} Beobachtungsanträge an.
+        Zum Übernehmen stehen {{open_orders|length}} Beobachtungsanträge an.
 </p>
     <p><a class="btn btn-primary" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
 
 
-{% if orders|length > 0 %}
+{% if open_orders|length > 0 %}
 
 <div id="pu-message"></div>
 <table class="table table-bordered table-striped table-hover">
@@ -30,7 +30,7 @@
         </tr>
     </thead>
     <tbody>
-    {% for order in orders %}
+    {% for order in open_orders %}
         <tr>
             <td>
   <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
@@ -84,6 +84,78 @@
 <br>
 
 {% endif %}
+
+<h2>Meine mir zugewiesenen Anträge</h2>
+
+{% if own_orders|length > 0 %}
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Details</th>
+            <th>Status</th>
+            <th>Datum</th>
+            <th>Antragsteller</th>
+            <th>Zugewiesener Poweruser</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for order in own_orders %}
+        <tr>
+            <td>
+                <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}">
+                    Anzeigen
+                </a>
+            </td>
+
+            <td>{{ order.status_label }}</td>
+            <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
+            <td>{{ order.name }}</td>
+            <td>{{ order.poweruser_name or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Dir sind derzeit keine Anträge zugewiesen.</p>
+{% endif %}
+
+<h2>Anderen Powerusern zugewiesene Anträge</h2>
+
+{% if others_orders|length > 0 %}
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Details</th>
+            <th>Status</th>
+            <th>Datum</th>
+            <th>Antragsteller</th>
+            <th>Zugewiesener Poweruser</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for order in others_orders %}
+        <tr>
+            <td>
+                <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}">
+                    Anzeigen
+                </a>
+            </td>
+
+            <td>{{ order.status_label }}</td>
+            <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
+            <td>{{ order.name }}</td>
+            <td>{{ order.poweruser_name or '-' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Es sind derzeit keine Anträge anderen Powerusern zugewiesen.</p>
+{% endif %}
+
+
 
 <a class="btn btn-warning" style="background-color: #007bff; color: white;"
    href="{{ url_for('main.home') }}">Zur Startseite</a>

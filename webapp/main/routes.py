@@ -101,33 +101,40 @@ def poweruser():
             User.id == ObservationRequest.request_poweruser_id,
         )
         .filter(
-            or_(
-                ObservationRequest.status == ORDER_STATUS_APPROVED,
-                and_(
-                    ObservationRequest.status == ORDER_STATUS_PU_ASSIGNED,
-                    ObservationRequest.request_poweruser_id == current_user.id,
-                ),
-            )
+            ObservationRequest.status.in_([
+                ORDER_STATUS_APPROVED,
+                ORDER_STATUS_PU_ASSIGNED,
+            ])
         )
         .all()
     )
 
-    all_orders = []
+    open_orders = []
+    own_orders = []
+    others_orders = []
 
     for order, pu_user in all_rows:
-        order.status_label = ORDER_STATUS_LABELS.get(
-            order.status,
-            "??",
-        )
+        order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
 
-        if order.status == ORDER_STATUS_PU_ASSIGNED and pu_user:
-            order.poweruser_name = pu_user.display_name()
-        else:
+        if order.status == ORDER_STATUS_APPROVED:
+            # Noch nicht zugewiesene Anträge
             order.poweruser_name = None
+            open_orders.append(order)
 
-        all_orders.append(order)
+        elif order.status == ORDER_STATUS_PU_ASSIGNED:
+            order.poweruser_name = (
+                pu_user.display_name()
+                if pu_user
+                else None
+            )
 
-    return render_template("poweruser.html", title="Poweruser", orders=all_orders)
+            if order.request_poweruser_id == current_user.id:
+                own_orders.append(order)
+            else:
+                others_orders.append(order)
+
+    return render_template("poweruser.html",title="Poweruser",open_orders=open_orders,own_orders=own_orders,others_orders=others_orders,)
+
 # -------------------------------------------------------------
 #
 # -------------------------------------------------------------
