@@ -480,6 +480,13 @@ def edit_order_pos(order_id):
                     )
                 )
 
+            order_head.status = ORDER_STATUS_WAITING
+            db.session.add(order_head)
+
+            if reservation:
+                reservation.freeze()
+                db.session.add(reservation) 
+
             db.session.commit()
             flash("Deine Eingaben sind gespeichert!", "success")
             return redirect(url_for("orders.edit_order_pos", order_id=order_id))
