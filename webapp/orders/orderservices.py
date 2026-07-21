@@ -119,6 +119,7 @@ def delete_order_service(order_id):
     try:
         if reservation:
             db.session.delete(reservation)
+            db.session.commit()
         db.session.delete(order)
         db.session.commit()
     except Exception as e:

@@ -13,6 +13,7 @@ from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIG
 from sqlalchemy.exc import IntegrityError
 from collections import defaultdict
 from ..users.utils import role_required
+from sqlalchemy import or_, and_
 
 @main.route("/")
 @main.route("/home")
@@ -95,19 +96,45 @@ def poweruser():
     # GET
     all_rows = (
         db.session.query(ObservationRequest, User)
-        .outerjoin(User, User.id == ObservationRequest.request_poweruser_id)
-        .filter(ObservationRequest.status.in_([ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED]))
+        .outerjoin(
+            User,
+            User.id == ObservationRequest.request_poweruser_id,
+        )
+        .filter(
+            ObservationRequest.status.in_([
+                ORDER_STATUS_APPROVED,
+                ORDER_STATUS_PU_ASSIGNED,
+            ])
+        )
         .all()
     )
 
-    all_orders = []
+    open_orders = []
+    own_orders = []
+    others_orders = []
+
     for order, pu_user in all_rows:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
-        pwuser = User.query.get(order.request_poweruser_id)
-        order.poweruser_name = pwuser.display_name() if pwuser else None
-        all_orders.append(order)
 
-    return render_template("poweruser.html", title="Poweruser", orders=all_orders)
+        if order.status == ORDER_STATUS_APPROVED:
+            # Noch nicht zugewiesene Anträge
+            order.poweruser_name = None
+            open_orders.append(order)
+
+        elif order.status == ORDER_STATUS_PU_ASSIGNED:
+            order.poweruser_name = (
+                pu_user.display_name()
+                if pu_user
+                else None
+            )
+
+            if order.request_poweruser_id == current_user.id:
+                own_orders.append(order)
+            else:
+                others_orders.append(order)
+
+    return render_template("poweruser.html",title="Poweruser",open_orders=open_orders,own_orders=own_orders,others_orders=others_orders,)
+
 # -------------------------------------------------------------
 #
 # -------------------------------------------------------------
