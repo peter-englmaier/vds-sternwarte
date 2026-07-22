@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<h2>Antrag zum {{ order.request_date.strftime('%d.%m.%Y') }} Teilnehmer: {{ order.name }}</h2>
-<p>Antragssteller: {{ current_user.firstname }} {{ current_user.surname }}</p>
+<h2>Antrag zum {{ order.request_date.strftime('%d.%m.%Y') }}</h2>
+<p>Antragssteller: {{ user.display_name() if user else '-' }}</p>
+<p>Poweruser: {{ pu_user.display_name() if pu_user else '-' }}</p>
+<p>Sternwarte: {{ observatory.name if observatory else '-' }}, {{ observatory.site.name if observatory and observatory.site else '-' }}</p>
+<p>Reserviertes Datum: {{ reservation.date.strftime('%d.%m.%Y') if reservation else '-' }}; {{ reservation or 'unknown' }} </p>
 <p>Status: {{ order.status_label }}</p>
 
 <h3>Schritte</h3>

@@ -581,8 +581,13 @@ def edit_order_pos(order_id):
 def show_order_positions(order_id):
     user_order = ObservationRequest.query.get(order_id)
     user_order.status_label = ORDER_STATUS_LABELS.get(user_order.status, "??")
+    user = User.query.get(user_order.user_id)
+    pu_user = User.query.get(user_order.request_poweruser_id)
     positions = ObservationRequestPosition.query.filter_by(observation_request_id=order_id).all()
-    return render_template("order_positions.html", order=user_order, order_position=positions)
+    observatory = Observatory.query.get(user_order.request_observatory_id)
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
+    return render_template("order_positions.html", order=user_order, order_position=positions,
+                           user=user, pu_user=pu_user, observatory=observatory, reservation=reservation)
 
 
 # --------------------------------------------------------------------
