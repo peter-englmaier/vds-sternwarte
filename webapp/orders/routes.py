@@ -394,112 +394,9 @@ def edit_order_pos(order_id):
     form = ObservationRequestPositionsForm(request.form)
 
     # -------------------------
-    # POST submit_order: Kopf + Positionen speichern (inkl. block_no / row_in_block)
-    # damit bei "Beantragung abschicken" gespeichert wird und die Angaben in der Liste mit show zu sehen sind
+    # POST save_order or submit-order: Kopf + Positionen speichern (inkl. block_no / row_in_block)
     # -------------------------
-    if action == "submit_order":
-        # Kopf speichern
-        order_head.request_date = form.head.request_date.data
-        order_head.request_observatory_id = form.head.observatory_name.data
-        observatory = Observatory.query.get(order_head.request_observatory_id)
-        reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
-        if not reservation:
-            reservation = ObservatoryReservation(order_head.request_date,observatory,order_head)
-        else:
-            reservation.set_observatory(observatory).set_date(order_head.request_date)
-        try:
-            db.session.add(reservation)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            flash("Reservation nicht möglich", "error")
-            return redirect(url_for("orders.edit_order_pos", order_id=order_id))
-
-        order_head.name = form.head.requester_name.data
-        #order_head.request_purpose = form.head.request_purpose.data
-        poweruser_index = form.head.poweruser_name.data
-        if poweruser_index != '':
-            poweruser = next((name for i, name in form.head.poweruser_name.choices if i == poweruser_index), None)
-            # poweruser now holds the display_name, not the name of the power user
-            pw_users = User.by_role('poweruser')
-            for pwuser in pw_users:
-                if pwuser.display_name() == poweruser:
-                    order_head.request_poweruser_id = pwuser.id
-                    break
-        order_head.request_type = form.head.request_type.data
-        order_head.remark = form.head.remark.data
-
-        try:
-            ObservationRequestPosition.query.filter_by(observation_request_id=order_id).delete()
-
-            for idx, pos_form in enumerate(form.positions):
-                # Wichtig: block_no und row_in_block kommen NICHT aus WTForms-Feldern,
-                # sondern aus den hidden Inputs, die dein Flattening erzeugt.
-                block_no_raw = request.form.get(f"positions-{idx}-block_no", "1")
-                row_in_block_raw = request.form.get(f"positions-{idx}-row_in_block", "1")
-
-                try:
-                    block_no = int(block_no_raw)
-                except Exception:
-                    block_no = 1
-
-                try:
-                    row_in_block = int(row_in_block_raw)
-                except Exception:
-                    row_in_block = 1
-
-                # target_coordinates_lock: DB ist VARCHAR(1)
-                # -> konsistent als "0"/"1" speichern, damit GET ( != "0") stimmt
-                lock_val = pos_form.target_coordinates_lock.data
-                if isinstance(lock_val, str):
-                    # falls schon "0"/"1" geliefert wird
-                    lock_db = lock_val
-                else:
-                    lock_db = "1" if lock_val else "0"
-
-                db.session.add(
-                    ObservationRequestPosition(
-                        row_no=idx + 1,
-                        block_no=block_no,
-                        row_in_block=row_in_block,
-                        observation_request_id=order_id,
-                        telescope_id=pos_form.telescope.data,
-                        target=pos_form.target.data,
-                        filterset_id=pos_form.filterset.data,
-                        target_objecttype=pos_form.target_objecttype.data,
-                        target_coordinates=pos_form.target_coordinates.data,
-                        target_coordinates_lock=lock_db,
-                        exposure_count=pos_form.exposure_count.data,
-                        exposure_time=pos_form.exposure_time.data,
-                        mosaic=bool(pos_form.mosaic.data),
-                        exposure_starttime=pos_form.exposure_starttime.data,
-                        exposure_gain=pos_form.exposure_gain.data,
-                        exposure_offset=pos_form.exposure_offset.data,
-                        exposure_dither=pos_form.exposure_dither.data,
-                        exposure_focus=pos_form.exposure_focus.data,
-                    )
-                )
-
-            order_head.status = ORDER_STATUS_WAITING
-            db.session.add(order_head)
-
-            if reservation:
-                reservation.freeze()
-                db.session.add(reservation) 
-
-            db.session.commit()
-            flash("Deine Eingaben sind gespeichert!", "success")
-            return redirect(url_for("orders.edit_order_pos", order_id=order_id))
-
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Es ist ein Fehler aufgetreten: {e}", "error")
-            return redirect(url_for("orders.edit_order_pos", order_id=order_id)) 
-
-    # -------------------------
-    # POST save_order: Kopf + Positionen speichern (inkl. block_no / row_in_block)
-    # -------------------------
-    if action == "save_order":
+    if action == "save_order" or action == "submit_order":
         # Kopf speichern
         order_head.request_date = form.head.request_date.data
         order_head.request_observatory_id = form.head.observatory_name.data
@@ -584,7 +481,10 @@ def edit_order_pos(order_id):
 
             db.session.commit()
             flash("Deine Eingaben sind gespeichert!", "success")
-            return redirect(url_for("orders.edit_order_pos", order_id=order_id))
+            #return redirect(url_for("orders.edit_order_pos", order_id=order_id))
+            if action == "save_order":
+                return redirect (url_for("orders.edit_order_pos", order_id=order_id))
+            # kein 'return' wenn "save_order"
 
         except Exception as e:
             db.session.rollback()
