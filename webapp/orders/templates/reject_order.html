@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Antrag ablehnen</h2>
+
+<p>Antrag für {{ order.request_date.strftime('%d.%m.%Y') }}</p>
+<p>Antragssteller: {{ user.display_name() if user else '-' }}</p>
+<p>Sternwarte: {{ observatory.name if observatory else '-' }}, {{ observatory.site.name if observatory and observatory.site else '-' }}</p>
+<p>Reserviertes Datum: {{ reservation.date.strftime('%d.%m.%Y') if reservation else '-' }}; {{ reservation or 'unknown' }} </p>
+<p>Status: {{ order.status_label }}</p>
+
+<h3>Schritte</h3>
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Teleskop</th>
+            <th>Filterset</th>
+            <th>Rubrik</th>
+            <th>Objekt</th>
+            <th>Koordinaten</th>
+            <th>Sperre</th>
+            <th>Anzahl Bilder</th>
+            <th>Bel. Zeit</th>
+            <th>Mosaik</th>
+            <th>Startzeit</th>
+            <th>Gain</th>
+            <th>Offset</th>
+            <th>Dithern</th>
+            <th>Fokussieren</th>
+        </tr>
+    </thead>
+    {% for order_pos in order_position %}
+        <tr>
+            <td>{{order_pos.telescope.name}}</td>
+            <td>{{order_pos.filterset.name}}</td>
+            <td>{{order_pos.target_objecttype}}</td>
+            <td>{{order_pos.target}}</td>
+            <td>{{order_pos.target_coordinates if order_pos.target_coordinates else '-' }}</td>
+            <td> {{ '✓' if order_pos.target_coordinates_lock == '1' else '✗' }} </td>
+            <td>{{order_pos.exposure_count}}</td>
+            <td>{{order_pos.exposure_time}}</td>
+            <td class="text-center">{{ "✓" if order_pos.mosaic else "" }}</td>
+            <td>{{ order_pos.exposure_starttime('%H:%M') if order_pos.exposure_starttime else '-' }}</td>
+            <td>{{order_pos.exposure_gain}}</td>
+            <td>{{order_pos.exposure_offset}}</td>
+            <td>{{order_pos.exposure_dither}}</td>
+            <td>{{order_pos.exposure_focus}}</td>
+        </tr>
+    {% endfor %}
+    <tbody>
+</table>
+<br/>
+
+<form method="POST" action="">
+  {{ form.hidden_tag() }}
+  <fieldset class="form-group">
+      <legend class="border-bottom mb-4">{{ legend }}</legend>
+      <div class="form-group">
+          {{ form.info.label(class="form-control-label") }}
+          {% if form.info.errors %}
+              {{ form.info(class="form-control form-control-lg is-invalid") }}
+              <div class="invalid-feedback">
+                  {% for error in form.info.errors %}
+                      <span>{{ error }}</span>
+                  {% endfor %}
+              </div>
+          {% else %}
+              {{ form.info(class="form-control form-control-lg") }}
+          {% endif %}
+      </div>
+  </fieldset>
+  <br/>
+  <div class="form-group">
+      {{ form.submit(class="btn btn-danger") }}
+      {{ form.cancel(class="btn btn-outline-secondary") }}
+  </div>
+</form>
+
+{% endblock content %}
