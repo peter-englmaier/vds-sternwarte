@@ -24,6 +24,7 @@ from webapp.orders import orders  # Blueprint-Objekt
 from webapp.orders.orderform import (
     ObservationRequestPositionsForm,
     ObservationRequestHead,
+    RejectOrderForm,
     telescope_query,
     filterset_query,
     poweruser_query,
@@ -666,8 +667,8 @@ def approver_assign_poweruser():
         pu_name = None
 
     # notify requester and poweruser
-    order_url = url_for('orders.show_order_positions', order_id=order_id)
-    send_approve_email.delay(order_id, current_user.id, order_url)
+    order_url = url_for('orders.show_order_positions', order_id=order_id, _external=True)
+    send_approve_email.delay(order_id, current_user.id, order_url, None)
 
     return f"""
 
@@ -689,26 +690,44 @@ def approver_assign_poweruser():
 # --------------------------------------------------------------------
 # Der Kontrolleur (Approver) weist Antrag zurück
 # --------------------------------------------------------------------
-@orders.route("/approver/<int:order_id>/reject", methods=["POST"])
+@orders.route("/approver/<int:order_id>/reject", methods=["GET", "POST"])
 @login_required
 @role_required("approver")
 def reject_order(order_id):
-    order_head = ObservationRequest.query.get(order_id)
-    order_head.status = ORDER_STATUS_REJECTED
-    try:
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        flash(
-            f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-            "danger",
-        )
-    else:
-        flash("Antrag abgelehnt", "success")
-        # notify requester
-        order_url = url_for('orders.show_order_positions', order_id=order_id)
-        send_reject_email.delay(order_id, current_user.id, order_url)
-    return redirect(url_for("main.approver"))
+    order_head = ObservationRequest.query.get_or_404(order_id)
+    user=User.query.get(order_head.user_id)
+    observatory = Observatory.query.get(order_head.request_observatory_id)
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
+    order_head.status_label = ORDER_STATUS_LABELS.get(order_head.status, "??")
+    form = RejectOrderForm()
+    if form.validate_on_submit():
+        if form.data['submit']:
+            done=False
+            try:
+                order_head.status = ORDER_STATUS_REJECTED
+                db.session.add(order_head)
+                db.session.commit()
+                done=True
+                order_url = url_for('orders.show_order_positions', order_id=order_id, _external=True)
+                send_reject_email.delay(order_id, current_user.id, order_url, form.data['info'])
+                flash(f"Antrag abgelehnt und Mail versendet", "success")
+                return redirect(url_for("main.approver"))
+            except Exception as e:
+                db.session.rollback()
+                if done:
+                    flash(f"Antrag abgelehnt, aber Mail konnte nicht versendet werden. Fehler: {e}",
+                          "danger")
+                else:
+                    flash(f"Antrag kann nicht abgelehnt werden. Fehler: {e}.", "danger")
+
+        elif form.data['cancel']:
+            return redirect(url_for("main.approver"))
+
+    elif request.method == 'GET':
+        # formular befuellen (hier nichts?)
+        pass
+    return render_template('reject_order.html',
+                           form=form, order=order_head, user=user, observatory=observatory, reservation=reservation)
 
 
 # --------------------------------------------------------------------
@@ -755,11 +774,12 @@ def approver_assign_poweruser_form():
     """
 
 @shared_task
-def send_approve_email(order_id,approver_id,order_url):
+def send_approve_email(order_id, approver_id, order_url, info):
     antrag = ObservationRequest.query.get(order_id)
     user = User.query.get(antrag.user_id)
     approver = User.query.get(approver_id)
     pu = User.query.get(antrag.request_poweruser_id)
+    request_date = antrag.request_date.strftime('%d.%m.%Y')
 
     user_greeting = user.display_name()
     approver_greeting = approver.display_name()
@@ -778,19 +798,24 @@ def send_approve_email(order_id,approver_id,order_url):
     msg = Message('Antrag genehmigt',
                   sender=Config.MAIL_REPLYTO,
                   recipients=recipients)
-
-    msg.body = f'''
+    msg.body = f'''\
 Hallo {user_greeting},
     
-Glückwunsch! Dein Antrag mit der Nummer #{order_id} wurde genehmigt.
+die beantragte Beobachtung #{order_id} für den {request_date} wurde genehmigt.
+Der Termin ist im Kalender entsprechend reserviert.
+
 Deine Beobachtung wird betreut durch: PU {pu_greeting}
 Link zum Antrag: {order_url}
-
+{info or ""}
 Wie geht es nun weiter?
-- Bereite dich auf die Beobachtung vor, indem du den PU frühzeitig kontaktierst
-- Halte alle Informationen bereit
-- Informiere dich über das Wetter vor Ort
-- Trage die erhaltenen Daten hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569
+- PU {pu_greeting} wird Dich kontaktieren. Für die Kommunikation setzen JITSI https://jitsi.decoit.de/VdS-Sternwarte ein. Dieses ist eine rein Webbrowser basiertende Anwendung und bedarf keiner weiteren Installation.
+- Bitte bereite dich auf die Beobachtung  in dem Sinne vor, das alle Informationen zur Erstellung einer N.I.N.A Sequenz durch den PU möglich ist.
+- Informiere dich über das Wetter vor Ort. Es ist nicht ausgeschlossen, das die Beobachtung aufgrund von instabilen Bedingungen nicht möglich ist.
+- Wir erstellen eine Statistik über die beobachteten Objekte – auch um Mehrfachbeobachtungen zu minimieren. Daher trage bitte die durchgeführten Belichtungen hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569.
+
+Bitte berücksichtige auch potenzielle allgemeine Bekanntmachungen.
+
+Danke für die Beachtung und viel Erfolg.
 
 Gruss, {approver_greeting}
 {ps}
@@ -807,7 +832,7 @@ Gruss, {approver_greeting}
 
 
 @shared_task
-def send_reject_email(order_id, approver_id,order_url):
+def send_reject_email(order_id, approver_id, order_url, info):
     antrag = ObservationRequest.query.get(order_id)
     user = User.query.get(antrag.user_id)
     approver = User.query.get(approver_id)
@@ -828,17 +853,23 @@ def send_reject_email(order_id, approver_id,order_url):
     msg = Message('Antrag abgelehnt',
                   sender=Config.MAIL_REPLYTO,
                   recipients=recipients)
-    msg.body = f'''
-    Hallo {user_greeting},
+    msg.body = f'''\
+Hallo {user_greeting},
 
-    Oh nein! Dein Antrag mit der Nummer #{order_id} wurde abgelehnt.
-    Link zum Antrag: {order_url}
+Dein Antrag mit der Nummer #{order_id} wurde leider abgelehnt. Gegebenenfalls ist unten eine Erläuterung zu finden.
 
-    Wie geht es nun weiter?
-    - Versuche einen neuen Antrag
+Link zum Antrag: {order_url}
 
-    Gruss, {approver_greeting}
-    {ps}
+Erläuterung: {info or "keine"}
+
+Wie geht es nun weiter?
+- Falls eine Erläuterung vorhanden ist, bitte diese in einem neuen Antrag berücksichtigen.
+- Gegebenenfalls Kontaktaufnahme via Email.
+
+Sorry, Danke!
+
+Gruss, {approver_greeting}
+{ps}
 '''
     try:
         mail.send(msg)

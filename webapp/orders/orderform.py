@@ -132,3 +132,9 @@ class ObservationRequestPositionsForm(FlaskForm):
     positions = FieldList(FormField(ObservationRequestPositionForm), min_entries=0)
     submit = SubmitField('Speichern')
 
+# Reject Order
+class RejectOrderForm(FlaskForm):
+    order_id = HiddenField()
+    info = TextAreaField('Begründung für Ablehnung')
+    submit = SubmitField('Ablehnen und Mail versenden')
+    cancel = SubmitField('Zurück zur Approver Seite')
