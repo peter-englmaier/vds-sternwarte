@@ -225,7 +225,7 @@ def actionhandler():
             db.session.rollback()
             flash(
                 f"Datum kann nicht reserviert werden. Bitte anderes Datum wählen.",
-                "error",
+                "danger",
             )
             return redirect(url_for("orders.edit_order_pos", order_id=order_head.id))
 
