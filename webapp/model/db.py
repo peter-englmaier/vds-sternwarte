@@ -645,7 +645,8 @@ class ObservatoryReservation(db.Model):
     def set_date(self, newdate):
         """change reservation date - will reset reservation period"""
         newdate = self.date_sanitize(newdate)
-        if self.date != newdate:
+        olddate = self.date.date()
+        if olddate != newdate:
             self.date = newdate
             now = datetime.now()
             self.reservation_max = now + self.reservation_maxtime
