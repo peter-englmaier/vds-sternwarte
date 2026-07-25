@@ -2,6 +2,10 @@
 {% block content %}
     <div class="content-section">
         <h1>Oops. Page Not Found (404)</h1>
-        <p>That page does not exist. Please try a different location</p>
+        {% if error and error != "" %}
+          <p> {{error}}. Please try a different location </p>
+        {% else %}
+          <p>That page does not exist. Please try a different location</p>
+        {% endif %}
     </div>
 {% endblock content %}

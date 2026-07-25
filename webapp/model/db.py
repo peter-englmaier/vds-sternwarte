@@ -571,14 +571,16 @@ class ObservatoryReservation(db.Model):
 
     def __str__(self):
         s = self.Status[self.status]
+        date_string = self.date.strftime('%d.%m.%Y')
         if s == self.Status.RESERVED:
-            return f"Reserviert bis {self.reservation_exp}"
+            exp_string = self.reservation_exp.strftime('%d.%m.%Y %H:%M')
+            return f"{date_string} reserviert bis {exp_string}"
         elif s == self.Status.EXPIRED:
             return f"Reservierung ist abgelaufen"
         elif s == self.Status.BOOKED:
-            return f"Reservierung ist definitiv"
+            return f"{date_string} definitiv reserviert"
         elif s == self.Status.FROZEN:
-            return f"Reservierung ist provisorisch"
+            return f"{date_string} provisorisch reserviert"
         else:
             return f"Status unbekannt"
 

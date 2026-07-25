@@ -61,9 +61,9 @@
           onclick="return confirm('Hast Du ein Datum ausgewählt?');">
    Weiter
   </button>
-
-<a class="btn btn-warning" style="background-color: #07a0f7; color: white;" href="{{ url_for('orders.show_calendar') }}" >Kalender anzeigen</a>
-
+{# not needed
+<a class="btn btn-warning" style="background-color: #07a0f7; color: white;" href="{{ url_for('orders.show_calendar', picker=False) }}" >Kalender anzeigen</a>
+#}
    <button type="reset" class="btn btn-secondary">
       Zurücksetzen
   </button>
