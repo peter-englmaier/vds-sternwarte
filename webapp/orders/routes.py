@@ -17,6 +17,7 @@ from celery import shared_task
 from sqlalchemy import true
 
 from webapp import db, mail, Config
+from webapp.errors.handlers import *
 from webapp.model.db import User, Group, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 
 from webapp.orders import orders  # Blueprint-Objekt
@@ -188,7 +189,7 @@ def actionhandler():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f"Datum wurde nicht ausgefüllt","error")
+            flash(f"Datum wurde nicht ausgefüllt","danger")
         return redirect("/orders")
 
     # Read entries from gui and save as new observation request (no positions so far)
@@ -216,7 +217,7 @@ def actionhandler():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f"Datum wurde nicht ausgefüllt", "error")
+            flash(f"Datum wurde nicht ausgefüllt", "danger")
             return redirect("/orders")
 
         # Reservation is created after the first commit so that order_head.id
@@ -419,7 +420,7 @@ def edit_order_pos(order_id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash("Reservation nicht möglich", "error")
+            flash("Reservation nicht möglich", "danger")
             return redirect(url_for("orders.edit_order_pos", order_id=order_id))
 
         order_head.name = form.head.requester_name.data
@@ -496,7 +497,7 @@ def edit_order_pos(order_id):
 
         except Exception as e:
             db.session.rollback()
-            flash(f"Es ist ein Fehler aufgetreten: {e}", "error")
+            flash(f"Es ist ein Fehler aufgetreten: {e}", "danger")
             return redirect(url_for("orders.edit_order_pos", order_id=order_id))
 
     # -------------------------
@@ -562,7 +563,7 @@ def edit_order_pos(order_id):
             db.session.rollback()
             flash(
                 f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-                "error",
+                "danger",
             )
         # freeze reservation
         reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
@@ -591,6 +592,8 @@ def edit_order_pos(order_id):
 @login_required
 def show_order_positions(order_id):
     user_order = ObservationRequest.query.get(order_id)
+    if not user_order:
+        return error_404("Order does not exist")
     user_order.status_label = ORDER_STATUS_LABELS.get(user_order.status, "??")
     user = User.query.get(user_order.user_id)
     pu_user = User.query.get(user_order.request_poweruser_id)
@@ -616,7 +619,7 @@ def pu_accept(order_id):
         db.session.rollback()
         flash(
             f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-            "error",
+            "danger",
         )
     else:
         flash("Antrag übernommen", "success")
@@ -698,7 +701,7 @@ def reject_order(order_id):
         db.session.rollback()
         flash(
             f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-            "error",
+            "danger",
         )
     else:
         flash("Antrag abgelehnt", "success")
@@ -723,7 +726,7 @@ def approve_order(order_id):
         db.session.rollback()
         flash(
             f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-            "error",
+            "danger",
         )
     else:
         flash("Antrag bestätigt", "success")
