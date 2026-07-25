@@ -18,8 +18,7 @@
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <th>Aktion</th>
-            <th>Status</th>
+            <th>Aktion</th>            
             <th>Datum</th>
             <th>Beteiligte</th>
             <th>Observatorium</th>
@@ -61,14 +60,7 @@
         hx-swap="outerHTML">
   <i class="bi bi-save"></i>
 </button>
-</td>
-
-            <td> {{ order.status_label }}
-              <br>
-               <span class="badge bg-info text-dark">
-                 {{ order.poweruser_name or '-' }}
-               </span>
-            </td>
+</td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
@@ -91,8 +83,7 @@
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <th>Details</th>
-            <th>Status</th>
+            <th>Details</th>            
             <th>Datum</th>
             <th>Antragsteller</th>
             <th>Zugewiesener Poweruser</th>
@@ -106,9 +97,7 @@
                 <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}">
                     Anzeigen
                 </a>
-            </td>
-
-            <td>{{ order.status_label }}</td>
+            </td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.poweruser_name or '-' }}</td>
@@ -126,8 +115,7 @@
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
-            <th>Details</th>
-            <th>Status</th>
+            <th>Details</th>            
             <th>Datum</th>
             <th>Antragsteller</th>
             <th>Zugewiesener Poweruser</th>
@@ -141,9 +129,7 @@
                 <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}">
                     Anzeigen
                 </a>
-            </td>
-
-            <td>{{ order.status_label }}</td>
+            </td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.poweruser_name or '-' }}</td>
