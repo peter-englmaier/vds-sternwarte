@@ -217,7 +217,7 @@ def actionhandler():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f"Datum wurde nicht ausgefüllt", "danger")
+            flash(f"Datum wurde nicht ausgewählt.  Bitte nochmal den Button <Neuen Antrag eingeben> drücken und ein Datum auswählen.", "warning")
             return redirect("/orders")
 
         # Reservation is created after the first commit so that order_head.id
