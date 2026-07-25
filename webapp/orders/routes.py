@@ -14,6 +14,7 @@ from flask import current_app
 from flask_mail import Message
 from datetime import date, datetime
 from celery import shared_task
+from sqlalchemy import true
 
 from webapp import db, mail, Config
 from webapp.model.db import User, Group, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
@@ -115,6 +116,13 @@ def show_orders():
     user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).all()
     for order in user_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+        reservation = ObservatoryReservation.query.filter_by(observation_request_id=order.id).first();
+        if reservation:
+            order.date_is_reserved = True
+            order.date_info = reservation
+        else:
+            order.date_is_reserved = False
+            order.date_info = order.request_date.strftime('%d.%m.%Y')
         pwuser = User.query.get(order.request_poweruser_id)
         if pwuser:
             order.poweruser_name = pwuser.display_name()

@@ -56,7 +56,11 @@
 
             </td>
             <td>{{ order.status_label }}</td>
-            <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
+            {% if order.date_is_reserved %}
+            <td>{{ order.date_info }}</td>
+            {% else %}
+            <td><s>{{ order.date_info }}</s></td>
+            {% endif %}
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
             <!-- <td>{{ order.request_purpose }}</td> -->
