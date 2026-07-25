@@ -786,14 +786,9 @@ def send_approve_email(order_id, approver_id, order_url, info):
     pu_greeting = pu.display_name()
 
     if Config.ENVIRONMENT != "PRODUCTION":
-        ps = f'''
-    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
-        {user.email}, {approver.email} und {pu.email}
-    '''
-        recipients = [Config.ADMIN_EMAIL]
-    else:
-        ps = ""
-        recipients = [user.email, approver.email, pu.email]
+        ps = f"P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt."
+
+    recipients = [user.email, approver.email, pu.email]
 
     msg = Message('Antrag genehmigt',
                   sender=Config.MAIL_REPLYTO,
@@ -818,7 +813,7 @@ Bitte berücksichtige auch potenzielle allgemeine Bekanntmachungen.
 Danke für die Beachtung und viel Erfolg.
 
 Gruss, {approver_greeting}
-{ps}
+{ps or ""}
 '''
     try:
         mail.send(msg)
@@ -841,14 +836,9 @@ def send_reject_email(order_id, approver_id, order_url, info):
     approver_greeting = approver.display_name()
 
     if Config.ENVIRONMENT != "PRODUCTION":
-        ps = f'''
-    P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt. Sie sollte gehen an:
-        {user.email} und {approver.email}
-    '''
-        recipients = [Config.ADMIN_EMAIL]
-    else:
-        ps = ""
-        recipients = [user.email, approver.email]
+        ps = f"P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt."
+
+    recipients = [user.email, approver.email]
 
     msg = Message('Antrag abgelehnt',
                   sender=Config.MAIL_REPLYTO,
@@ -869,7 +859,7 @@ Wie geht es nun weiter?
 Sorry, Danke!
 
 Gruss, {approver_greeting}
-{ps}
+{ps or ""}
 '''
     try:
         mail.send(msg)
