@@ -39,7 +39,20 @@
 
 <span id="pu-feedback-{{ order.id }}">
   {% if order.my_pu_meldung_availability %}
-    <span class="text-success ms-2">In Datenbank gespeichert</span>
+    <span class="text-success ms-2">Deine Rückmeldung
+        {% if order.my_pu_meldung_availability == 1 %}
+          <span class="text-success">Möglich</span>
+        {% elif order.my_pu_meldung_availability == 2 %}
+          <span class="text-warning">Vielleicht</span>
+        {% elif order.my_pu_meldung_availability == 3 %}
+          <span class="text-danger">Nicht möglich</span>
+        {% endif %}
+         ist eingereicht</span>
+     <br>
+      <small class="text-muted">
+        Die Antwort kann bis zur Zuweisung durch den Approver geändert werden:
+      </small>
+    </div>
   {% endif %}
 </span>
 

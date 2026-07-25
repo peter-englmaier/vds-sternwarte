@@ -88,9 +88,17 @@ def poweruser():
         db.session.commit()
 
         return (
-            f'<span id="pu-feedback-{order_id}">'
-            f'<span class="text-success ms-2">In Datenbank gespeichert</span>'
-            f'</span>'
+    f'<span id="pu-feedback-{order_id}">'
+    f'<div class="mt-1">'
+    f'<span class="text-success">'
+    f'Rückmeldung ist eingereicht'
+    f'</span>'
+    f'<br>'
+    f'<small class="text-muted">'
+    f'Die Antwort kann bis zur Zuweisung durch den Approver geändert werden:'
+    f'</small>'
+    f'</div>'
+    f'</span>'
         )
 
     # GET
@@ -105,20 +113,32 @@ def poweruser():
                 ORDER_STATUS_APPROVED,
                 ORDER_STATUS_PU_ASSIGNED,
             ])
-        )
-        .all()
+        )    
+    .order_by(
+            ObservationRequest.request_date,
+            ObservationRequest.id,
+    )
+    .all()
     )
 
     open_orders = []
     own_orders = []
     others_orders = []
 
+    my_meldungen_by_order = {
+        meldung.observation_request_id: meldung.availability
+        for meldung in PoweruserMeldung.query.filter_by(
+            poweruser_user_id=current_user.id
+        ).all()
+    }
+    
     for order, pu_user in all_rows:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
 
         if order.status == ORDER_STATUS_APPROVED:
             # Noch nicht zugewiesene Anträge
             order.poweruser_name = None
+            order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
             open_orders.append(order)
 
         elif order.status == ORDER_STATUS_PU_ASSIGNED:
