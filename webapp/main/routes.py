@@ -64,7 +64,7 @@ def poweruser():
         order_id = request.form.get("order_id", type=int)
         availability = request.form.get("availability", type=int)
 
-        if not order_id or availability not in (1, 2, 3):
+        if not order_id or availability not in (0,1, 2, 3):
             return (
                 f'<span id="pu-feedback-{order_id or 0}" class="text-danger ms-2">Ungültige Eingabe</span>',
                 400,
