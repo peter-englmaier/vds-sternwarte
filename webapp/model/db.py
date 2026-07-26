@@ -511,7 +511,7 @@ class PoweruserMeldung(db.Model):
     __tablename__ = "poweruser_meldung"
     __table_args__ = (
         UniqueConstraint("observation_request_id", "poweruser_user_id", name="uq_meldung_request_poweruser"),
-        CheckConstraint("availability IN (1,2,3)", name="ck_availability_1_2_3"),
+        CheckConstraint("availability IN (0,1,2,3)", name="ck_availability_0_1_2_3"),
         {'sqlite_autoincrement': True},
     )
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
