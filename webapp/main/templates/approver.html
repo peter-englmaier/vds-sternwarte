@@ -169,12 +169,11 @@
                       <i class="bi bi-hand-thumbs-up-fill"></i>
                       </button>
                     </form>
-                     <form method="post" action="{{ url_for('orders.reject_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Du willst diesen neuen Antrag zurückweisen?');">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                     <a href="{{ url_for('orders.reject_order', order_id=order.id) }}">
                       <button type="submit" class="btn btn-sm btn-danger" title="Ablehnen">
                       <i class="bi bi-hand-thumbs-down"></i>
                       </button>
-                    </form>                   
+                    </a>
             </td>
             <td><span class="badge bg-secondary">Abgeschickt</span></td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
