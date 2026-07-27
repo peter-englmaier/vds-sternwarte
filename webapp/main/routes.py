@@ -64,7 +64,7 @@ def poweruser():
         order_id = request.form.get("order_id", type=int)
         availability = request.form.get("availability", type=int)
 
-        if not order_id or availability not in (0,1, 2, 3):
+        if not order_id or availability not in (1, 2, 3, 4):
             return (
                 f'<span id="pu-feedback-{order_id or 0}" class="text-danger ms-2">Ungültige Eingabe</span>',
                 400,
@@ -74,6 +74,23 @@ def poweruser():
             observation_request_id=order_id,
             poweruser_user_id=current_user.id
         ).first()
+
+                # 4 = Keine Rückmeldung
+        if availability == 4:
+            if meldung is not None:
+                db.session.delete(meldung)
+
+            db.session.commit()
+
+            return (
+                f'<span id="pu-feedback-{order_id}">'
+                f'<div class="mt-1">'
+                f'<span class="text-muted">'
+                f'Keine Rückmeldung eingereicht'
+                f'</span>'
+                f'</div>'
+                f'</span>'
+            )
 
         if meldung is None:
             meldung = PoweruserMeldung(
