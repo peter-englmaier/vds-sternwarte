@@ -29,6 +29,7 @@ COPY migrations migrations/
 COPY datamigrations datamigrations/
 COPY prod.py app.py init-db.py docker-startup.sh make_celery.py ./
 
+RUN apk update && apk upgrade
 EXPOSE 5000/tcp
 ENTRYPOINT [ "/bin/sh", "-c" ]
 USER flask
