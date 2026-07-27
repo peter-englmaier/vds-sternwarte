@@ -714,6 +714,9 @@ def reject_order(order_id):
         if form.data['submit']:
             done=False
             try:
+                reservation.cancel()
+                db.session.add(reservation)
+                db.session.commit()
                 order_head.status = ORDER_STATUS_REJECTED
                 db.session.add(order_head)
                 db.session.commit()
