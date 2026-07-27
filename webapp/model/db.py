@@ -511,7 +511,7 @@ class PoweruserMeldung(db.Model):
     __tablename__ = "poweruser_meldung"
     __table_args__ = (
         UniqueConstraint("observation_request_id", "poweruser_user_id", name="uq_meldung_request_poweruser"),
-        CheckConstraint("availability IN (0,1,2,3)", name="ck_availability_0_1_2_3"),
+        CheckConstraint("availability IN (1,2,3,4)", name="ck_availability_1_2_3_4"),
         {'sqlite_autoincrement': True},
     )
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
@@ -526,7 +526,7 @@ class PoweruserMeldung(db.Model):
         db.ForeignKey("user.id"),
         nullable=False
     )
-    # 1 = ist möglich, 2 = vielleicht möglich, 3 = nein
+    # 1 = ist möglich, 2 = vielleicht möglich, 3 = nein, 4 = keine Rückmeldung
     availability: Mapped[int] = mapped_column(db.Integer, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
