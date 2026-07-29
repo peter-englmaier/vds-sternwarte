@@ -925,6 +925,7 @@ def show_calendar():
 
 @orders.route("/obs_requests")
 @login_required
+@role_required("approver")
 def obs_request_complete():
     orders = ObservationRequest.query.order_by(ObservationRequest.id.desc()).all()
 
