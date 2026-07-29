@@ -36,6 +36,8 @@ from webapp.orders.constants import (
     ORDER_STATUS_PU_ACCEPTED,
     ORDER_STATUS_REJECTED,
     USER_ROLE_ADMIN,
+    USER_ROLE_APPROVER,
+    USER_ROLE_POWERUSER,
     ORDER_STATUS_APPROVED,
     ORDER_STATUS_PU_ASSIGNED,
 )
@@ -50,6 +52,26 @@ from webapp.orders.orderservices import (
     get_user_preference_service,
 )
 from webapp.users.utils import role_required
+
+
+def can_view_observation_request(user, order):
+    if order is None or not user.is_authenticated:
+        return False
+    if user.has_role(USER_ROLE_ADMIN) or user.has_role(USER_ROLE_APPROVER):
+        return True
+    if order.user_id == user.id:
+        return True
+
+    # Powerusers need access to active requests visible in their workflow,
+    # but not to arbitrary drafts, waiting, rejected or archived requests.
+    if user.has_role(USER_ROLE_POWERUSER):
+        return order.status in {
+            ORDER_STATUS_APPROVED,
+            ORDER_STATUS_PU_ASSIGNED,
+            ORDER_STATUS_PU_ACCEPTED,
+        }
+
+    return False
 
 
 # ------------------------------------------------------------------
@@ -595,6 +617,9 @@ def show_order_positions(order_id):
     user_order = ObservationRequest.query.get(order_id)
     if not user_order:
         return error_404("Order does not exist")
+    if not can_view_observation_request(current_user, user_order):
+        abort(403)
+
     user_order.status_label = ORDER_STATUS_LABELS.get(user_order.status, "??")
     user = User.query.get(user_order.user_id)
     pu_user = User.query.get(user_order.request_poweruser_id)
