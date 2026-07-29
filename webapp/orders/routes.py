@@ -157,6 +157,8 @@ def delete_order(order_id):
     order = ObservationRequest.query.get_or_404(order_id)
     if order.user_id != current_user.id:
         abort(403)
+    if order.status not in {ORDER_STATUS_CREATED, ORDER_STATUS_REJECTED}:
+        abort(403)
 
     rc, message = delete_order_service(order_id)
     flash(message, "success" if rc == 0 else "danger")
