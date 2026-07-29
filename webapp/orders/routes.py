@@ -614,7 +614,13 @@ def show_order_positions(order_id):
 @login_required
 @role_required("poweruser")
 def pu_accept(order_id):
-    order_head = ObservationRequest.query.get(order_id)
+    order_head = ObservationRequest.query.get_or_404(order_id)
+    if (
+        order_head.status != ORDER_STATUS_PU_ASSIGNED
+        or order_head.request_poweruser_id != current_user.id
+    ):
+        abort(403)
+
     order_head.status = ORDER_STATUS_PU_ACCEPTED
     try:
         db.session.commit()
