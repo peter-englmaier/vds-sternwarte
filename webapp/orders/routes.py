@@ -36,6 +36,7 @@ from webapp.orders.constants import (
     ORDER_STATUS_PU_ACCEPTED,
     ORDER_STATUS_REJECTED,
     USER_ROLE_ADMIN,
+    USER_ROLE_POWERUSER,
     ORDER_STATUS_APPROVED,
     ORDER_STATUS_PU_ASSIGNED,
 )
@@ -638,9 +639,16 @@ def approver_assign_poweruser():
     poweruser_user_id = request.form.get("poweruser_user_id", type=int)
 
     if not order_id or not poweruser_user_id:
-        return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
+        return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>', 400
 
     order = ObservationRequest.query.get_or_404(order_id)
+    if order.status not in {ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED}:
+        return f'<span id="pu-assign-feedback-{order_id}" class="text-danger ms-2">Antrag kann in diesem Status nicht zugewiesen werden</span>', 409
+
+    pu_user = User.query.get(poweruser_user_id)
+    if pu_user is None or not pu_user.has_role(USER_ROLE_POWERUSER):
+        return f'<span id="pu-assign-feedback-{order_id}" class="text-danger ms-2">Ungültiger Poweruser</span>', 400
+
     try:
         order.request_poweruser_id = poweruser_user_id
         order.status = ORDER_STATUS_PU_ASSIGNED
@@ -660,11 +668,7 @@ def approver_assign_poweruser():
             print(f"Es ist ein Fehler aufgetreten: {e}.")
             db.session.rollback()
 
-    pu_user = User.query.get(poweruser_user_id)
-    if pu_user:
-        pu_name = pu_user.display_name()
-    else:
-        pu_name = None
+    pu_name = pu_user.display_name()
 
     # notify requester and poweruser
     order_url = url_for('orders.show_order_positions', order_id=order_id, _external=True)
