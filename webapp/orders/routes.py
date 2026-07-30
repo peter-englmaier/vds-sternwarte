@@ -496,9 +496,10 @@ def edit_order_pos(order_id):
                 return redirect (url_for("orders.edit_order_pos", order_id=order_id))
             # kein 'return' wenn "save_order"
 
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            flash(f"Es ist ein Fehler aufgetreten: {e}", "danger")
+            current_app.logger.exception("Failed to save order positions")
+            flash("Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.", "danger")
             return redirect(url_for("orders.edit_order_pos", order_id=order_id))
 
     # -------------------------
@@ -560,10 +561,11 @@ def edit_order_pos(order_id):
         order_head.status = ORDER_STATUS_WAITING
         try:
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
+            current_app.logger.exception("Failed to submit order")
             flash(
-                f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
+                "Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.",
                 "danger",
             )
         # freeze reservation
@@ -573,8 +575,8 @@ def edit_order_pos(order_id):
                 reservation.freeze()
                 db.session.add(reservation)
                 db.session.commit()
-            except Exception as e:
-                print(f"Es ist ein Fehler aufgetreten: {e}.")
+            except Exception:
+                current_app.logger.exception("Failed to freeze reservation")
                 db.session.rollback()
                 flash(
                     f"Die reservation ist bereits abgelaufen und kann nicht mehr aufrechterhalten werden",
@@ -616,10 +618,11 @@ def pu_accept(order_id):
     order_head.status = ORDER_STATUS_PU_ACCEPTED
     try:
         db.session.commit()
-    except Exception as e:
+    except Exception:
         db.session.rollback()
+        current_app.logger.exception("Failed to accept order as poweruser")
         flash(
-            f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
+            "Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.",
             "danger",
         )
     else:
@@ -646,9 +649,9 @@ def approver_assign_poweruser():
         order.status = ORDER_STATUS_PU_ASSIGNED
         db.session.add(order)
         db.session.commit()
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        print(f"Es ist ein Fehler aufgetreten: {e}.")
+        current_app.logger.exception("Failed to assign poweruser")
 
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
     if reservation:
@@ -656,8 +659,8 @@ def approver_assign_poweruser():
             reservation.confirm()
             db.session.add(reservation)
             db.session.commit()
-        except Exception as e:
-            print(f"Es ist ein Fehler aufgetreten: {e}.")
+        except Exception:
+            current_app.logger.exception("Failed to confirm reservation after assigning poweruser")
             db.session.rollback()
 
     pu_user = User.query.get(poweruser_user_id)
@@ -741,10 +744,11 @@ def approve_order(order_id):
     order_head.status = ORDER_STATUS_APPROVED
     try:
         db.session.commit()
-    except Exception as e:
+    except Exception:
         db.session.rollback()
+        current_app.logger.exception("Failed to approve order")
         flash(
-            f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
+            "Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.",
             "danger",
         )
     else:

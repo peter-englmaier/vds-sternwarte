@@ -1,3 +1,4 @@
+from flask import current_app
 from flask_login import current_user
 from datetime import datetime, timedelta
 from webapp.model.db import Catalogue
@@ -103,9 +104,10 @@ def copy_order_service(order_id):
 
         try:
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            return 1, f'Es ist ein Fehler aufgetreten:\n{e}.\nBitte melden Sie sich beim Systemadministrator.'
+            current_app.logger.exception("Failed to copy order")
+            return 1, 'Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.'
         return 0, "Antrag \nerfolgreich\n kopiert."
 
 
@@ -122,9 +124,10 @@ def delete_order_service(order_id):
             db.session.commit()
         db.session.delete(order)
         db.session.commit()
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        return 1, f'Es ist ein Fehler aufgetreten:\n{e}.\nBitte melden Sie sich beim Systemadministrator.'
+        current_app.logger.exception("Failed to delete order")
+        return 1, 'Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.'
     return 0, "Antrag \nerfolgreich\n gelöscht."
 
 # --------------------------------------------------------------------------
@@ -200,9 +203,10 @@ def set_user_preference_service( user_id, key, value, default=None ):
     pref.value = str(value)
     try:
         db.session.commit()
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        return 1, f'Es ist ein Fehler aufgetreten:\n{e}.\nBitte melden Sie sich beim Systemadministrator.'
+        current_app.logger.exception("Failed to save user preference")
+        return 1, 'Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.'
     return 0, None
 
 
