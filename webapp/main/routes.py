@@ -15,6 +15,14 @@ from collections import defaultdict
 from ..users.utils import role_required
 from sqlalchemy import or_, and_
 
+def can_save_poweruser_meldung(order):
+    if order.status == ORDER_STATUS_APPROVED:
+        return True
+    return (
+        order.status == ORDER_STATUS_PU_ASSIGNED
+        and order.request_poweruser_id == current_user.id
+    )
+
 @main.route("/")
 @main.route("/home")
 def home():
@@ -68,6 +76,13 @@ def poweruser():
             return (
                 f'<span id="pu-feedback-{order_id or 0}" class="text-danger ms-2">Ungültige Eingabe</span>',
                 400,
+            )
+
+        order = ObservationRequest.query.get(order_id)
+        if order is None or not can_save_poweruser_meldung(order):
+            return (
+                f'<span id="pu-feedback-{order_id or 0}" class="text-danger ms-2">Keine Berechtigung für diesen Antrag</span>',
+                403,
             )
 
         meldung = PoweruserMeldung.query.filter_by(
