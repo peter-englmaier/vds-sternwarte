@@ -25,7 +25,7 @@
         <td
           {% if picker and not is_past and day not in approved_days and day not in planned_days %}
               data-day="{{ day }}" data-month="{{ month }}" data-year="{{ year }}"
-              onclick="selectDate(this, '{{ target_id }}', '{{ display_id }}')"
+              onclick='selectDate(this, {{ target_id|tojson }}, {{ display_id|tojson }})'
               style="cursor: pointer; background-color: {{ open_bg_color }}; color: {{ open_fg_color }};"
           {% else %}
               style="
