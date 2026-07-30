@@ -1,4 +1,5 @@
 import json
+import os
 from flask import render_template, Response, request, flash, redirect, url_for
 from flask_login import login_required
 from sqlalchemy import select
@@ -7,6 +8,44 @@ from webapp import db
 from webapp.model.db import User, UserPreferences, Group, Role, Post, Site, Observatory, Telescope, Filterset, Poweruser, ObservationRequest, ObservationRequestPosition, ObservationHistory, SystemParameters, SystemParametersHistory, MotivationTypes, ObjectTypes, ObservationRequestLog, CatalogueMeta, Catalogue, user_group, role_group
 from datetime import datetime, date, time
 from webapp.users.utils import role_required
+
+MAX_IMPORT_BYTES = int(os.getenv("VDS_IMPORT_MAX_BYTES", str(50 * 1024 * 1024)))
+ASSOCIATION_TABLES = {"user_group", "role_group"}
+
+
+def validate_import_payload(data, models):
+    if not isinstance(data, dict):
+        raise ValueError("Import JSON muss ein Objekt mit Tabellennamen enthalten.")
+
+    known_tables = set(models) | ASSOCIATION_TABLES
+    unknown_tables = sorted(set(data) - known_tables)
+    if unknown_tables:
+        raise ValueError(f"Import JSON enthält unbekannte Tabellen: {', '.join(unknown_tables)}.")
+
+    for table_name, records in data.items():
+        if not isinstance(records, list):
+            raise ValueError(f"Importtabelle {table_name} muss eine Liste enthalten.")
+        for index, record in enumerate(records, start=1):
+            if not isinstance(record, dict):
+                raise ValueError(f"Importtabelle {table_name} enthält in Zeile {index} keinen Datensatz.")
+
+
+def load_import_payload(file_storage, models):
+    if request.content_length and request.content_length > MAX_IMPORT_BYTES:
+        raise ValueError(f"Importdatei ist größer als {MAX_IMPORT_BYTES} Bytes.")
+
+    raw_data = file_storage.stream.read(MAX_IMPORT_BYTES + 1)
+    if len(raw_data) > MAX_IMPORT_BYTES:
+        raise ValueError(f"Importdatei ist größer als {MAX_IMPORT_BYTES} Bytes.")
+
+    try:
+        data = json.loads(raw_data.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("Importdatei ist keine gültige UTF-8-JSON-Datei.") from exc
+
+    validate_import_payload(data, models)
+    return data
+
 
 @bp.route('/inout/export', methods=['POST'])
 @role_required('admin')
@@ -53,8 +92,6 @@ def import_data():
         flash('No selected file')
         return redirect(url_for('admin.index'))
     if file:
-        data = json.load(file)
-        
         models = {
             'user': User, 'user_preferences': UserPreferences, 'group': Group, 'role': Role, 'post': Post, 'site': Site,
             'observatory': Observatory, 'telescope': Telescope, 'filterset': Filterset, 'poweruser': Poweruser,
@@ -64,6 +101,12 @@ def import_data():
             'object_types': ObjectTypes, 'observation_request_log': ObservationRequestLog, 'catalogue_meta': CatalogueMeta,
             'catalogue': Catalogue
         }
+
+        try:
+            data = load_import_payload(file, models)
+        except ValueError as exc:
+            flash(str(exc), 'danger')
+            return redirect(url_for('admin.index'))
         
         ordered_tables = [
             'role', 'group', 'user', 'user_preferences', 'post', 'site', 'observatory', 'telescope', 'filterset',
