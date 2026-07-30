@@ -8,6 +8,10 @@ from webapp.model.db import User, UserPreferences, Group, Role, Post, Site, Obse
 from datetime import datetime, date, time
 from webapp.users.utils import role_required
 
+SENSITIVE_EXPORT_COLUMNS = {
+    User.__tablename__: {"password"},
+}
+
 @bp.route('/inout/export', methods=['POST'])
 @role_required('admin')
 def export_data():
@@ -21,7 +25,8 @@ def export_data():
     for model in models:
         table_name = model.__tablename__
         records = model.query.all()
-        data[table_name] = [record_to_dict(record) for record in records]
+        excluded_columns = SENSITIVE_EXPORT_COLUMNS.get(table_name, set())
+        data[table_name] = [record_to_dict(record, excluded_columns) for record in records]
 
     # Also export the association tables
     data['user_group'] = [{'user_id': row[0], 'group_id': row[1]} for row in db.session.query(user_group).all()]
@@ -146,5 +151,10 @@ def import_data():
         flash('Data imported successfully. Existing records were ignored.')
     return redirect(url_for('admin.index'))
 
-def record_to_dict(record):
-    return {c.name: getattr(record, c.name) for c in record.__table__.columns}
+def record_to_dict(record, excluded_columns=None):
+    excluded_columns = excluded_columns or set()
+    return {
+        c.name: getattr(record, c.name)
+        for c in record.__table__.columns
+        if c.name not in excluded_columns
+    }
