@@ -329,3 +329,12 @@ def gast_approve():
 
     flash(f"{user.name} wurde freigeschaltet.", "success")
     return redirect(url_for("main.gast"))
+
+@main.route("/impressum")
+def impressum():
+    vds_link = SystemParameters.query.filter_by(parameter='vds_link').first()
+    if vds_link:
+        vds_link = vds_link.value
+    else:
+        vds_link = "#"
+    return render_template('impressum.html', title='Impressum', vds_link=vds_link)
