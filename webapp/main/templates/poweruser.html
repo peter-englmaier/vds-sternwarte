@@ -59,24 +59,26 @@
 <input type="hidden" id="action-{{ order.id }}" name="action" value="pu_meldung">
 <input type="hidden" id="order-{{ order.id }}" name="order_id" value="{{ order.id }}">
 
-<div id="availability-{{ order.id }}" class="mt-2">
+<div id="availability-{{ order.id }}" class="mt-2 d-flex align-items-center gap-3">
 
-<div class="form-check">
+<div class="form-check  form-check-inline m-0">
     <input
-        class="form-check-input"
+        class="form-check-input  availability-gray"
         type="radio"
         name="availability-{{ order.id }}"
         id="availability-0-{{ order.id }}"
         value="4"
         {% if not order.my_pu_meldung_availability or order.my_pu_meldung_availability == 0 %}checked{% endif %}
+        hx-post="{{ url_for('main.poweruser') }}"
+        hx-trigger="change"
+        hx-include="#action-{{ order.id }},#order-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
+        hx-vals='{"availability":"4"}'
+        hx-target="#pu-feedback-{{ order.id }}"
+        hx-swap="innerHTML"
     >
-    <label class="form-check-label"
-           for="availability-0-{{ order.id }}">
-        Keine Rückmeldung
-    </label>
 </div>
 
-    <div class="form-check">
+    <div class="form-check  form-check-inline m-0">
         <input
             class="form-check-input availability-green"
             type="radio"
@@ -84,16 +86,16 @@
             id="availability-1-{{ order.id }}"
             value="1"
             {% if order.my_pu_meldung_availability == 1 %}checked{% endif %}
+            hx-post="{{ url_for('main.poweruser') }}"
+            hx-trigger="change"
+            hx-include="#action-{{ order.id }},#order-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
+            hx-vals='{"availability":"1"}'
+            hx-target="#pu-feedback-{{ order.id }}"
+            hx-swap="innerHTML"
         >
-        <label
-            class="form-check-label availability-label-green"
-            for="availability-1-{{ order.id }}"
-        >
-            Ja
-        </label>
     </div>
 
-    <div class="form-check">
+    <div class="form-check  form-check-inline m-0">
         <input
             class="form-check-input availability-yellow"
             type="radio"
@@ -101,16 +103,16 @@
             id="availability-2-{{ order.id }}"
             value="2"
             {% if order.my_pu_meldung_availability == 2 %}checked{% endif %}
+            hx-post="{{ url_for('main.poweruser') }}"
+            hx-trigger="change"
+            hx-include="#action-{{ order.id }},#order-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
+            hx-vals='{"availability":"2"}'
+            hx-target="#pu-feedback-{{ order.id }}"
+            hx-swap="innerHTML"
         >
-        <label
-            class="form-check-label availability-label-yellow"
-            for="availability-2-{{ order.id }}"
-        >
-            Vielleicht
-        </label>
     </div>
 
-    <div class="form-check">
+    <div class="form-check  form-check-inline m-0">
         <input
             class="form-check-input availability-red"
             type="radio"
@@ -118,25 +120,16 @@
             id="availability-3-{{ order.id }}"
             value="3"
             {% if order.my_pu_meldung_availability == 3 %}checked{% endif %}
+            hx-post="{{ url_for('main.poweruser') }}"
+            hx-trigger="change"
+            hx-include="#action-{{ order.id }},#order-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
+            hx-vals='{"availability":"3"}'
+            hx-target="#pu-feedback-{{ order.id }}"
+            hx-swap="innerHTML"
         >
-        <label
-            class="form-check-label availability-label-red"
-            for="availability-3-{{ order.id }}"
-        >
-            Nein
-        </label>
     </div>
 
 </div>
-
-<button type="button" class="btn btn-sm btn-outline-primary"
-        hx-post="{{ url_for('main.poweruser') }}"
-        hx-include="#action-{{ order.id }},#order-{{ order.id }},#availability-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
-        hx-vals='js:{ availability: document.querySelector( "input[name=\"availability-{{ order.id }}\"]:checked")?.value}'
-        hx-target="#pu-feedback-{{ order.id }}"
-        hx-swap="outerHTML">
-  <i class="bi bi-save"></i>
-</button>
 </td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>

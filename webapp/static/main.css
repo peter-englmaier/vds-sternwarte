@@ -121,55 +121,52 @@ a.article-title:hover {
 }
 
 /* Eigenschaften Radiobutton
+bessere Lesbarkeit im Dark und Light Modus, Kreise ohne weißen Punkt */
 
-/* Möglich: grün */
+
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: 2px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.25);
+}
+
+/* Keine Rückmeldung */
+.availability-gray {
+    border-color: #6c757d;
+}
+.availability-gray:checked {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    background-image: none;
+}
+
+/* Ja */
 .availability-green {
     border-color: #198754;
 }
-
 .availability-green:checked {
     background-color: #198754;
     border-color: #198754;
-}
-
-/* Vielleicht: gelb */
-.availability-yellow {
-    border-color: #ffc107;
-}
-
-.availability-yellow:checked {
-    background-color: #ffc107;
-    border-color: #ffc107;
-}
-
-/* Bei Gelb den inneren Punkt besser sichtbar machen */
-.availability-yellow:checked {
     background-image: none;
-    box-shadow: inset 0 0 0 4px #ffc107;
 }
 
-/* Nicht möglich: rot */
+/* Vielleicht */
+.availability-yellow {
+    border-color: #d39e00;
+}
+.availability-yellow:checked {
+    background-color: #d39e00;
+    border-color: #d39e00;
+    background-image: none;
+}
+
+/* Nein */
 .availability-red {
     border-color: #dc3545;
 }
-
 .availability-red:checked {
     background-color: #dc3545;
     border-color: #dc3545;
-}
-
-/* Beschriftungen ebenfalls einfärben */
-.availability-label-green {
-    color: #198754;
-    font-weight: 600;
-}
-
-.availability-label-yellow {
-    color: #b58100;
-    font-weight: 600;
-}
-
-.availability-label-red {
-    color: #dc3545;
-    font-weight: 600;
+    background-image: none;
 }
