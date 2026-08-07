@@ -134,6 +134,8 @@ bessere Lesbarkeit im Dark und Light Modus, Kreise ohne weißen Punkt */
 /* Keine Rückmeldung */
 .availability-gray {
     border-color: #6c757d;
+    border-width: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 .availability-gray:checked {
     background-color: #6c757d;
@@ -144,6 +146,8 @@ bessere Lesbarkeit im Dark und Light Modus, Kreise ohne weißen Punkt */
 /* Ja */
 .availability-green {
     border-color: #198754;
+    border-width: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 .availability-green:checked {
     background-color: #198754;
@@ -154,6 +158,8 @@ bessere Lesbarkeit im Dark und Light Modus, Kreise ohne weißen Punkt */
 /* Vielleicht */
 .availability-yellow {
     border-color: #d39e00;
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
 }
 .availability-yellow:checked {
     background-color: #d39e00;
@@ -164,6 +170,8 @@ bessere Lesbarkeit im Dark und Light Modus, Kreise ohne weißen Punkt */
 /* Nein */
 .availability-red {
     border-color: #dc3545;
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
 }
 .availability-red:checked {
     background-color: #dc3545;
