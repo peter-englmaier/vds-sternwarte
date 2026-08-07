@@ -7,16 +7,17 @@ labels:
 assignees: []
 type: bug
 body:
- - type: input
-   id: contact
-   description: Wer hat diesen Fehler gemeldet?
-   validations:
+  - type: input
+    id: contact
+    description: Wer hat diesen Fehler gemeldet?
+    validations:
     required: true
 
   - type: markdown
     attributes:
       value: |
         Dieser Fehler wurde ohne die Hilfe von KI gefunden.
+
   - type: checkboxes
     id: noki
     attributes:
