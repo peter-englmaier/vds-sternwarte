@@ -201,6 +201,7 @@
         <thead>
             <tr>
                 <th>Aktion</th>
+                <th>Poweruserauswahl</th>
                 <th>Status</th>
                 <th>Datum</th>
                 <th>Beteiligte</th>
@@ -212,7 +213,7 @@
         </thead>
         <tbody>
         {% for order in orders_pu_assigned %}
-            <tr>
+        <tr>
                 <td>
                     <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
                        class="btn btn-sm btn-secondary" title="Show">
@@ -224,6 +225,66 @@
                         <i class="bi bi-pencil"></i>
                     </a>
                 </td>
+                <td>
+    {% set meldungen = pu_meldungen_by_order.get(order.id, []) %}
+
+    {% if meldungen|length == 0 %}
+        <span class="text-muted">Keine Rückmeldungen</span>
+    {% else %}
+        <div id="pu-select-{{ order.id }}" class="d-flex flex-column gap-1">
+
+            {% for m in meldungen %}
+                <label class="d-flex align-items-center gap-2">
+
+                    <input
+                        type="radio"
+                        name="poweruser_user_id"
+                        value="{{ m.user_id }}"
+                        class="form-check-input"
+                        {% if order.request_poweruser_id == m.user_id %}
+                            checked
+                        {% endif %}
+                    >
+
+                    <span>{{ m.name }}</span>
+
+                    {% if m.availability == 1 %}
+                        <span class="badge bg-success">Möglich</span>
+                    {% elif m.availability == 2 %}
+                        <span class="badge bg-warning text-dark">Vielleicht</span>
+                    {% elif m.availability == 3 %}
+                        <span class="badge bg-danger">Nein</span>
+                    {% else %}
+                        <span class="badge bg-secondary">?</span>
+                    {% endif %}
+
+                </label>
+            {% endfor %}
+
+            <span id="pu-assign-slot-{{ order.id }}">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary mt-1"
+                    hx-post="{{ url_for('orders.approver_assign_poweruser') }}"
+                    hx-include="#pu-select-{{ order.id }} input, #order-id-{{ order.id }}"
+                    hx-target="#pu-assign-slot-{{ order.id }}"
+                    hx-swap="outerHTML"
+                >
+                    <i class="bi bi-person-arms-up"></i>
+                    Poweruser ändern
+                </button>
+            </span>
+
+            <input
+                type="hidden"
+                id="order-id-{{ order.id }}"
+                name="order_id"
+                value="{{ order.id }}"
+            >
+
+        </div>
+    {% endif %}
+</td>            
 
                 <td>
                     <span class="badge bg-primary">PU zugewiesen</span><br>
