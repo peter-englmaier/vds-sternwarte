@@ -82,6 +82,18 @@ def poweruser():
 
             db.session.commit()
 
+            positive_feedback_count = PoweruserMeldung.query.filter(
+                PoweruserMeldung.observation_request_id == order_id,
+                PoweruserMeldung.availability.in_([1, 2])
+            ).count()
+
+            if positive_feedback_count == 1:
+                count_text = "Es hat bereits 1 PU zurückgemeldet."
+            elif positive_feedback_count > 1:
+                count_text = f"Es haben bereits {positive_feedback_count} PUs zurückgemeldet."
+            else:
+                count_text = ""
+
             return (
                 f'<span id="pu-feedback-{order_id}">'
                 f'<div class="mt-1">'
@@ -90,6 +102,11 @@ def poweruser():
                 f'</span>'
                 f'</div>'
                 f'</span>'
+                f'<div id="pu-count-{order_id}" '
+                f'class="text-muted mt-1" '
+                f'hx-swap-oob="innerHTML">'
+                f'{count_text}'
+                f'</div>'
             )
 
         if meldung is None:
@@ -104,6 +121,18 @@ def poweruser():
 
         db.session.commit()
 
+        positive_feedback_count = PoweruserMeldung.query.filter(
+            PoweruserMeldung.observation_request_id == order_id,
+            PoweruserMeldung.availability.in_([1, 2])
+        ).count()
+
+        if positive_feedback_count == 1:
+            count_text = "Es hat bereits 1 PU zurückgemeldet."
+        elif positive_feedback_count > 1:
+            count_text = f"Es haben bereits {positive_feedback_count} PUs zurückgemeldet."
+        else:
+            count_text = ""
+
         return (
     f'<span id="pu-feedback-{order_id}">'
     f'<div class="mt-1">'
@@ -116,6 +145,11 @@ def poweruser():
     f'</small>'
     f'</div>'
     f'</span>'
+    f'<div id="pu-count-{order_id}" '
+    f'class="text-muted mt-1" '
+    f'hx-swap-oob="innerHTML">'
+    f'{count_text}'
+    f'</div>'
         )
 
     # GET
