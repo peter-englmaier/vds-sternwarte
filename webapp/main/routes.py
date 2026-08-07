@@ -249,10 +249,7 @@ def approver():
         )
 
         for r in rows:
-            display_name = r.name
-            if (not display_name) and (r.firstname or r.surname):
-                display_name = f"{r.firstname or ''} {r.surname or ''}".strip()
-
+            display_name = User.query.get(r[1]).display_name()
             pu_meldungen_by_order[r.observation_request_id].append({
                 "user_id": r.poweruser_user_id,
                 "name": display_name or f"User {r.poweruser_user_id}",
