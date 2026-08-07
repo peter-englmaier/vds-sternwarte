@@ -161,10 +161,15 @@
                                 </div>
                             {% endfor %}
                         {% endif %}
-                    {% endwith %}
+                    {% endwith %}                    
                     {% block content %}{% endblock %}
                 </div>
             </div>
         </main>
+        <footer class="text-center mt-5 mb-3">
+    <hr>
+    <a href="{{ url_for('main.impressum') }}">Impressum</a>
+    <a href="https://sternfreunde.de/datenschutzerklaerung/" target="_blank" rel="noopener noreferrer">Datenschutzerklärung der Vereinigung der Sternfreunde e. V.</a>
+        </footer>
     </body>
 </html>
