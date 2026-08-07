@@ -152,6 +152,11 @@ def poweruser():
     for order, pu_user in all_rows:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
 
+        order.positive_feedback_count = PoweruserMeldung.query.filter(
+            PoweruserMeldung.observation_request_id == order.id,
+            PoweruserMeldung.availability.in_([1, 2])
+        ).count()
+
         if order.status == ORDER_STATUS_APPROVED:
             # Noch nicht zugewiesene Anträge
             order.poweruser_name = None
