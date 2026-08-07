@@ -1,14 +1,21 @@
 ---
-name: Bug report
-about: Fehler oder Änderungswunsch melden
+name: KI Bug report
+about: Fehler melden
 title: ''
-labels: ''
+labels: AI-content, bug
 assignees: ''
 
 ---
 
 **Originator:**
-Wer hat diesen Vorschlag/Fehler gemeldet?
+Wer hat diesen Fehler gemeldet?
+
+**KI: (dieser Teil ist immer von einem Mensch auszufüllen)**
+Wer hat den Fehler verifiziert? 
+
+Wurde der KI Output von einem Menschen im Detail geprüft? 
+
+Wie gut ist der Output auf einer Skala von 0 bis 10 verstanden?
 
 **Ist:**
 Beschreibe Schritt für Schritt das Verhalten wie es aktuell ist.
