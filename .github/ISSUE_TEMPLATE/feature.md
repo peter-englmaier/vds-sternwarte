@@ -1,5 +1,5 @@
 ---
-name: Feature request
+name: Feature
 about: Erweiterungswunsch
 title: ''
 labels: feature

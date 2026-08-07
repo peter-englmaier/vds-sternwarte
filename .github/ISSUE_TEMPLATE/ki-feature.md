@@ -1,5 +1,5 @@
 ---
-name: Feature request
+name: KI Feature
 about: Erweiterungswunsch
 title: ''
 labels: AI-content, feature
