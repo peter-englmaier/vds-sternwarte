@@ -129,15 +129,15 @@
         >
     </div>
 
-    {% if order.positive_feedback_count > 0 %}
-    <div class="text-muted mt-1">
+    <div id="pu-count-{{ order.id }}" class="text-muted mt-1">
+    {% if order.positive_feedback_count > 0 %}    
         {% if order.positive_feedback_count == 1 %}
             Es hat bereits 1 PU zurückgemeldet.
         {% else %}
             Es haben bereits {{ order.positive_feedback_count }} PUs zurückgemeldet.
-        {% endif %}
-    </div>
+        {% endif %}    
     {% endif %}
+</div>
 
 </div>
 </td>            
