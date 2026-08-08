@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import render_template, request, url_for, redirect, flash, abort
+from flask import render_template, request, url_for, redirect, flash, abort, escape
 from flask_login import login_required
 from flask_login import current_user
 
@@ -64,11 +64,14 @@ def poweruser():
         order_id = request.form.get("order_id", type=int)
         availability = request.form.get("availability", type=int)
 
+        order_id_html = escape(str(order_id or 0))
+
         if not order_id or availability not in (1, 2, 3, 4):
             return (
-                f'<span id="pu-feedback-{order_id or 0}" class="text-danger ms-2">Ungültige Eingabe</span>',
+                f'<span id="pu-feedback-{order_id_html}" class="text-danger ms-2">Ungültige Eingabe</span>',
                 400,
             )
+
 
         meldung = PoweruserMeldung.query.filter_by(
             observation_request_id=order_id,
@@ -95,14 +98,14 @@ def poweruser():
                 count_text = ""
 
             return (
-                f'<span id="pu-feedback-{order_id}">'
+                f'<span id="pu-feedback-{order_id_html}">'
                 f'<div class="mt-1">'
                 f'<span class="text-muted">'
                 f'Keine Rückmeldung eingereicht'
                 f'</span>'
                 f'</div>'
                 f'</span>'
-                f'<div id="pu-count-{order_id}" '
+                f'<div id="pu-count-{order_id_html}" '
                 f'class="text-muted mt-1" '
                 f'hx-swap-oob="innerHTML">'
                 f'{count_text}'
@@ -134,7 +137,7 @@ def poweruser():
             count_text = ""
 
         return (
-    f'<span id="pu-feedback-{order_id}">'
+    f'<span id="pu-feedback-{order_id_html}">'
     f'<div class="mt-1">'
     f'<span class="text-success">'
     f'Rückmeldung ist eingereicht'
@@ -145,7 +148,7 @@ def poweruser():
     f'</small>'
     f'</div>'
     f'</span>'
-    f'<div id="pu-count-{order_id}" '
+    f'<div id="pu-count-{order_id_html}" '
     f'class="text-muted mt-1" '
     f'hx-swap-oob="innerHTML">'
     f'{count_text}'
