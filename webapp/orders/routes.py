@@ -262,6 +262,8 @@ def edit_order_pos(order_id):
         abort(403)
     if order_head.user_id != current_user.id and not current_user.has_role(USER_ROLE_ADMIN):
         abort(403)
+    if order_head.status not in {ORDER_STATUS_CREATED, ORDER_STATUS_REJECTED}:
+        abort(403)
 
     expert_mode = get_user_preference_service(current_user.id, "expert_mode", "False")
     selected_observatory_id = order_head.request_observatory_id
