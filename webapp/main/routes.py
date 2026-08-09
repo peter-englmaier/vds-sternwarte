@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from flask import render_template, request, url_for, redirect, flash, abort, escape
+from flask import render_template, request, url_for, redirect, flash, abort
+from markupsafe import escape
 from flask_login import login_required
 from flask_login import current_user
 
