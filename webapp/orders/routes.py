@@ -797,6 +797,8 @@ def send_approve_email(order_id, approver_id, order_url, info):
 
     if Config.ENVIRONMENT != "PRODUCTION":
         ps = f"P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt."
+    else:
+        ps = ""
 
     recipients = [user.email, approver.email, pu.email]
 
@@ -847,6 +849,8 @@ def send_reject_email(order_id, approver_id, order_url, info):
 
     if Config.ENVIRONMENT != "PRODUCTION":
         ps = f"P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt."
+    else:
+        ps = ""
 
     recipients = [user.email, approver.email]
 
