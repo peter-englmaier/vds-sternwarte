@@ -73,6 +73,12 @@ def poweruser():
                 400,
             )
 
+        order = ObservationRequest.query.get_or_404(order_id)
+
+        is_assigned_to_current_user = (
+        order.status == ORDER_STATUS_PU_ASSIGNED
+        and order.request_poweruser_id == current_user.id
+        )
 
         meldung = PoweruserMeldung.query.filter_by(
             observation_request_id=order_id,
@@ -122,6 +128,10 @@ def poweruser():
             db.session.add(meldung)
         else:
             meldung.availability = availability
+
+# Bereits zugewiesener Poweruser kann den Termin doch nicht wahrnehmen
+        if is_assigned_to_current_user and availability == 3:
+            order.status = ORDER_STATUS_PU_REJECTED
 
         db.session.commit()
 
@@ -209,6 +219,7 @@ def poweruser():
             )
 
             if order.request_poweruser_id == current_user.id:
+                order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
                 own_orders.append(order)
             else:
                 others_orders.append(order)
@@ -228,8 +239,18 @@ def approver():
         .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED]))
         .all()
     )
+
+    # Action-required-Anträge ganz nach oben
+    all_orders.sort(
+    key=lambda order: order.status != ORDER_STATUS_PU_REJECTED
+    )
+
     for order in all_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+
+        # Zugewiesener Poweruser kann Termin nicht mehr wahrnehmen
+        if order.status == ORDER_STATUS_PU_REJECTED:
+            order.status_label = "Action required"
 
         if order.request_poweruser_id:
             order.poweruser_name = User.query.get(order.request_poweruser_id).display_name()
