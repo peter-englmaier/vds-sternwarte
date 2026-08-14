@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import render_template, request, url_for, redirect, flash, abort
 from markupsafe import escape
 from flask_login import login_required
@@ -10,11 +8,8 @@ from webapp.main import main
 from webapp.model.db import db, Post, SystemParameters, ObservationRequest, PoweruserMeldung, User, Group
 from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_ROLE_USER, USER_ROLE_GUEST,ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
     ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
-from webapp.orders.constants import ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
-from sqlalchemy.exc import IntegrityError
 from collections import defaultdict
 from ..users.utils import role_required
-from sqlalchemy import or_, and_
 
 @main.route("/")
 @main.route("/home")
