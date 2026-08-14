@@ -19,35 +19,11 @@ from sqlalchemy import or_, and_
 @main.route("/")
 @main.route("/home")
 def home():
+    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_GUEST):
+        return render_template("home.html")
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    
-    guest_group = Group.query.filter_by(
-        name=f"{USER_ROLE_GUEST}_group"
-    ).first()
-
-    guest_count = 0
-    if guest_group:
-        guest_count = (
-            User.query.join(User.groups)
-            .filter(Group.id == guest_group.id)
-            .count()
-        )
-
-    # freigeschaltete Benutzer
-    if current_user.is_authenticated and not current_user.has_role(USER_ROLE_GUEST):
-        return render_template(
-            "home_intern.html",
-            posts=posts,
-            guest_count=guest_count
-        )
-
-    # keine Fachgruppenmitglieder
-    return render_template(
-        "home.html",
-        posts=posts,
-        guest_count=guest_count
-    )
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+    return render_template("home_intern.html", posts=posts)
 
 # -------------------------------------------------------------
 #
