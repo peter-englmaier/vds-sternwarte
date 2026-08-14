@@ -2,7 +2,7 @@ from flask import render_template, request, url_for, redirect, flash, abort
 from markupsafe import escape
 from flask_login import login_required
 from flask_login import current_user
-
+from sqlalchemy import select
 from webapp import Config
 from webapp.main import main
 from webapp.model.db import db, Post, SystemParameters, ObservationRequest, PoweruserMeldung, User, Group
@@ -128,24 +128,24 @@ def poweruser():
         )
 
     # GET
-    all_rows = (
-        db.session.query(ObservationRequest, User)
+    stmt = (
+        select(ObservationRequest, User)
         .outerjoin(
             User,
             User.id == ObservationRequest.request_poweruser_id,
         )
-        .filter(
+        .where(
             ObservationRequest.status.in_([
                 ORDER_STATUS_APPROVED,
                 ORDER_STATUS_PU_ASSIGNED,
             ])
         )    
-    .order_by(
+        .order_by(
             ObservationRequest.request_date,
             ObservationRequest.id,
+        )
     )
-    .all()
-    )
+    all_rows = db.session.execute(stmt).unique().all()
 
     open_orders = []
     own_orders = []
