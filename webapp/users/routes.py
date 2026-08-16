@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import current_app, render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from urllib.parse import urlparse
 from webapp import bcrypt, db
@@ -42,9 +42,10 @@ def register():
 
         try:
             db.session.commit()
-        except Exception as e:
+        except Exception:
             db.session.rollback()
-            flash(f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.", "error")
+            current_app.logger.exception("Failed to register user")
+            flash("Es ist ein Fehler aufgetreten. Bitte melden Sie sich beim Systemadministrator.", "error")
             return render_template("register.html", title="Register", form=form)
 
         flash("Ihr Benutzer ist registriert! Sie können sich jetzt anmelden", "success")
