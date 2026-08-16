@@ -52,11 +52,6 @@
                     <i class="bi bi-eye"></i>
                 </a>
 
-                <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}"
-                   class="btn btn-sm btn-primary"
-                   title="Edit">
-                    <i class="bi bi-pencil"></i>
-                </a>
                     <form method="post" action="{{ url_for('orders.approve_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Du willst diesen neuen Antrag genehmigen?');">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button type="submit" class="btn btn-sm btn-success" title="Genehmigen">
@@ -166,11 +161,7 @@
             <td>
                 <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}" class="btn btn-sm btn-secondary" title="Show">
                     <i class="bi bi-eye"></i>
-                </a>
-                
-                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}" class="btn btn-sm btn-primary" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </a>                    
+                </a>                   
                 
                  <form method="post" action="{{ url_for('orders.approve_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Du willst diesen neuen Antrag genehmigen?');">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -190,7 +181,7 @@
             <td>{{ order.name }}</td>
             <td>{{ order.observatory_name }}</td>
             <!-- <td>{{ order.request_purpose }}</td> -->
-            <td>{{ order.poweruser_name or '-' }}
+            <td>{{ order.poweruser_name or '-' }}</td>
             <td>{{ order.request_type }}</td>
             <td>{{ order.remark }}</td>
         </tr>
@@ -228,11 +219,6 @@
                     <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
                        class="btn btn-sm btn-secondary" title="Show">
                         <i class="bi bi-eye"></i>
-                    </a>
-
-                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}"
-                       class="btn btn-sm btn-primary" title="Edit">
-                        <i class="bi bi-pencil"></i>
                     </a>
 
                     <a href="{{ url_for('orders.reject_order', order_id=order.id) }}">
@@ -339,11 +325,6 @@
                     <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}"
                        class="btn btn-sm btn-secondary" title="Show">
                         <i class="bi bi-eye"></i>
-                    </a>
-
-                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}"
-                       class="btn btn-sm btn-primary" title="Edit">
-                        <i class="bi bi-pencil"></i>
                     </a>
                 </td>
                 <td>

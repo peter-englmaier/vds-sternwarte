@@ -178,7 +178,11 @@ def poweruser():
 
         if order.status == ORDER_STATUS_APPROVED:
             # Noch nicht zugewiesene Anträge
-            order.poweruser_name = None
+            order.poweruser_name = (
+                pu_user.display_name()
+                if pu_user
+                else None
+            )
             order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
             open_orders.append(order)
 
