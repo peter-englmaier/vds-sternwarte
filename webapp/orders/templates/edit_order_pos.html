@@ -392,6 +392,16 @@ function toggleExpertFields() {
 }
 
 /* =====================  Block-Reihenfolge ===================== */
+function updateBlockMoveButtons() {
+  const blocks = document.querySelectorAll('#positions-root .position-block');
+  const show = blocks.length >= 2;
+
+  const moveUp = document.getElementById('move-up');
+  const moveDown = document.getElementById('move-down');
+
+  if (moveUp) moveUp.style.display = show ? '' : 'none';
+  if (moveDown) moveDown.style.display = show ? '' : 'none';
+}
 function renumberAllBlocks() {
   const blocks = document.querySelectorAll('#positions-root .position-block');
   blocks.forEach((block, idx) => {
@@ -661,6 +671,7 @@ document.getElementById('add-new')?.addEventListener('click', () => {
   registerTelescopeBoxListeners(blank);
   setActive(blank);
   renumberAllBlocks();
+  updateBlockMoveButtons();
   renumberRowsInAllBlocks();
 });
 document.getElementById('delete-active')?.addEventListener('click', () => {
@@ -668,6 +679,7 @@ document.getElementById('delete-active')?.addEventListener('click', () => {
   if (!confirm('Wirklich löschen?')) return;
   deleteBlock(b);
   renumberAllBlocks();
+  updateBlockMoveButtons();
   renumberRowsInAllBlocks();
 });
 
@@ -681,6 +693,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   setActive(getActiveBlock());
   renumberAllBlocks();
+  updateBlockMoveButtons();
   renumberRowsInAllBlocks();
 
     // >>> gespeicherte Koordinaten in Felder zurückschreiben <<<
