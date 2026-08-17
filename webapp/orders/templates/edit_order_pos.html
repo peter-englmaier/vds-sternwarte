@@ -398,9 +398,11 @@ function updateBlockMoveButtons() {
 
   const moveUp = document.getElementById('move-up');
   const moveDown = document.getElementById('move-down');
+  const deleteActive = document.getElementById('delete-active');
 
   if (moveUp) moveUp.style.display = show ? '' : 'none';
   if (moveDown) moveDown.style.display = show ? '' : 'none';
+  if (deleteActive) deleteActive.style.display = show ? '' : 'none';
 }
 function renumberAllBlocks() {
   const blocks = document.querySelectorAll('#positions-root .position-block');
@@ -763,9 +765,11 @@ function renumberRowsInAllBlocks() {
       row.dataset.rowInBlock = String(i + 1); // 1..n
       const moveUp = row.querySelector('[data-row-move="up"]');
       const moveDown = row.querySelector('[data-row-move="down"]');
+      const deleteRow = row.querySelector('[data-row-delete]');
 
       if (moveUp) moveUp.style.display = show ? '' : 'none';
-      if (moveDown) moveDown.style.display = show ? '' : 'none';      
+      if (moveDown) moveDown.style.display = show ? '' : 'none';   
+      if (deleteRow) deleteRow.style.display = show ? '' : 'none';   
     });
   });
 }
