@@ -656,6 +656,13 @@ document.getElementById('add-new')?.addEventListener('click', () => {
   const tmpl = document.querySelector('#positions-root .position-block');
   if (!tmpl) return;
   const blank = tmpl.cloneNode(true);
+  const rows = blank.querySelectorAll('tbody.rows-body tr.pos-row');
+
+rows.forEach((row, index) => {
+  if (index > 0) {
+    row.remove();
+  }
+});
   clearBlockInputs(blank);
   document.getElementById('positions-root').appendChild(blank);
   registerTelescopeBoxListeners(blank);
