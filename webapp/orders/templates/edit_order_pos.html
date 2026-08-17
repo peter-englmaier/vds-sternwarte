@@ -527,6 +527,18 @@ function registerTelescopeBoxListeners(context = document) {
 }
 
 /* ===================== Coord toggle + write target_coordinates ===================== */
+function clampCoordinateValue(input, min, max) {
+  if (!input || input.value === '') return;
+
+  const value = Number(input.value);
+  if (Number.isNaN(value)) {
+    input.value = '';
+    return;
+  }
+
+  if (value < min) input.value = min;
+  if (value > max) input.value = max;
+}
 function pad2(v){ v=String(v??'').trim(); if(v==='') return '00'; return v.padStart(2,'0'); }
 function padSec(v){
   if(v===''||v==null) return '00.00';
@@ -621,6 +633,29 @@ document.addEventListener('change', (e) => {
 document.addEventListener('input', (e) => {
   const block = e.target.closest('.position-block');
   if (!block) return;
+  if (e.target.classList.contains('ra-h')) {
+    clampCoordinateValue(e.target, 0, 23);
+  }
+
+  if (e.target.classList.contains('ra-m')) {
+    clampCoordinateValue(e.target, 0, 59);
+  }
+
+  if (e.target.classList.contains('ra-s')) {
+    clampCoordinateValue(e.target, 0, 59.999);
+  }
+
+  if (e.target.classList.contains('dec-d')) {
+    clampCoordinateValue(e.target, 0, 90);
+  }
+
+  if (e.target.classList.contains('dec-m')) {
+    clampCoordinateValue(e.target, 0, 59);
+  }
+
+  if (e.target.classList.contains('dec-s')) {
+    clampCoordinateValue(e.target, 0, 59.999);
+  }
   if (
     e.target.classList.contains('ra-h') ||
     e.target.classList.contains('ra-m') ||
