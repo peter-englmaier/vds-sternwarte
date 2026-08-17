@@ -714,8 +714,14 @@ window.addEventListener('DOMContentLoaded', () => {
 function renumberRowsInAllBlocks() {
   document.querySelectorAll('#positions-root .position-block').forEach(block => {
     const rows = block.querySelectorAll('tbody.rows-body tr.pos-row');
+    const show = rows.length >= 2;    
     rows.forEach((row, i) => {
       row.dataset.rowInBlock = String(i + 1); // 1..n
+      const moveUp = row.querySelector('[data-row-move="up"]');
+      const moveDown = row.querySelector('[data-row-move="down"]');
+
+      if (moveUp) moveUp.style.display = show ? '' : 'none';
+      if (moveDown) moveDown.style.display = show ? '' : 'none';      
     });
   });
 }
