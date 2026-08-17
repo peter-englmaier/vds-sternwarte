@@ -666,6 +666,8 @@ rows.forEach((row, index) => {
   clearBlockInputs(blank);
   document.getElementById('positions-root').appendChild(blank);
   registerTelescopeBoxListeners(blank);
+  const telescopeSelect = blank.querySelector('.telescope_box');
+  if (telescopeSelect) telescopeSelect.dispatchEvent(new Event('change'));
   setActive(blank);
   renumberAllBlocks();
   renumberRowsInAllBlocks();
