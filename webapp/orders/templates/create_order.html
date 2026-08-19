@@ -20,7 +20,7 @@
             <td class="col-fixed-100">
                 {{ form.request_date(class="form-control", type="hidden") }}
                 <span id="selected_date_display">Kein Datum ausgewählt</span>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
+                <button type="button" class="btn btn-sm btn-primary"
                         hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.request_date.id, display_id='selected_date_display') }}"
                         hx-target="#calendar-container-modal .modal-body"
                         hx-swap="innerHTML"
@@ -58,7 +58,7 @@
 
 <br>
 <br>
-  <button type="submit" class="btn" name="action" value="save_order" style="background-color: #a020f0; color: white;"
+  <button type="submit" class="btn btn-success" name="action" value="save_order"
           onclick="return confirm('Hast Du ein Datum ausgewählt?');">
    Weiter
   </button>
@@ -70,7 +70,7 @@
   </button>
 
 
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >abbrechen</a>
 {% endif %}
 </form>
 
