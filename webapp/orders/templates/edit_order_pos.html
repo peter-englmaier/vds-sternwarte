@@ -119,7 +119,7 @@ function unused() {
             {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
           </span>
           <button type="button"
-                  class="btn btn-sm btn-outline-secondary"
+                  class="btn btn-sm btn-primary"
                   hx-get="{{ url_for('orders.show_calendar', year=form.head.request_date.data.year, month=form.head.request_date.data.month, picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
                   hx-target="#calendar-container-modal .modal-body"
                   hx-swap="innerHTML"
@@ -327,7 +327,7 @@ function unused() {
     Objekt Koordinaten ergänzen
   </button>
 
-  <a class="btn btn-primary" href="{{ url_for('main.home') }}">Zur Startseite</a>
+  <a class="btn btn-primary" href="{{ url_for('main.home') }}">Abbrechen</a>
 
   <div id="flatten-hidden" style="display:none;"></div>
   {% endif %}
