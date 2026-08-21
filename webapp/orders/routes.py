@@ -751,18 +751,26 @@ def reject_order(order_id):
 @role_required("approver")
 def approve_order(order_id):
     order_head = ObservationRequest.query.get(order_id)
-    order_head.status = ORDER_STATUS_APPROVED
+    done = False
     try:
+        order_head.status = ORDER_STATUS_APPROVED
+        db.session.add(order_head)
         db.session.commit()
+        done = True
+        order_url = url_for('orders.show_order_positions', order_id=order_id, _external=True)
+        send_accept_email.delay(order_id, current_user.id, order_url)
+        flash(f"Antrag angenommen und Mail versendet", "success")
     except Exception as e:
         db.session.rollback()
-        flash(
-            f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
-            "danger",
-        )
-    else:
-        flash("Antrag bestätigt", "success")
+        if done:
+            flash(f"Antrag angenommen, aber Mail konnte nicht versendet werden. Fehler: {e}",
+                  "danger")
+        else:
+            flash(f"Antrag kann nicht angenommen werden. Fehler: {e}.", "danger")
+
     return redirect(url_for("main.approver"))
+
+
 
 @orders.route("/approver/assign_poweruser_form", methods=["GET"])
 @login_required
@@ -887,7 +895,88 @@ Gruss, {approver_greeting}
         else:
             raise exc
 
+#TODO
+#@shared_task
+#def send_submitted_email
+#Vorschlag für Mail 1.:
+# Hallo {user_greeting},
+#
+# die beantragte Beobachtung #{order_id} für den {request_date} ist eingegangen.
+# Der Termin ist im Kalender entsprechend reserviert.
+#
+# Link zum Antrag: {order_url}
+#
+# Wie geht es nun weiter?
+# - wir prüfen, ob der Antrag angenommen werden kann.
+# - du wirst anschliessend entsprechend informiert.
+#
+# Danke für die Geduld!
+#
+# Gruss,
+# {Sternwarte}  <<=== diese Mail ist automatisch, also gibts keinen Mensch als Absender
 
+#TODO
+#@shared_task
+#def send_reservation_expired_email
+#Hallo {user_greeting},
+#
+# der Reservierung für {request_date} von Beobachtung #{order_id} ist abgelaufen.
+# Der Termin wurde im Kalender wieder freigegeben. Dadurch soll verhindert werden, dass verwaiste
+# Anträge die Sternwarte blockieren. Bitte lösche Anträge, die du nicht einreichen wirst damit kein Termin
+# blockiert wird.
+#
+# Link zum Antrag: {order_url}
+#
+# Du Termin kann von dir oder einem anderen Benutzer erneut
+# reserviert werden - wer zuerst kommt, schnappt sich den Termin!
+#
+# Gruss,
+# {Sternwarte}
+
+@shared_task
+def send_accept_email(order_id, approver_id, order_url):
+    antrag = ObservationRequest.query.get(order_id)
+    request_date = antrag.request_date.strftime("%d.%m.%Y")
+    user = User.query.get(antrag.user_id)
+    approver = User.query.get(approver_id)
+
+    user_greeting = user.display_name()
+    approver_greeting = approver.display_name()
+
+    if Config.ENVIRONMENT != "PRODUCTION":
+        ps = f"P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt."
+    else:
+        ps = ""
+
+    recipients = [user.email, approver.email]
+
+    msg = Message('Antrag eingegangen',
+                  sender=Config.MAIL_REPLYTO,
+                  recipients=recipients)
+    msg.body = f'''\
+Hallo {user_greeting},
+die beantragte Beobachtung #{order_id} für den {request_date} ist provisorisch angenommen.
+Der Termin ist im Kalender entsprechend reserviert.
+
+Link zum Antrag: {order_url}
+
+Wie geht es nun weiter?
+- wir suchen einen PU der die Beobachtung durchführen kann
+- du wirst anschliessend entsprechend informiert.
+
+Danke für die Geduld!
+
+Gruss, {approver_greeting}
+{ps or ""}
+'''
+    try:
+        mail.send(msg)
+    except SMTPAuthenticationError as exc:
+        if exc.smtp_code == 454:
+            print(exc)
+            raise self.retry(exc=exc)
+        else:
+            raise exc
 
 # --------------------------------------------------------------------
 # Belegungskalender anzeigen
