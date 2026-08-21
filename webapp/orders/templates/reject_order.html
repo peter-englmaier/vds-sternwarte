@@ -29,7 +29,8 @@
             <th>Fokussieren</th>
         </tr>
     </thead>
-    {% for order_pos in order_position %}
+    <tbody>
+    {% for order_pos in order_position %}    
         <tr>
             <td>{{order_pos.telescope.name}}</td>
             <td>{{order_pos.filterset.name}}</td>
@@ -47,7 +48,7 @@
             <td>{{order_pos.exposure_focus}}</td>
         </tr>
     {% endfor %}
-    <tbody>
+    </tbody>
 </table>
 <br/>
 
