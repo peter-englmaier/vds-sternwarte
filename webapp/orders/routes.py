@@ -708,6 +708,9 @@ def reject_order(order_id):
     user=User.query.get(order_head.user_id)
     observatory = Observatory.query.get(order_head.request_observatory_id)
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
+    positions = ObservationRequestPosition.query.filter_by(
+    observation_request_id=order_id
+).all()
     order_head.status_label = ORDER_STATUS_LABELS.get(order_head.status, "??")
     form = RejectOrderForm()
     if form.validate_on_submit():
@@ -740,7 +743,7 @@ def reject_order(order_id):
         # formular befuellen (hier nichts?)
         pass
     return render_template('reject_order.html',
-                           form=form, order=order_head, user=user, observatory=observatory, reservation=reservation)
+                           form=form, order=order_head, user=user, observatory=observatory, reservation=reservation, order_position=positions)
 
 
 # --------------------------------------------------------------------
