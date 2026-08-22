@@ -1,4 +1,6 @@
 from smtplib import SMTPAuthenticationError
+import re
+from urllib.parse import urlparse
 
 from flask import (
     render_template,
@@ -50,6 +52,58 @@ from webapp.orders.orderservices import (
     get_user_preference_service,
 )
 from webapp.users.utils import role_required
+
+CALENDAR_DOM_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_:-]{0,63}$")
+CALENDAR_MIN_YEAR = 1900
+CALENDAR_MAX_YEAR = 2100
+
+
+def get_calendar_int_arg(name, default, min_value, max_value):
+    raw_value = request.args.get(name)
+    if raw_value is None:
+        return default
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        abort(400)
+    if value < min_value or value > max_value:
+        abort(400)
+    return value
+
+
+def get_calendar_bool_arg(name, default=False):
+    raw_value = request.args.get(name)
+    if raw_value is None:
+        return default
+    value = raw_value.lower()
+    if value in ("1", "true", "t", "yes", "y", "on"):
+        return True
+    if value in ("0", "false", "f", "no", "n", "off"):
+        return False
+    abort(400)
+
+
+def get_calendar_dom_id_arg(name, default):
+    value = request.args.get(name, default)
+    if CALENDAR_DOM_ID_RE.fullmatch(value):
+        return value
+    abort(400)
+
+
+def get_safe_calendar_referrer():
+    referrer = request.referrer
+    if not referrer:
+        return None
+
+    parsed_referrer = urlparse(referrer)
+    if parsed_referrer.scheme or parsed_referrer.netloc:
+        if parsed_referrer.scheme in ("http", "https") and parsed_referrer.netloc == request.host:
+            return referrer
+        return None
+
+    if referrer.startswith("/"):
+        return referrer
+    return None
 
 
 # ------------------------------------------------------------------
@@ -988,17 +1042,17 @@ Gruss, {approver_greeting}
 @login_required
 @role_required("user")
 def show_calendar():
-    year = request.args.get("year", default=datetime.now().year, type=int)
-    month = request.args.get("month", default=datetime.now().month, type=int)
-    picker = request.args.get("picker", default=False, type=bool)
-    target_id = request.args.get("target_id", default="request_date", type=str)
-    display_id = request.args.get("display_id", default="selected_date_display", type=str)
+    year = get_calendar_int_arg("year", datetime.now().year, CALENDAR_MIN_YEAR, CALENDAR_MAX_YEAR)
+    month = get_calendar_int_arg("month", datetime.now().month, 1, 12)
+    picker = get_calendar_bool_arg("picker", False)
+    target_id = get_calendar_dom_id_arg("target_id", "request_date")
+    display_id = get_calendar_dom_id_arg("display_id", "selected_date_display")
 
     (cal, planned_days, approved_days,
      new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
      full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days) = calendar_service(year, month)
     today = date.today()
-    referrer = request.referrer
+    referrer = get_safe_calendar_referrer()
 
     template = "_calendar.html" if request.headers.get("HX-Request") else "calendar.html"
     month_name = [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" ]
