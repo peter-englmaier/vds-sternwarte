@@ -754,14 +754,27 @@ def reject_order(order_id):
 @role_required("approver")
 def approve_order(order_id):
     order_head = ObservationRequest.query.get(order_id)
+    user=User.query.get(order_head.user_id)
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first();
+    is_pu = user.has_role('poweruser')
     done = False
     try:
-        order_head.status = ORDER_STATUS_APPROVED
+        if is_pu:
+            if reservation:
+                reservation.confirm()
+                db.session.add(reservation)
+            order_head.status = ORDER_STATUS_PU_ASSIGNED
+            order_head.request_poweruser_id = order_head.user_id
+        else:
+            order_head.status = ORDER_STATUS_APPROVED
         db.session.add(order_head)
         db.session.commit()
         done = True
         order_url = url_for('orders.show_order_positions', order_id=order_id, _external=True)
-        send_accept_email.delay(order_id, current_user.id, order_url)
+        if is_pu:
+            send_putime_email.delay(order_id, current_user.id, order_url)
+        else:
+            send_accept_email.delay(order_id, current_user.id, order_url)
         flash(f"Antrag angenommen und Mail versendet", "success")
     except Exception as e:
         db.session.rollback()
@@ -968,6 +981,45 @@ Wie geht es nun weiter?
 - du wirst anschliessend entsprechend informiert.
 
 Danke für die Geduld!
+
+Gruss, {approver_greeting}
+{ps or ""}
+'''
+    try:
+        mail.send(msg)
+    except SMTPAuthenticationError as exc:
+        if exc.smtp_code == 454:
+            print(exc)
+            raise self.retry(exc=exc)
+        else:
+            raise exc
+
+@shared_task
+def send_putime_email(order_id, approver_id, order_url):
+    antrag = ObservationRequest.query.get(order_id)
+    request_date = antrag.request_date.strftime("%d.%m.%Y")
+    user = User.query.get(antrag.user_id)
+    approver = User.query.get(approver_id)
+
+    user_greeting = user.display_name()
+    approver_greeting = approver.display_name()
+
+    if Config.ENVIRONMENT != "PRODUCTION":
+        ps = f"P.S.: diese Email wurde von {Config.ENVIRONMENT} verschickt."
+    else:
+        ps = ""
+
+    recipients = [user.email, approver.email]
+
+    msg = Message('Antrag Poweruser Zeit genehmigt',
+                  sender=Config.MAIL_REPLYTO,
+                  recipients=recipients)
+    msg.body = f'''\
+Hallo {user_greeting},
+deine Beobachtung #{order_id} für den {request_date} ist genehmigt.
+Der Termin ist im Kalender entsprechend reserviert.
+
+Link zum Antrag: {order_url}
 
 Gruss, {approver_greeting}
 {ps or ""}
