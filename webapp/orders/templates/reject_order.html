@@ -15,18 +15,18 @@
         <tr>
             <th>Teleskop</th>
             <th>Filterset</th>
-            <th>Rubrik</th>
+            <!-- <th>Rubrik</th> Nr183 unnötige Spaten -->
             <th>Objekt</th>
             <th>Koordinaten</th>
-            <th>Sperre</th>
+            <!-- <th>Sperre</th> Nr183 unnötige Spaten -->
             <th>Anzahl Bilder</th>
             <th>Bel. Zeit</th>
             <th>Mosaik</th>
-            <th>Startzeit</th>
+            <!-- <th>Startzeit</th>
             <th>Gain</th>
             <th>Offset</th>
             <th>Dithern</th>
-            <th>Fokussieren</th>
+            <th>Fokussieren</th> Nr183 unnötige Spaten -->
         </tr>
     </thead>
     <tbody>
@@ -34,18 +34,18 @@
         <tr>
             <td>{{order_pos.telescope.name}}</td>
             <td>{{order_pos.filterset.name}}</td>
-            <td>{{order_pos.target_objecttype}}</td>
+            <!-- <td>{{order_pos.target_objecttype}}</td> Nr183 unnötige Spaten -->
             <td>{{order_pos.target}}</td>
             <td>{{order_pos.target_coordinates if order_pos.target_coordinates else '-' }}</td>
-            <td> {{ '✓' if order_pos.target_coordinates_lock == '1' else '✗' }} </td>
+            <!-- <td> {{ '✓' if order_pos.target_coordinates_lock == '1' else '✗' }} </td> Nr183 unnötige Spaten -->
             <td>{{order_pos.exposure_count}}</td>
             <td>{{order_pos.exposure_time}}</td>
             <td class="text-center">{{ "✓" if order_pos.mosaic else "" }}</td>
-            <td>{{ order_pos.exposure_starttime('%H:%M') if order_pos.exposure_starttime else '-' }}</td>
+            <!-- <td>{{ order_pos.exposure_starttime('%H:%M') if order_pos.exposure_starttime else '-' }}</td>
             <td>{{order_pos.exposure_gain}}</td>
             <td>{{order_pos.exposure_offset}}</td>
             <td>{{order_pos.exposure_dither}}</td>
-            <td>{{order_pos.exposure_focus}}</td>
+            <td>{{order_pos.exposure_focus}}</td> Nr183 unnötige Spaten -->
         </tr>
     {% endfor %}
     </tbody>
