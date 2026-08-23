@@ -1125,3 +1125,13 @@ def obs_request_complete():
         ORDER_STATUS_PU_ASSIGNED=ORDER_STATUS_PU_ASSIGNED,
         ORDER_STATUS_PU_ACCEPTED=ORDER_STATUS_PU_ACCEPTED,
     )
+
+#Sortierung und Archivierung
+
+@orders.route("/order_history")
+def order_history():
+    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_USER):
+        return render_template("home.html")
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+    return render_template("order_history.html", posts=posts)

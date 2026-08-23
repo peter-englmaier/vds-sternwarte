@@ -411,3 +411,21 @@ def impressum():
     else:
         vds_link = "#"
     return render_template('impressum.html', title='Impressum', vds_link=vds_link)
+
+#Sortierung und Archivierung
+
+@main.route("/poweruser_history")
+def poweruser_history():
+    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_Poweruser):
+        return render_template("home.html")
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+    return render_template("poweruser_history.html", posts=posts)
+
+@main.route("/approver_history")
+def approver_history():
+    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_Approver):
+        return render_template("home.html")
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+    return render_template("approver_history.html", posts=posts)
