@@ -12,7 +12,7 @@ from flask import (
 from flask_login import current_user, login_required
 from flask import current_app
 from flask_mail import Message
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from celery import shared_task
 from sqlalchemy import true
 
@@ -115,7 +115,8 @@ def get_filtersets():
 @login_required
 @role_required("user")
 def show_orders():
-    user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).all()
+    cutoff_date = date.today() - timedelta(days=3)
+    user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).filter(ObservationRequest.request_date >= cutoff_date).order_by(ObservationRequest.request_date.desc()).all()
     for order in user_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
         reservation = ObservatoryReservation.query.filter_by(observation_request_id=order.id).first();
