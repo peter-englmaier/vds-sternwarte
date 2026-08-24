@@ -9,6 +9,7 @@ from webapp.model.db import db, Post, SystemParameters, ObservationRequest, Powe
 from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_ROLE_USER, USER_ROLE_GUEST,ORDER_STATUS_LABELS, ORDER_STATUS_WAITING, \
     ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED
 from collections import defaultdict
+from datetime import date, timedelta
 from ..users.utils import role_required
 
 @main.route("/")
@@ -138,6 +139,7 @@ def poweruser():
         )
 
     # GET
+    cutoff_date = date.today() - timedelta(days=3)
     stmt = (
         select(ObservationRequest, User)
         .outerjoin(
@@ -151,8 +153,8 @@ def poweruser():
             ])
         )    
         .order_by(
-            ObservationRequest.request_date,
-            ObservationRequest.id,
+            ObservationRequest.request_date.desc(),
+            ObservationRequest.id.desc(),
         )
     )
     all_rows = db.session.execute(stmt).unique().all()
@@ -193,11 +195,12 @@ def poweruser():
                 else None
             )
 
-            if order.request_poweruser_id == current_user.id:
-                order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
-                own_orders.append(order)
-            else:
-                others_orders.append(order)
+    if order.request_date.date() >= cutoff_date:
+        if order.request_poweruser_id == current_user.id:
+            order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
+            own_orders.append(order)
+        else:
+            others_orders.append(order)
 
     return render_template("poweruser.html",title="Poweruser",open_orders=open_orders,own_orders=own_orders,others_orders=others_orders,)
 
@@ -208,20 +211,25 @@ def poweruser():
 @login_required
 @role_required("approver")
 def approver():
+    cutoff_date = date.today() - timedelta(days=3)
 
     all_orders = (
         ObservationRequest.query
         .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED]))
         .all()
     )
-
+    all_orders = [order for order in all_orders
+    if order.status != ORDER_STATUS_PU_ASSIGNED
+    or order.request_date.date() >= cutoff_date
+]
     # Action-required-Anträge ganz nach oben
     all_orders.sort(
     key=lambda order: order.status != ORDER_STATUS_PU_REJECTED
     )
 
     for order in all_orders:
-        order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
+        order.status_label = ORDER_STATUS_LABELS.get(order.status, "??") 
+        -order.request_date.timestamp()
 
         # Zugewiesener Poweruser kann Termin nicht mehr wahrnehmen
         if order.status == ORDER_STATUS_PU_REJECTED:
@@ -414,18 +422,53 @@ def impressum():
 
 #Sortierung und Archivierung
 
-@main.route("/poweruser_history")
-def poweruser_history():
-    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_Poweruser):
-        return render_template("home.html")
+@main.route("/user_order_history")
+@login_required
+@role_required("user")
+def user_order_history():
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
-    return render_template("poweruser_history.html", posts=posts)
+    ser_orders = ObservationRequest.query.filter_by(user_id=current_user.id).order_by(ObservationRequest.request_date.desc()).all()
+    return render_template("orders_history.html", posts=posts, orders=ser_orders)
 
-@main.route("/approver_history")
-def approver_history():
-    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_Approver):
-        return render_template("home.html")
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
-    return render_template("approver_history.html", posts=posts)
+@main.route("/poweruser_order_history")
+@login_required
+@role_required("poweruser")
+def poweruser_order_history():
+    all_orders = (
+        ObservationRequest.query
+        .filter(
+            ObservationRequest.status.in_([
+                ORDER_STATUS_PU_ASSIGNED,
+                ORDER_STATUS_PU_REJECTED,
+                ORDER_STATUS_PU_ACCEPTED,
+            ])
+        )
+        .order_by(ObservationRequest.request_date.desc())
+        .all()
+    )
+
+    own_orders = []
+    others_orders = []
+
+    for order in all_orders:
+        if order.request_poweruser_id:
+            pu_user = User.query.get(order.request_poweruser_id)
+            order.poweruser_name = (
+                pu_user.display_name()
+                if pu_user
+                else None
+            )
+        else:
+            order.poweruser_name = None
+
+        if order.request_poweruser_id == current_user.id:
+            own_orders.append(order)
+        else:
+            others_orders.append(order)
+
+    return render_template(
+        "poweruser_history.html",
+        own_orders=own_orders,
+        others_orders=others_orders
+    )

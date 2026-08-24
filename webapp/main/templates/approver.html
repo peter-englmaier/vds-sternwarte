@@ -20,10 +20,10 @@
 {% if orders|length > 0 %}
 
     {# Grundebene Festlegung der Statusvarianten #}
-    {% set orders_waiting = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_WAITING) | list %}
-    {% set orders_approved_open = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_APPROVED) | list %}
+    {% set orders_waiting = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_WAITING) | sort(attribute='request_date', reverse=true) | list %}
+    {% set orders_approved_open = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_APPROVED) | sort(attribute='request_date', reverse=true)| list %}
     {% set orders_pu_assigned = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_ASSIGNED) | list %}
-    {% set orders_action_required = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_REJECTED) | list %}
+    {% set orders_action_required = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_REJECTED) | sort(attribute='request_date', reverse=true) | list %}
 
 {# -------------------- ACTION REQUIRED -------------------- #}
 {% if orders_action_required|length > 0 %}
