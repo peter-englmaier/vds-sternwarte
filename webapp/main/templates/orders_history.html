@@ -1,12 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<h2>Meine Teleskopzeiten</h2>
+<h2>Archiv meiner Anträge</h2>
 {% if current_user.is_authenticated %}
-<p>
-    <span style="margin-right:50px;">
-        Antragssteller: {{current_user.firstname}} {{current_user.surname}} ({{current_user.name}})
-    </span>
+<p>    
         Du hast bisher {{orders|length}} Beobachtungsanträge.
 </p>
 
@@ -74,17 +71,13 @@
 </table>
 {% endif %}
 <br>
-
-<form method="post" action="{{ url_for('orders.actionhandler') }}">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-<button type="submit" class="btn btn-success" name="action" value="create_order">
-      Neuen Antrag eingeben
-</button>
 {% endif %}
 
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.user_order_history') }}" >Archiv</a>
-</form>
+<a class="btn btn-primary" href="{{ url_for('orders.show_orders') }}">
+    Zurück zu Meine Teleskopzeiten
+</a>
 
+<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}">
+    Zur Startseite
+</a>
 {% endblock content %}

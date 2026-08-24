@@ -1088,7 +1088,7 @@ def show_calendar():
 @orders.route("/obs_requests")
 @login_required
 def obs_request_complete():
-    orders = ObservationRequest.query.order_by(ObservationRequest.id.desc()).all()
+    orders = ObservationRequest.query.order_by(ObservationRequest.request_date.desc()).all()
 
     for order in orders:
         # Status-Label
