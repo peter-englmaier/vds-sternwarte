@@ -3,6 +3,13 @@
     <h1>Approver</h1>
 <!-- Bearbeitung #84 -->
 {% if current_user.is_authenticated %}
+
+    {# Grundebene Festlegung der Statusvarianten #}
+    {% set orders_waiting = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_WAITING) | sort(attribute='request_date', reverse=true) | list %}
+    {% set orders_approved_open = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_APPROVED) | sort(attribute='request_date', reverse=true)| list %}
+    {% set orders_pu_assigned = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_ASSIGNED) | list %}
+    {% set orders_action_required = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_REJECTED) | sort(attribute='request_date', reverse=true) | list %}
+    
 <p>
     <span style="margin-right:50px;">
         Genehmiger: {{current_user.firstname}} {{current_user.surname}}
@@ -11,19 +18,18 @@
     <p><a class="btn btn-primary" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
 <p>
     <span style="margin-right:50px;">
-        Insgesamt gibt es 
-        <a href="{{ url_for('orders.obs_request_complete') }}">
-            {{ orders|length }} Beobachtungsanträge
+        Insgesamt gibt es {{ orders_waiting|length }} offene Beobachtungsanträge
         </a>.
     </span>
 </p>
 {% if orders|length > 0 %}
 
-    {# Grundebene Festlegung der Statusvarianten #}
-    {% set orders_waiting = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_WAITING) | sort(attribute='request_date', reverse=true) | list %}
-    {% set orders_approved_open = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_APPROVED) | sort(attribute='request_date', reverse=true)| list %}
-    {% set orders_pu_assigned = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_ASSIGNED) | list %}
-    {% set orders_action_required = orders | selectattr('status', 'equalto', CONSTANTS.ORDER_STATUS_PU_REJECTED) | sort(attribute='request_date', reverse=true) | list %}
+<p>
+    <span style="margin-right:50px;"> 
+        <a href="{{ url_for('orders.obs_request_complete') }}">Archivierte Anträge ansehen</a>.
+    </span>
+</p>
+
 
 {# -------------------- ACTION REQUIRED -------------------- #}
 {% if orders_action_required|length > 0 %}

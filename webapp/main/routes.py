@@ -195,12 +195,12 @@ def poweruser():
                 else None
             )
 
-    if order.request_date.date() >= cutoff_date:
-        if order.request_poweruser_id == current_user.id:
-            order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
-            own_orders.append(order)
-        else:
-            others_orders.append(order)
+        if order.request_date.date() >= cutoff_date:
+            if order.request_poweruser_id == current_user.id:
+                order.my_pu_meldung_availability = my_meldungen_by_order.get(order.id)
+                own_orders.append(order)
+            else:
+                others_orders.append(order)
 
     return render_template("poweruser.html",title="Poweruser",open_orders=open_orders,own_orders=own_orders,others_orders=others_orders,)
 
