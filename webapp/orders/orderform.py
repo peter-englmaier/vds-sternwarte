@@ -47,7 +47,7 @@ def filterset_query(telescope_id):
     return (
         Filterset.query
         .filter_by(telescope_id=int(telescope_id))
-        .order_by(Filterset.name)
+        .order_by(Filterset.priority)
         .all()
     )
 
