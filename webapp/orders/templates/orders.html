@@ -7,7 +7,7 @@
     <span style="margin-right:50px;">
         Antragssteller: {{current_user.firstname}} {{current_user.surname}} ({{current_user.name}})
     </span>
-        Du hast bisher {{orders|length}} Beobachtungsanträge.
+        Anzahl bisheriger Beobachtungsanträge: {{orders|length}}
 </p>
 
 {% if orders|length > 0 %}

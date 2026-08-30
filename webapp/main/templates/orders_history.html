@@ -4,7 +4,7 @@
 <h2>Archiv meiner Anträge</h2>
 {% if current_user.is_authenticated %}
 <p>    
-        Du hast bisher {{orders|length}} Beobachtungsanträge.
+        Anzahl bisheriger Beobachtungsanträge: {{orders|length}}
 </p>
 
 {% if orders|length > 0 %}
