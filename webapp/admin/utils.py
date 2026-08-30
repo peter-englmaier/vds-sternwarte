@@ -184,11 +184,12 @@ class SystemParametersHistoryModelView(GenericModelView):
 
 class FiltersetModelView(GenericModelView):
     form_excluded_columns: tuple[str, ...] = ['observation_request_position']  # List View
-    column_list: tuple[str, ...] = ( 'name', 'telescope', 'quantity' )
+    column_list: tuple[str, ...] = ( 'name', 'telescope', 'quantity', 'priority' )
     column_labels = dict(
         name='Filterset',
         telescope='Teleskop',
-        quantity='Anzahl Filter im Set'
+        quantity='Anzahl Filter im Set',
+        priority='Sortierung',
     )
     column_formatters = dict(
         telescope=(lambda v, c, m, p: m.telescope.name if m.telescope else "None")
@@ -197,7 +198,8 @@ class FiltersetModelView(GenericModelView):
          name='Einzelner Filter oder ganze Palette. Anweisung an den Poweruser',
          telescope='ist an dem Teleskop verbaut',
          quantity ='Wert wieviel Belichtungen pro Durchgang erforderlich sind.\n' 
-                   'Anzahl Filter pro Set'
+                   'Anzahl Filter pro Set',
+         priority='Sortierung der Filter im Set',
     )
 
 class ObjectTypesModelView(GenericModelView):
