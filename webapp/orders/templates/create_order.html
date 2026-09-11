@@ -11,7 +11,7 @@
     <thead>
         <tr>
             <th class="col-fixed-100">Datum</th>
-            <th class="col-fixed-100">Beteiligte</th>
+            <th class="col-fixed-100">Antragsteller</th>
             <th class="col-fixed-100">Observatorium</th>
         </tr>
     </thead>
@@ -30,7 +30,7 @@
                 </button>
             </td>
             <td class="col-fixed-100">
-                {{ form.requester_name(class="form-control") }}
+                {{ form.requester_name.data }}
             </td>
             <td class="col-fixed-100">
                 {{ form.observatory_name(class="form-control") }}
