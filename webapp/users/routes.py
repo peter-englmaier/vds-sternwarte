@@ -108,7 +108,10 @@ def account():
         form.firstname.data = current_user.firstname
         form.surname.data = current_user.surname
         form.vds_number.data = current_user.vds_number
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    if current_user.image_file == 'default.jpg':
+        image_file = url_for('static', filename='default.jpg')
+    else:
+        image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
                            image_file=image_file, form=form)
 
