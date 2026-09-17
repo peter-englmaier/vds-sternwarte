@@ -204,7 +204,7 @@ def actionhandler():
             order_head.request_date = form.request_date.data
             order_head.request_observatory_id = form.observatory_name.data
             observatory = Observatory.query.get(order_head.request_observatory_id)
-            order_head.name = form.requester_name.data
+            order_head.name = current_user.display_name()
             poweruser_index = form.poweruser_name.data
             if poweruser_index != '':
                 poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
@@ -429,7 +429,7 @@ def edit_order_pos(order_id):
             flash("Reservation nicht möglich", "danger")
             return redirect(url_for("orders.edit_order_pos", order_id=order_id))
 
-        order_head.name = form.head.requester_name.data
+        #order_head.name = form.head.requester_name.data
         #order_head.request_purpose = form.head.request_purpose.data
         poweruser_index = form.head.poweruser_name.data
         if poweruser_index != '':
