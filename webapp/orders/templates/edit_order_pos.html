@@ -84,6 +84,7 @@ function unused() {
       action="{{ url_for('orders.edit_order_pos', order_id=order_id) }}"
 >
   {{ form.hidden_tag() }}
+  {{ form.head.requester_name(type="hidden") }}
 
   {% if current_user.is_authenticated %}
 
@@ -107,7 +108,7 @@ function unused() {
     <thead>
       <tr>
         <th class="text-center">Datum</th>
-        <th class="text-center">Beteiligte</th>
+        <!-- <th class="text-center">Antragsteller</th> -->
         <th class="text-center">Observatorium</th>
       </tr>
     </thead>
@@ -129,7 +130,7 @@ function unused() {
             Kalender
           </button>
         </td>
-        <td class="text-center">{{ form.head.requester_name() }}</td>
+        <!-- <td class="text-center">{{ form.head.requester_name() }}</td> -->
         <td class="text-center">{{ form.head.observatory_name() }}</td>
       </tr>
     </tbody>

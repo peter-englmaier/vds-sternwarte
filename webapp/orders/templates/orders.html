@@ -18,7 +18,7 @@
             <th>Aktion</th>
             <th>Status</th>
             <th>Datum</th>
-            <th>Beteiligte</th>
+            <!-- <th>Antragsteller</th> -->
             <th>Observatorium</th>
             <!-- <th>Motivation</th> -->
             <th>Poweruser</th>
@@ -62,7 +62,7 @@
             {% else %}
             <td><s>{{ order.date_info }}</s></td>
             {% endif %}
-            <td>{{ order.name }}</td>
+            <!-- <td>{{ order.name }}</td> -->
             <td>{{ order.observatory_name }}</td>
             <!-- <td>{{ order.request_purpose }}</td> -->
             <td>{{ order.poweruser_name if order.poweruser_name else '-' }}</td>
