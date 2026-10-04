@@ -204,7 +204,7 @@ def actionhandler():
             order_head.request_date = form.request_date.data
             order_head.request_observatory_id = form.observatory_name.data
             observatory = Observatory.query.get(order_head.request_observatory_id)
-            order_head.name = form.requester_name.data
+            order_head.name = current_user.display_name() # form.requester_name.data
             poweruser_index = form.poweruser_name.data
             if poweruser_index != '':
                 poweruser = next(( name for i, name in form.poweruser_name.choices if i == poweruser_index ), None)
