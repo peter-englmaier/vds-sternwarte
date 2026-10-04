@@ -171,7 +171,8 @@
             <th>Details</th>            
             <th>Datum</th>
             <th>Antragsteller</th>
-            <th>Rückmeldung ändern</th>
+            <th style="width: 170px; text-align: center;">Rückmeldung ändern</th>
+            <th>Anmerkungen</th>
         </tr>
     </thead>
 
@@ -185,8 +186,8 @@
             </td>            
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
-            <td>
-    <div class="mt-2">
+            <td style="width: 170px; text-align: center;">
+    <div class="mt-2  d-flex flex-column align-items-center">
         <input type="hidden"
                id="action-own-{{ order.id }}"
                name="action"
@@ -196,39 +197,7 @@
                id="order-own-{{ order.id }}"
                name="order_id"
                value="{{ order.id }}">
-
-        <div class="form-check form-check-inline m-0">
-            <input
-                class="form-check-input availability-green"
-                type="radio"
-                name="availability-own-{{ order.id }}"
-                value="1"
-                {% if order.my_pu_meldung_availability == 1 %}checked{% endif %}
-                hx-post="{{ url_for('main.poweruser') }}"
-                hx-trigger="change"
-                hx-include="#action-own-{{ order.id }},#order-own-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
-                hx-vals='{"availability":"1"}'
-                hx-target="#pu-feedback-own-{{ order.id }}"
-                hx-swap="innerHTML"
-            >
-        </div>
-
-        <div class="form-check form-check-inline m-0">
-            <input
-                class="form-check-input availability-yellow"
-                type="radio"
-                name="availability-own-{{ order.id }}"
-                value="2"
-                {% if order.my_pu_meldung_availability == 2 %}checked{% endif %}
-                hx-post="{{ url_for('main.poweruser') }}"
-                hx-trigger="change"
-                hx-include="#action-own-{{ order.id }},#order-own-{{ order.id }}{% if csrf_token is defined %},#csrf_token{% endif %}"
-                hx-vals='{"availability":"2"}'
-                hx-target="#pu-feedback-own-{{ order.id }}"
-                hx-swap="innerHTML"
-            >
-        </div>
-
+        
         <div class="form-check form-check-inline m-0">
             <input
                 class="form-check-input availability-red"
@@ -248,6 +217,7 @@
         <div id="pu-feedback-own-{{ order.id }}"></div>
     </div>
 </td>
+<td>{{ order.remark }}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -266,6 +236,7 @@
             <th>Datum</th>
             <th>Antragsteller</th>
             <th>Zugewiesener Poweruser</th>
+            <th>Anmerkungen</th>
         </tr>
     </thead>
 
@@ -280,6 +251,7 @@
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.poweruser_name or '-' }}</td>
+            <td>{{ order.remark }}</td>
         </tr>
     {% endfor %}
     </tbody>
