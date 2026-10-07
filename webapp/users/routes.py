@@ -5,8 +5,9 @@ from webapp import bcrypt, db
 from webapp.model.db import User, Post, Group
 from webapp.users import users
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
+                                   ChangePasswordForm,
                                    RequestResetForm, ResetPasswordForm)
-from webapp.users.utils import save_picture, send_reset_email
+from webapp.users.utils import check_password_strength, save_picture, send_reset_email
 from sqlalchemy import func
 from webapp.orders.constants import USER_ROLE_GUEST
 
@@ -90,7 +91,30 @@ def logout():
 @login_required
 def account():
     form = UpdateAccountForm()
-    if form.validate_on_submit():
+    password_form = ChangePasswordForm(prefix='pw')
+    if password_form.submit.data:
+        if current_user.name == 'admin':
+            flash('Der Benutzer admin kann sein Passwort hier nicht ändern.', 'danger')
+            return redirect(url_for('users.account'))
+        if password_form.validate_on_submit():
+            if not bcrypt.check_password_hash(current_user.password, password_form.current_password.data):
+                password_form.current_password.errors.append('Das aktuelle Passwort ist nicht korrekt.')
+            else:
+                password_is_strong, message = check_password_strength(
+                    password_form.password.data,
+                    current_password=password_form.current_password.data,
+                )
+                if not password_is_strong:
+                    password_form.password.errors.append(message)
+                else:
+                    current_user.password = bcrypt.generate_password_hash(
+                        password_form.password.data
+                    ).decode('utf-8')
+                    db.session.commit()
+                    logout_user()
+                    flash('Ihr Passwort wurde aktualisiert.', 'success')
+                    return redirect(url_for('users.password_changed'))
+    elif form.validate_on_submit():
         if form.picture.data:
             picture_file = save_picture(form.picture.data)
             current_user.image_file = picture_file
@@ -102,7 +126,7 @@ def account():
         db.session.commit()
         flash('Your account has been updated!', 'success')
         return redirect(url_for('users.account'))
-    elif request.method == 'GET':
+    if request.method == 'GET' or not form.submit.data:
         form.username.data = current_user.name
         form.email.data = current_user.email
         form.firstname.data = current_user.firstname
@@ -113,7 +137,12 @@ def account():
     else:
         image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
-                           image_file=image_file, form=form)
+                           image_file=image_file, form=form,
+                           password_form=password_form)
+
+@users.route('/password_changed')
+def password_changed():
+    return render_template('password_changed.html', title='Passwort geändert')
 
 
 @users.route("/user/<string:username>")
