@@ -4,6 +4,7 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, Integ
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from flask_login import current_user
 from webapp.model.db import User
+from webapp.users.utils import check_password_strength
 from sqlalchemy import func
 
 
@@ -19,6 +20,11 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Passwort wiederholen',
                                      validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Registrieren')
+
+    def validate_password(self, password):
+        password_is_strong, message = check_password_strength(password.data)
+        if not password_is_strong:
+            raise ValidationError(message)
 
     def validate_username(self, username):
         user = User.query.filter_by(name=username.data).first()
@@ -68,6 +74,14 @@ class UpdateAccountForm(FlaskForm):
             ).first()
             if user:
                 raise ValidationError('That email is taken. Please choose a different one.')
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Aktuelles Passwort', validators=[DataRequired()])
+    password = PasswordField('Neues Passwort', validators=[DataRequired()])
+    confirm_password = PasswordField('Neues Passwort wiederholen',
+                                     validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Passwort ändern')
 
 
 class RequestResetForm(FlaskForm):
