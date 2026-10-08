@@ -39,6 +39,11 @@ def setup_users():
                     db.session.add(group)
                     db.session.commit()
 
+            if app.config.get('ALLOW_WEAK_PASSWORDS', False):
+                print("WARNING: ------------------------------------------------")
+                print("WARNING: \033[91mweak passwords are allowed by configuration\033[0m")
+                print("WARNING: ------------------------------------------------")
+
             # setup admin user, if name and password are set
             # always reset password to configured password; password must be complex enough
             pwd_complex = len(app.config['ADMIN_USER']) > 3 \
