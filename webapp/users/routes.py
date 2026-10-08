@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from urllib.parse import urlparse
 from webapp import bcrypt, db
@@ -70,6 +70,15 @@ def login():
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
+            if not current_app.config.get('ALLOW_WEAK_PASSWORDS', False):
+                password_is_strong, message = check_password_strength(form.password.data)
+                if not password_is_strong:
+                    flash(
+                        f'Ihr Passwort muss aktualisiert werden. {message}',
+                        'warning',
+                    )
+                    return redirect(url_for('users.account'))
+
             next_page = request.args.get('next', '').replace('\\', '')
             if next_page and not urlparse(next_page).netloc and not urlparse(next_page).scheme:
                 return redirect(next_page)
@@ -100,13 +109,14 @@ def account():
             if not bcrypt.check_password_hash(current_user.password, password_form.current_password.data):
                 password_form.current_password.errors.append('Das aktuelle Passwort ist nicht korrekt.')
             else:
-                password_is_strong, message = check_password_strength(
-                    password_form.password.data,
-                    current_password=password_form.current_password.data,
-                )
-                if not password_is_strong:
-                    password_form.password.errors.append(message)
-                else:
+                if not current_app.config.get('ALLOW_WEAK_PASSWORDS', False):
+                    password_is_strong, message = check_password_strength(
+                        password_form.password.data,
+                        current_password=password_form.current_password.data,
+                    )
+                    if not password_is_strong:
+                        password_form.password.errors.append(message)
+                if not password_form.password.errors:
                     current_user.password = bcrypt.generate_password_hash(
                         password_form.password.data
                     ).decode('utf-8')

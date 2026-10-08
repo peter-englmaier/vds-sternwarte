@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
+from flask import current_app
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from flask_login import current_user
@@ -22,9 +23,10 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Registrieren')
 
     def validate_password(self, password):
-        password_is_strong, message = check_password_strength(password.data)
-        if not password_is_strong:
-            raise ValidationError(message)
+        if not current_app.config.get('ALLOW_WEAK_PASSWORDS', False):
+            password_is_strong, message = check_password_strength(password.data)
+            if not password_is_strong:
+                raise ValidationError(message)
 
     def validate_username(self, username):
         user = User.query.filter_by(name=username.data).first()
