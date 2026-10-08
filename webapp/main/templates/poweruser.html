@@ -20,7 +20,7 @@
         <tr>
             <th>Aktion</th>            
             <th>Datum</th>
-            <th>Beteiligte</th>
+            <th>Antragsteller</th>
             <th>Observatorium</th>
             <!-- <th>Motivation</th> -->
             <th>Wunsch Poweruser</th>
@@ -172,6 +172,7 @@
             <th>Datum</th>
             <th>Antragsteller</th>
             <th>Rückmeldung ändern</th>
+            <th>Anmerkungen</th>
         </tr>
     </thead>
 
@@ -248,6 +249,7 @@
         <div id="pu-feedback-own-{{ order.id }}"></div>
     </div>
 </td>
+            <td>{{ order.remark }}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -266,6 +268,7 @@
             <th>Datum</th>
             <th>Antragsteller</th>
             <th>Zugewiesener Poweruser</th>
+            <th>Anmerkungen</th>
         </tr>
     </thead>
 
@@ -280,6 +283,7 @@
             <td>{{ order.request_date.strftime('%d.%m.%Y') }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.poweruser_name or '-' }}</td>
+            <td>{{ order.remark }}</td>
         </tr>
     {% endfor %}
     </tbody>
