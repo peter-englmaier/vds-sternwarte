@@ -120,6 +120,7 @@ def account():
                     current_user.password = bcrypt.generate_password_hash(
                         password_form.password.data
                     ).decode('utf-8')
+                    current_user.session_version += 1
                     db.session.commit()
                     logout_user()
                     flash('Ihr Passwort wurde aktualisiert.', 'success')
@@ -190,6 +191,7 @@ def reset_token(token):
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user.password = hashed_password
+        user.session_version += 1
         db.session.commit()
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('users.login'))
