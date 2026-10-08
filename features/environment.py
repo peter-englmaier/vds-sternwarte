@@ -43,6 +43,7 @@ class TestConfig:
     ADMIN_USER = 'testadmin'
     ADMIN_EMAIL = 'admin@test.com'
     ADMIN_PASSWORD = 'TestAdmin1!'
+    ALLOW_WEAK_PASSWORDS = False
 
 
 # ---------------------------------------------------------------------------
@@ -75,6 +76,7 @@ def after_all(context):
     context.pa_app.join()
 
 def before_scenario(context, scenario):
+    context._flask_app.config['ALLOW_WEAK_PASSWORDS'] = context.app_config.ALLOW_WEAK_PASSWORDS
     # Push an app context that stays alive for the whole scenario so that
     # step code can use db.session directly without extra context managers.
     context._app_ctx = context._flask_app.app_context()

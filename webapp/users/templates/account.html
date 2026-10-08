@@ -98,5 +98,32 @@
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>
         </form>
+    <!-- Change password form, don't show for admin -->
+            {% if current_user.name != "admin" %}
+        <form method="POST" action="">
+            {{ password_form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Passwort ändern</legend>
+                {% for field in [password_form.current_password, password_form.password, password_form.confirm_password] %}
+                <div class="form-group">
+                    {{ field.label(class="form-control-label") }}
+                    {% if field.errors %}
+                        {{ field(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in field.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ field(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </fieldset>
+            <div class="form-group mt-3">
+                {{ password_form.submit(class="btn btn-outline-info") }}
+            </div>
+        </form>
+        {% endif %}
     </div>
 {% endblock content %}

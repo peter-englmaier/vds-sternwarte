@@ -1,12 +1,13 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from urllib.parse import urlparse
 from webapp import bcrypt, db
 from webapp.model.db import User, Post, Group
 from webapp.users import users
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
+                                   ChangePasswordForm,
                                    RequestResetForm, ResetPasswordForm)
-from webapp.users.utils import save_picture, send_reset_email
+from webapp.users.utils import check_password_strength, save_picture, send_reset_email
 from sqlalchemy import func
 from webapp.orders.constants import USER_ROLE_GUEST
 
@@ -69,6 +70,15 @@ def login():
 
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
+            if not current_app.config.get('ALLOW_WEAK_PASSWORDS', False):
+                password_is_strong, message = check_password_strength(form.password.data)
+                if not password_is_strong:
+                    flash(
+                        f'Ihr Passwort muss aktualisiert werden. {message}',
+                        'warning',
+                    )
+                    return redirect(url_for('users.account'))
+
             next_page = request.args.get('next', '').replace('\\', '')
             if next_page and not urlparse(next_page).netloc and not urlparse(next_page).scheme:
                 return redirect(next_page)
@@ -90,7 +100,32 @@ def logout():
 @login_required
 def account():
     form = UpdateAccountForm()
-    if form.validate_on_submit():
+    password_form = ChangePasswordForm(prefix='pw')
+    if password_form.submit.data:
+        if current_user.name == 'admin':
+            flash('Der Benutzer admin kann sein Passwort hier nicht ändern.', 'danger')
+            return redirect(url_for('users.account'))
+        if password_form.validate_on_submit():
+            if not bcrypt.check_password_hash(current_user.password, password_form.current_password.data):
+                password_form.current_password.errors.append('Das aktuelle Passwort ist nicht korrekt.')
+            else:
+                if not current_app.config.get('ALLOW_WEAK_PASSWORDS', False):
+                    password_is_strong, message = check_password_strength(
+                        password_form.password.data,
+                        current_password=password_form.current_password.data,
+                    )
+                    if not password_is_strong:
+                        password_form.password.errors.append(message)
+                if not password_form.password.errors:
+                    current_user.password = bcrypt.generate_password_hash(
+                        password_form.password.data
+                    ).decode('utf-8')
+                    current_user.session_version += 1
+                    db.session.commit()
+                    logout_user()
+                    flash('Ihr Passwort wurde aktualisiert.', 'success')
+                    return redirect(url_for('users.password_changed'))
+    elif form.validate_on_submit():
         if form.picture.data:
             picture_file = save_picture(form.picture.data)
             current_user.image_file = picture_file
@@ -102,7 +137,7 @@ def account():
         db.session.commit()
         flash('Your account has been updated!', 'success')
         return redirect(url_for('users.account'))
-    elif request.method == 'GET':
+    if request.method == 'GET' or not form.submit.data:
         form.username.data = current_user.name
         form.email.data = current_user.email
         form.firstname.data = current_user.firstname
@@ -113,7 +148,12 @@ def account():
     else:
         image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
     return render_template('account.html', title='Account',
-                           image_file=image_file, form=form)
+                           image_file=image_file, form=form,
+                           password_form=password_form)
+
+@users.route('/password_changed')
+def password_changed():
+    return render_template('password_changed.html', title='Passwort geändert')
 
 
 @users.route("/user/<string:username>")
@@ -151,6 +191,7 @@ def reset_token(token):
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user.password = hashed_password
+        user.session_version += 1
         db.session.commit()
         flash('Your password has been updated! You are now able to log in', 'success')
         return redirect(url_for('users.login'))

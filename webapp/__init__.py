@@ -9,6 +9,7 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import MetaData
 #import jinja_partials
 from celery import Celery, Task
+import traceback
 from webapp.config import Config
 from webapp.admin.utils import init_admin
 from webapp.orders import constants
@@ -112,6 +113,7 @@ def create_app(config_class=Config):
             setup_users()
         except:
             print('WARN: Could not initialize users')
+            traceback.print_exc()
 
     # Ensure tasks are imported so they are registered
     import webapp.tasks

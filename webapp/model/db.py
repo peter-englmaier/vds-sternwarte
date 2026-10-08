@@ -11,7 +11,24 @@ from typing import List, Optional
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    is_legacy_session = ":" not in user_id
+    try:
+        if is_legacy_session:
+            user_pk = int(user_id)
+            session_version = None
+        else:
+            raw_user_pk, raw_session_version = user_id.rsplit(":", 1)
+            user_pk = int(raw_user_pk)
+            session_version = int(raw_session_version)
+    except (TypeError, ValueError):
+        return None
+
+    user = User.query.get(user_pk)
+    if user is None:
+        return None
+    if is_legacy_session:
+        return user if user.session_version == 0 else None
+    return user if user.session_version == session_version else None
 
 """
     A user is an individual. Do not share users.
@@ -23,6 +40,7 @@ class User(db.Model, UserMixin):
     email: Mapped[str] = mapped_column(db.String(120), unique=True, nullable=False)
     image_file: Mapped[str] = mapped_column(db.String(60), nullable=False, default='default.jpg')
     password: Mapped[str] = mapped_column(db.String(60), nullable=False)
+    session_version: Mapped[int] = mapped_column(db.Integer, nullable=False, default=0, server_default='0')
     surname: Mapped[str] = mapped_column(db.String(40), nullable=True)
     firstname: Mapped[str] = mapped_column(db.String(40), nullable=True)
     vds_number: Mapped[int] = mapped_column(db.Integer, nullable=True)
@@ -30,6 +48,9 @@ class User(db.Model, UserMixin):
     posts = db.relationship('Post', backref='author', lazy=True)
     groups = db.relationship('Group', secondary='user_group', back_populates='users')
     preferences = db.relationship('UserPreferences', backref='user', cascade="all, delete-orphan")
+
+    def get_id(self):
+        return f"{self.id}:{self.session_version}"
 
     def has_role(self, name):
         for group in self.groups:
