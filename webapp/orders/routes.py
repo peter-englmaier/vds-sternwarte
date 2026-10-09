@@ -8,13 +8,16 @@ from flask import (
     request,
     abort,
     jsonify,
+    Response,
 )
 from flask_login import current_user, login_required
 from flask import current_app
 from flask_mail import Message
 from datetime import date, datetime, timedelta
+from datetime import timezone
 from celery import shared_task
 from sqlalchemy import true
+from icalendar import Calendar, Event
 
 from webapp import db, mail, Config
 from webapp.errors.handlers import *
@@ -608,6 +611,64 @@ def show_order_positions(order_id):
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
     return render_template("order_positions.html", order=user_order, order_position=positions,
                            user=user, pu_user=pu_user, observatory=observatory, reservation=reservation)
+
+# --------------------------------------------------------------------
+# iCalendar-Download für Anträge
+# --------------------------------------------------------------------
+@orders.route("/orders/<int:order_id>/reservation.ics", methods=["GET"])
+@login_required
+def download_reservation_ical(order_id):
+    order = ObservationRequest.query.get_or_404(order_id)
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
+    # Which other options are to be expected?
+    # However, let's be conservative.
+    if not reservation:
+        abort(404)
+
+    positions = ObservationRequestPosition.query.filter_by(observation_request_id=order_id).all()
+    targets = list(dict.fromkeys(
+        position.target.strip()
+        for position in positions
+        if position.target and position.target.strip()
+    ))
+    observatory = Observatory.query.get(order.request_observatory_id)
+    reservation_date = reservation.date.date() if isinstance(reservation.date, datetime) else reservation.date
+
+    calendar = Calendar()
+    calendar.add("prodid", "-//VdS Sternwarte//Observatory Reservation//DE")
+    calendar.add("version", "2.0")
+
+    event = Event()
+    event.add("uid", f"reservation-{reservation.id}@vds-sternwarte")
+    event.add("dtstamp", datetime.now(timezone.utc))
+    event.add("dtstart", reservation_date)
+    event.add("dtend", reservation_date + timedelta(days=1))
+    event.add("summary", f"Sternwartenreservierung: {observatory.name if observatory else 'Observatorium'}")
+    event.add("description", "\n".join((
+        f"Antrag zum {order.request_date.strftime('%d.%m.%Y')}",
+        f"Antragsstatus: {ORDER_STATUS_LABELS.get(order.status, 'Unbekannt')}",
+        f"Reservierungsstatus: {reservation}",
+        f"Objekt(e): {', '.join(targets) if targets else 'Kein Objekt angegeben'}",
+    )))
+    if observatory:
+        location = observatory.name
+        if observatory.site:
+            location = f"{location}, {observatory.site.name}"
+        event.add("location", location)
+
+    if reservation.status == ObservatoryReservation.Status.BOOKED.name:
+        event.add("status", "CONFIRMED")
+    elif reservation.status == ObservatoryReservation.Status.EXPIRED.name:
+        event.add("status", "CANCELLED")
+    else:
+        event.add("status", "TENTATIVE")
+    calendar.add_component(event)
+
+    return Response(
+        calendar.to_ical(),
+        mimetype="text/calendar",
+        headers={"Content-Disposition": f"attachment; filename=reservierung-{order_id}.ics"},
+    )
 
 
 # --------------------------------------------------------------------
