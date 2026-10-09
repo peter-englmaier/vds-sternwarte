@@ -80,7 +80,7 @@ def create_app(config_class=Config):
 
     @app.context_processor
     def inject_constants():
-        return dict(CONSTANTS=constants)
+        return dict(CONSTANTS=constants, site_title="VdS Sternwarte")
 
     app.jinja_env.add_extension('jinja_partials.PartialsJinjaExtension') # make render_partial available inside templates
     db.init_app(app)
@@ -90,11 +90,6 @@ def create_app(config_class=Config):
     mail.init_app(app)
     csrf.init_app(app)
     init_admin(app, admin) # setup admin views
-
-    @app.before_request
-    def set_global_variables():
-        from .global_vars import set_global_vars
-        set_global_vars()
 
     with app.app_context():
         from webapp.users.routes import users
