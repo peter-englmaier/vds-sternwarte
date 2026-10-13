@@ -44,7 +44,7 @@ Feature: Login with in-memory test database
     When I post login with email "test@example.com" and password "TestPass1"
     And I change my password from "TestPass1" to "weakpass"
     Then I am redirected to the profile page
-    And the response contains "Das Passwort muss mindestens 8 Zeichen lang sein"
+    And the response contains "Das Passwort muss mindestens 8 und höchstens 25 Zeichen lang sein"
 
   @db
   Scenario: Weak password change is accepted when weak passwords are configured
