@@ -5,7 +5,7 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, Integ
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from flask_login import current_user
 from webapp.model.db import User
-from webapp.users.utils import check_password_strength
+from webapp.users.utils import check_password_strength, PASSWORD_REQUIREMENTS
 from sqlalchemy import func
 
 
@@ -17,7 +17,8 @@ class RegistrationForm(FlaskForm):
     firstname = StringField('Vorname',validators=[DataRequired(), Length(min=2, max=20)])
     surname = StringField('Nachname',validators=[DataRequired(), Length(min=2, max=20)])
     vds_number = IntegerField('VDS Mitgliedsnummer')
-    password = PasswordField('Passwort', validators=[DataRequired()])
+    password = PasswordField('Passwort', validators=[DataRequired()],
+                             description=PASSWORD_REQUIREMENTS)
     confirm_password = PasswordField('Passwort wiederholen',
                                      validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Registrieren')
@@ -80,7 +81,8 @@ class UpdateAccountForm(FlaskForm):
 
 class ChangePasswordForm(FlaskForm):
     current_password = PasswordField('Aktuelles Passwort', validators=[DataRequired()])
-    password = PasswordField('Neues Passwort', validators=[DataRequired()])
+    password = PasswordField('Neues Passwort', validators=[DataRequired()],
+                             description=PASSWORD_REQUIREMENTS)
     confirm_password = PasswordField('Neues Passwort wiederholen',
                                      validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Passwort ändern')
