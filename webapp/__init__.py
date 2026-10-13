@@ -109,13 +109,23 @@ def create_app(config_class=Config):
         app.register_blueprint(errors)
         app.register_blueprint(orders)
         app.register_blueprint(inout_bp)
-        try:
-            setup_users()
-        except:
-            print('WARN: Could not initialize users')
-            traceback.print_exc()
 
     # Ensure tasks are imported so they are registered
     import webapp.tasks
 
     return app
+
+
+"""
+Create default roles/groups and the admin user.
+Not part of create_app(), because create_app() also runs for celery,
+"flask db upgrade" and the reloader's watcher process.
+Call this only in the process that actually serves requests.
+"""
+def init_users(app):
+    with app.app_context():
+        try:
+            setup_users()
+        except:
+            print('WARN: Could not initialize users')
+            traceback.print_exc()
