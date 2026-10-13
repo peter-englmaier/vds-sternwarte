@@ -81,8 +81,6 @@
                     {% endif %}
                 </div>
 
-
-
                 <div class="form-group">
                     {{ form.password.label(class="form-control-label") }}
                     {% if form.password.errors %}
@@ -94,6 +92,9 @@
                         </div>
                     {% else %}
                         {{ form.password(class="form-control form-control-lg") }}
+                    {% endif %}
+                    {% if not config.ALLOW_WEAK_PASSWORDS %}
+                        <small class="form-text text-muted">{{ form.password.description }}</small>
                     {% endif %}
                 </div>
                 <div class="form-group">
@@ -110,7 +111,7 @@
                     {% endif %}
                 </div>
             </fieldset>
-            <div class="form-group">
+            <div class="form-group mt-3">
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>
         </form>

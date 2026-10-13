@@ -7,12 +7,16 @@ from webapp import mail, Config
 from functools import wraps
 from flask_login import current_user
 
+PASSWORD_REQUIREMENTS = (
+    'Das Passwort muss mindestens 8 und höchstens 25 Zeichen lang sein und '
+    'Groß- und Kleinbuchstaben sowie eine Zahl oder ein Sonderzeichen enthalten.'
+)
 
-def check_password_strength(password, current_password=None, admin_policy=False):
+
+def check_password_strength(password, current_password=None):
     """Check password strength and return a validation message.
 
     :param password: Password to check.
-    :param bool admin_policy: Whether to apply additional admin password checks.
     :param current_password: Current password; use ``None`` only when checking a
         configured password that has no existing value, such as initial admin setup.
     :return: A tuple containing whether the password is strong and the
@@ -27,24 +31,12 @@ def check_password_strength(password, current_password=None, admin_policy=False)
         not character.isalnum() and not character.isspace() for character in password
     )
     is_strong = (
-        len(password) >= 8 # check for standard user'S PW length
+        8 <= len(password) <= 25 # check for standard user'S PW length
         and any(character.islower() for character in password) #check for lower caser letter
         and any(character.isupper() for character in password) # check for upper case letter
         and (has_digit or has_special_character) # check for at least one special character or one digit
     )
-    if admin_policy:
-        admin_checks = [len(password) >= 9, has_digit, has_special_character] # check for admin's pw length
-        is_strong = is_strong and all(admin_checks)
-        message = (
-            'Das Admin-Passwort muss mindestens 9 Zeichen lang sein und '
-            'Groß- und Kleinbuchstaben, eine Ziffer sowie ein Sonderzeichen enthalten.'
-        )
-    else:
-        message = (
-            'Das Passwort muss mindestens 8 Zeichen lang sein und '
-            'Groß- und Kleinbuchstaben sowie eine Zahl oder ein Sonderzeichen enthalten.'
-        )
-    return is_strong, message
+    return is_strong, PASSWORD_REQUIREMENTS
 
 
 def role_required(role_name):

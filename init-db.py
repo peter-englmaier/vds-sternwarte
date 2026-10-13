@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+from flask_migrate import upgrade
 from webapp import create_app, db
 from webapp.model.db import Site, Telescope, Observatory, Filterset
 
 app=create_app()
 
 with app.app_context():
-    db.create_all()
+    #db.create_all()
+    upgrade() # Fix DB migration issues.
 
     # SITE
     name='Astro-Farm Hakos, Namibia'
