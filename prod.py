@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-from webapp import create_app
+from webapp import create_app, init_users
 import os
 
 print("STARTING PRODUCTION SERVER")
 
 app = create_app()
+init_users(app)
 
 from waitress import serve
 from paste.translogger import TransLogger
