@@ -847,6 +847,7 @@ Wie geht es nun weiter?
 - Bitte bereite dich auf die Beobachtung  in dem Sinne vor, das alle Informationen zur Erstellung einer N.I.N.A Sequenz durch den PU möglich ist.
 - Informiere dich über das Wetter vor Ort. Es ist nicht ausgeschlossen, das die Beobachtung aufgrund von instabilen Bedingungen nicht möglich ist.
 - Wir erstellen eine Statistik über die beobachteten Objekte – auch um Mehrfachbeobachtungen zu minimieren. Daher trage bitte die durchgeführten Belichtungen hier ein: https://nextcloud.sternfreunde.de/index.php/f/104569.
+- Bitte Feedback an G. Piehler mit Angabe des Grundes, wenn die Beobachtung **NICHT** durchgeführt werden konnte.. Bei Teilausführung wird kein entsprechendes Feedback benötigt. – Danke !
 
 Bitte berücksichtige auch potenzielle allgemeine Bekanntmachungen.
 
