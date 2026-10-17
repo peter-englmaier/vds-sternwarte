@@ -11,8 +11,8 @@ from webapp.model.db import User, ObservationRequest
 # so that tasks still queued during a deployment are found by the new worker.
 
 
-@shared_task(name="webapp.orders.routes.send_approve_email")
-def send_approve_email(order_id, approver_id, order_url, info):
+@shared_task(bind=True, name="webapp.orders.routes.send_approve_email")
+def send_approve_email(self, order_id, approver_id, order_url, info):
     """Celery task: mail that an order is approved and a poweruser is assigned.
 
     Recipients are the requester, the approver and the poweruser.
@@ -22,9 +22,6 @@ def send_approve_email(order_id, approver_id, order_url, info):
     :param order_url: absolute link to the order.
     :param info: optional additional text, may be ``None``.
     :raises SMTPAuthenticationError: if the mail server rejects the login.
-
-    .. warning:: The retry on SMTP code 454 calls ``self.retry`` without
-       ``bind=True`` and therefore raises a :exc:`NameError` instead.
     """
     antrag = ObservationRequest.query.get(order_id)
     user = User.query.get(antrag.user_id)
@@ -80,8 +77,8 @@ Gruss, {approver_greeting}
 
 
 
-@shared_task(name="webapp.orders.routes.send_reject_email")
-def send_reject_email(order_id, approver_id, order_url, info):
+@shared_task(bind=True, name="webapp.orders.routes.send_reject_email")
+def send_reject_email(self, order_id, approver_id, order_url, info):
     """Celery task: mail that an order is rejected.
 
     Recipients are the requester and the approver.
@@ -91,9 +88,6 @@ def send_reject_email(order_id, approver_id, order_url, info):
     :param order_url: absolute link to the order.
     :param info: explanation of the rejection, may be ``None``.
     :raises SMTPAuthenticationError: if the mail server rejects the login.
-
-    .. warning:: The retry on SMTP code 454 calls ``self.retry`` without
-       ``bind=True`` and therefore raises a :exc:`NameError` instead.
     """
     antrag = ObservationRequest.query.get(order_id)
     user = User.query.get(antrag.user_id)
@@ -177,8 +171,8 @@ Gruss, {approver_greeting}
 # Gruss,
 # {Sternwarte}
 
-@shared_task(name="webapp.orders.routes.send_accept_email")
-def send_accept_email(order_id, approver_id, order_url):
+@shared_task(bind=True, name="webapp.orders.routes.send_accept_email")
+def send_accept_email(self, order_id, approver_id, order_url):
     """Celery task: mail that an order is provisionally accepted.
 
     Sent when the approver accepts the order of a regular user; a poweruser is
@@ -188,9 +182,6 @@ def send_accept_email(order_id, approver_id, order_url):
     :param approver_id: id of the approver, who signs the mail.
     :param order_url: absolute link to the order.
     :raises SMTPAuthenticationError: if the mail server rejects the login.
-
-    .. warning:: The retry on SMTP code 454 calls ``self.retry`` without
-       ``bind=True`` and therefore raises a :exc:`NameError` instead.
     """
     antrag = ObservationRequest.query.get(order_id)
     request_date = antrag.request_date.strftime("%d.%m.%Y")
@@ -235,8 +226,8 @@ Gruss, {approver_greeting}
         else:
             raise exc
 
-@shared_task(name="webapp.orders.routes.send_putime_email")
-def send_putime_email(order_id, approver_id, order_url):
+@shared_task(bind=True, name="webapp.orders.routes.send_putime_email")
+def send_putime_email(self, order_id, approver_id, order_url):
     """Celery task: mail that the observation time of a poweruser is approved.
 
     Sent when the approver accepts an order of a poweruser.
@@ -246,9 +237,6 @@ def send_putime_email(order_id, approver_id, order_url):
     :param approver_id: id of the approver, who signs the mail.
     :param order_url: absolute link to the order.
     :raises SMTPAuthenticationError: if the mail server rejects the login.
-
-    .. warning:: The retry on SMTP code 454 calls ``self.retry`` without
-       ``bind=True`` and therefore raises a :exc:`NameError` instead.
     """
     antrag = ObservationRequest.query.get(order_id)
     request_date = antrag.request_date.strftime("%d.%m.%Y")
