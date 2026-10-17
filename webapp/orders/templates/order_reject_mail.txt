@@ -1,0 +1,16 @@
+Hallo {{ user_greeting }},
+
+Dein Antrag mit der Nummer #{{ order_id }} wurde leider abgelehnt. Gegebenenfalls ist unten eine Erläuterung zu finden.
+
+Link zum Antrag: {{ order_url }}
+
+Erläuterung: {{ info or "keine" }}
+
+Wie geht es nun weiter?
+- Falls eine Erläuterung vorhanden ist, bitte diese in einem neuen Antrag berücksichtigen.
+- Gegebenenfalls Kontaktaufnahme via Email.
+
+Sorry, Danke!
+
+Gruss, {{ approver_greeting}}
+{{ ps or "" }}
