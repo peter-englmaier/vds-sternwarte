@@ -1,0 +1,9 @@
+Hallo {{ user_greeting }},
+
+deine Beobachtung #{{ order_id }} für den {{ request_date }} ist genehmigt.
+Der Termin ist im Kalender entsprechend reserviert.
+
+Link zum Antrag: {{ order_url }}
+
+Gruss, {{ approver_greeting }}
+{{ ps or "" }}
