@@ -1,0 +1,15 @@
+Hallo {{ user_greeting }},
+
+die beantragte Beobachtung #{{ order_id }} für den {{ request_date }} ist provisorisch angenommen.
+Der Termin ist im Kalender entsprechend reserviert.
+
+Link zum Antrag: {{ order_url }}
+
+Wie geht es nun weiter?
+- wir suchen einen PU der die Beobachtung durchführen kann
+- du wirst anschliessend entsprechend informiert.
+
+Danke für die Geduld!
+
+Gruss, {{ approver_greeting }}
+{{ ps or "" }}

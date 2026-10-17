@@ -1,0 +1,14 @@
+Hallo {{ user_greeting }},
+
+die Reservierung für {{ request_date }} von Beobachtung #{{ order_id }} ist abgelaufen.
+Der Termin wurde im Kalender wieder freigegeben. Dadurch soll verhindert werden, dass verwaiste
+Anträge die Sternwarte blockieren. Bitte lösche Anträge, die du nicht einreichen wirst, damit kein Termin
+blockiert wird.
+
+Link zum Antrag: {{ order_url }}
+
+Du Termin kann von dir oder einem anderen Benutzer erneut
+reserviert werden - wer zuerst kommt, schnappt sich den Termin!
+
+Gruss, {{ observatory }}
+{{ ps or "" }}
