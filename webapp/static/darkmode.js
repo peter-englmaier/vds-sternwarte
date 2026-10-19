@@ -78,4 +78,4 @@
       })
   })
 })()
-<!-- Darkmode Java Script End-->
+/* Darkmode Java Script End */
