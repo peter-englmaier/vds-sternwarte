@@ -37,7 +37,7 @@
                 </div>
             </fieldset>
             <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
+                {{ form.submit(class="btn bg-primary-subtle") }}
                 <small class="text-muted ml-2">
                     <a href="{{ url_for('users.reset_request') }}">Passwort vergessen?</a>
                 </small>
@@ -46,7 +46,7 @@
     </div>
     <div class="border-top pt-3">
         <small class="text-muted">
-            Benötigen Sie einen Benutzer? <a class="ml-2" href="{{ url_for('users.register') }}">Registrieren</a>
+            Benötigen Sie eine Anmeldung? <a class="ml-2" href="{{ url_for('users.register') }}">Registrieren</a>
         </small>
     </div>
 {% endblock content %}
