@@ -44,7 +44,7 @@ class LoginForm(FlaskForm):
     email = StringField('Email oder Benutzername',
                         validators=[DataRequired()])
     password = PasswordField('Passwort', validators=[DataRequired()])
-    remember = BooleanField('An mich erinnern')
+    remember = BooleanField('Angemeldet bleiben')
     submit = SubmitField('Anmelden')
 
 
