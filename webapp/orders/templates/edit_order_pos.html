@@ -107,20 +107,20 @@ function unused() {
   <table class="table table-bordered table-striped table-hover">
     <thead>
       <tr>
-        <th class="text-center">Datum</th>
-        <!-- <th class="text-center">Antragsteller</th> -->
-        <th class="text-center">Observatorium</th>
+        <th>Datum</th>
+   <!-- <th>Antragsteller</th> -->
+        <th>Observatorium</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="text-center">
+        <td>
           {{ form.head.request_date(class="form-control", type="hidden") }}
           <span id="selected_date_display">
             {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
           </span>
           <button type="button"
-                  class="btn btn-sm btn-primary"
+                  class="btn btn-sm bg-secondary-subtle"
                   hx-get="{{ url_for('orders.show_calendar', year=form.head.request_date.data.year, month=form.head.request_date.data.month, picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
                   hx-target="#calendar-container-modal .modal-body"
                   hx-swap="innerHTML"
@@ -130,8 +130,8 @@ function unused() {
             Kalender
           </button>
         </td>
-        <!-- <td class="text-center">{{ form.head.requester_name() }}</td> -->
-        <td class="text-center">{{ form.head.observatory_name() }}</td>
+        <!-- <td>{{ form.head.requester_name() }}</td> -->
+        <td>{{ form.head.observatory_name() }}</td>
       </tr>
     </tbody>
   </table>
@@ -139,21 +139,21 @@ function unused() {
   <table class="table table-bordered table-striped table-hover">
     <thead>
       <tr>
-        <th class="text-center">Wunsch Poweruser</th>
-        <th class="text-center">Type</th>
-        <th class="text-center">Anmerkungen</th>
+        <th>Wunsch Poweruser</th>
+        <th>Typ</th>
+        <th>Anmerkungen</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="text-center">{{ form.head.poweruser_name() }}</td>
-        <td class="text-center">{{ form.head.request_type() }}</td>
-        <td class="text-center">{{ form.head.remark() }}</td>
+        <td >{{ form.head.poweruser_name() }}</td>
+        <td >{{ form.head.request_type() }}</td>
+        <td >{{ form.head.remark(style="width: 100%") }}</td>
       </tr>
     </tbody>
   </table>
 
-  <hr style="border:2px solid red; margin-top:10px; margin-bottom:20px;">
+  <hr style="margin-top:10px; margin-bottom:20px;">
 
   <!-- Block-Toolbar -->
   <div class="d-flex justify-content-center gap-2 flex-wrap mb-2">
@@ -164,13 +164,13 @@ function unused() {
       <i class="bi bi-arrow-down"></i>
     </button>
     <div class="vr mx-1"></div>
-    <button class="btn btn-secondary" id="copy-active" type="button" title="Aktiven Block kopieren">
+    <button class="btn bg-secondary-subtle" id="copy-active" type="button" title="Aktiven Block kopieren">
       <i class="bi bi-files"></i>
     </button>
-    <button class="btn btn-primary" id="add-new" type="button" title="Leeren Block hinzufügen">
+    <button class="btn bg-secondary-subtle" id="add-new" type="button" title="Leeren Block hinzufügen">
       <i class="bi bi-plus"></i>
     </button>
-    <button class="btn btn-danger" id="delete-active" type="button" title="Aktiven Block löschen">
+    <button class="btn bg-warning-subtle id="delete-active" type="button" title="Aktiven Block löschen">
       <i class="bi bi-trash"></i>
     </button>
   </div>
@@ -186,7 +186,7 @@ function unused() {
         <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
              data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
 
-          <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
+          <span class="active-badge badge bg-primary-subtle position-absolute top-0 end-0 me-2 mt-2 d-none">
             Aktiver Block
           </span>
 
@@ -273,13 +273,13 @@ function unused() {
                       <button type="button" class="btn btn-sm btn-light" data-row-move="down" title="Zeile nach unten">
                         <i class="bi bi-arrow-down"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
+                      <button type="button" class="btn btn-sm bg-secondary-subtle" data-row-copy title="Zeile kopieren">
                         <i class="bi bi-files"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
+                      <button type="button" class="btn btn-sm bg-warning-subtle" data-row-delete title="Zeile löschen">
                         <i class="bi bi-trash"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-primary" data-row-add>+ Zeile</button>
+                      <button type="button" class="btn btn-sm bg-secondary-subtle" data-row-add>+ Zeile</button>
                     </div>
                   </td>
 
@@ -309,13 +309,12 @@ function unused() {
     </div>
   </div>
 
-  <button type="submit" class="btn btn-success" name="action" value="save_order">Speichern</button>
-
-  <button type="submit" class="btn" name="action" value="submit_order"
-          style="background-color: purple; color:white;"
-          onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
+  <button type="submit" class="btn bg-primary-subtle" name="action" value="submit_order"
+            onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
     Beantragung abschicken
   </button>
+
+  <button type="submit" class="btn bg-secondary-subtle" name="action" value="save_order">Speichern</button>
 
   {#
   <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
@@ -328,7 +327,7 @@ function unused() {
     Objekt Koordinaten ergänzen
   </button>
 
-  <a class="btn btn-primary" href="{{ url_for('main.home') }}">Abbrechen</a>
+  <a class="btn bg-warning-subtle" href="{{ url_for('main.home') }}">Abbrechen</a>
 
   <div id="flatten-hidden" style="display:none;"></div>
   {% endif %}
