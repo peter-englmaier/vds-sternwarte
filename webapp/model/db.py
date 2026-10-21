@@ -7,6 +7,10 @@ from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint, CheckConstraint, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
+from webapp.model.feedback import (
+    ObservationFeedback,
+    ObservationFeedbackPosition,
+)
 
 
 @login_manager.user_loader

@@ -17,6 +17,10 @@ def config_bool(name, default=False):
 
 
 class Config:
+    OBSERVATION_FEEDBACK_ENABLED = config_bool(
+        'OBSERVATION_FEEDBACK_ENABLED',
+        default=False,
+    )
     SECRET_KEY = config.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = config.get('SQLALCHEMY_DATABASE_URI')
     MAIL_SERVER = config.get('MAIL_SERVER')

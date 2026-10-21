@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% macro render_field(field) %}
+<div class="col-md-4 mb-3">
+    {% if field.type == 'BooleanField' %}
+        <div class="form-check">
+            {{ field(class="form-check-input") }}
+            {{ field.label(class="form-check-label") }}
+        </div>
+    {% else %}
+        {{ field.label(class="form-label") }}
+        {{ field(
+            class="form-select"
+            if field.type == "SelectField"
+            else "form-control"
+        ) }}
+    {% endif %}
+
+    {% for error in field.errors %}
+        <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% block content %}
+
+<h2>Beobachtungsrückmeldung – Statistik offen</h2>
+
+<p>
+    Antrag #{{ feedback.source_request_id }}
+    vom {{ feedback.request_date.strftime('%d.%m.%Y') }}
+</p>
+
+<p>
+    <a href="{{ url_for(
+        'orders.show_order_positions',
+        order_id=feedback.source_request_id
+    ) }}">
+        Originalantrag ansehen
+    </a>
+</p>
+
+<p>
+    Bitte bestätigen Sie die Durchführung gemäß Antrag
+    oder korrigieren Sie die tatsächlichen Beobachtungsdaten.
+    Der Originalantrag bleibt erhalten.
+</p>
+
+<form method="post">
+    {{ form.hidden_tag() }}
+
+    {% if form.csrf_token is defined %}
+        {% for error in form.csrf_token.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        {% for name in [
+            'matches_request',
+            'deviations',
+            'name',
+            'request_date',
+            'request_observatory_id',
+            'remark'
+        ] %}
+            {{ render_field(form[name]) }}
+        {% endfor %}
+    </div>
+
+    <h3>Aufnahmezeilen</h3>
+
+    {% for row in form.positions %}
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 h5">
+                Aufnahmezeile {{ loop.index }}
+            </legend>
+
+            <div class="row">
+                {% for field in row.form %}
+                    {{ render_field(field) }}
+                {% endfor %}
+            </div>
+        </fieldset>
+    {% endfor %}
+
+    <button type="submit"
+            class="btn btn-outline-secondary mb-3"
+            name="action"
+            value="add_position"
+            formnovalidate>
+        Aufnahmezeile ergänzen
+    </button>
+
+    <div class="row">
+        {{ render_field(form.confirm) }}
+    </div>
+
+    <button type="submit"
+            class="btn btn-success"
+            name="action"
+            value="complete"
+            formnovalidate>
+        Rückmeldung abschließen
+    </button>
+
+    <a class="btn btn-secondary"
+       href="{{ url_for('orders.show_orders') }}">
+        Zurück
+    </a>
+</form>
+
+{% endblock %}

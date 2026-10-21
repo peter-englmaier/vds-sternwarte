@@ -16,4 +16,5 @@ from webapp.orders.routes import (
     reject_order,
     calendar,
     obs_request_complete,
+    feedback,
 )

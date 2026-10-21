@@ -76,6 +76,15 @@ def create_app(config_class=Config):
         ),
     )
     app.config.from_prefixed_env()
+
+    if app.config.get("OBSERVATION_FEEDBACK_ENABLED", False):
+        app.config["CELERY"]["beat_schedule"][
+            "copy-observation-feedback"
+        ] = {
+            "task": "webapp.tasks.copy_due_observation_feedback_task",
+            "schedule": 300.0,
+        }
+
     celery_init_app(app)
 
     @app.context_processor

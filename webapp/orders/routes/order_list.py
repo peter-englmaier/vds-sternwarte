@@ -16,6 +16,10 @@ from webapp.orders import orders  # blueprint object
 from webapp.orders.constants import ORDER_STATUS_LABELS, ORDER_STATUS_CREATED, ORDER_STATUS_REJECTED
 from webapp.orders.orderservices import copy_order_service, delete_order_service
 from webapp.users.utils import role_required
+from webapp.model.feedback import ObservationFeedback
+from webapp.orders.feedbackservice import copy_due_feedback
+from webapp.orders.constants import ORDER_STATUS_STATISTICS_OPEN
+from flask import current_app
 
 
 # --------------------------------------------------------------------
@@ -47,7 +51,21 @@ def show_orders():
         pwuser = User.query.get(order.request_poweruser_id)
         if pwuser:
             order.poweruser_name = pwuser.display_name()
-    return render_template("orders.html", title="Teleskopzeit Beantragung", orders=user_orders)
+    pending_feedback_orders = []
+
+    if current_app.config.get(
+        "OBSERVATION_FEEDBACK_ENABLED",
+        False,
+    ):
+        copy_due_feedback(user_id=current_user.id)
+        pending_feedback_orders = get_pending_feedback_orders()
+
+    return render_template(
+        "orders.html",
+        title="Teleskopzeit Beantragung",
+        orders=user_orders,
+        pending_feedback_orders=pending_feedback_orders,
+    )
 
 
 # --------------------------------------------------------------------
@@ -98,3 +116,32 @@ def delete_order(order_id):
     rc, message = delete_order_service(order_id)
     flash(message, "success" if rc == 0 else "danger")
     return redirect("/orders")
+
+def get_pending_feedback_orders():
+    feedback_orders = (
+        ObservationFeedback.query
+        .filter(
+            ObservationFeedback.user_id == current_user.id,
+            ObservationFeedback.status
+            == ORDER_STATUS_STATISTICS_OPEN,
+        )
+        .order_by(
+            ObservationFeedback.request_date.desc(),
+            ObservationFeedback.id.desc(),
+        )
+        .all()
+    )
+
+    for feedback in feedback_orders:
+        feedback.status_label = ORDER_STATUS_LABELS.get(
+            feedback.status,
+            "??",
+        )
+
+        feedback.poweruser_name = (
+            feedback.poweruser.display_name()
+            if feedback.poweruser
+            else None
+        )
+
+    return feedback_orders

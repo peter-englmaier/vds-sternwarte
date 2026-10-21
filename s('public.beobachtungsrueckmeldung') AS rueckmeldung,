@@ -1,0 +1,30 @@
+                       List of tables
+ Schema |             Name             | Type  |    Owner    
+--------+------------------------------+-------+-------------
+ public | alembic_version              | table | yb_database
+ public | catalogue                    | table | yb_database
+ public | catalogue_meta               | table | yb_database
+ public | filterset                    | table | yb_database
+ public | group                        | table | yb_database
+ public | motivation_types             | table | yb_database
+ public | object_types                 | table | yb_database
+ public | observation_history          | table | yb_database
+ public | observation_request          | table | yb_database
+ public | observation_request_log      | table | yb_database
+ public | observation_request_position | table | yb_database
+ public | observatory                  | table | yb_database
+ public | observatory_reservation      | table | yb_database
+ public | post                         | table | yb_database
+ public | poweruser                    | table | yb_database
+ public | poweruser_meldung            | table | yb_database
+ public | role                         | table | yb_database
+ public | role_group                   | table | yb_database
+ public | site                         | table | yb_database
+ public | system_parameters            | table | yb_database
+ public | system_parameters_history    | table | yb_database
+ public | telescope                    | table | yb_database
+ public | user                         | table | yb_database
+ public | user_group                   | table | yb_database
+ public | user_preferences             | table | yb_database
+(25 rows)
+

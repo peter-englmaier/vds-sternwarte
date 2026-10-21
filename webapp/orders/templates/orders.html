@@ -10,6 +10,58 @@
         Anzahl bisheriger Beobachtungsanträge: {{orders|length}}
 </p>
 
+{% if pending_feedback_orders %}
+<h3>Statistik offen – Beobachtungsrückmeldungen</h3>
+
+<p>
+    Bitte bestätigen oder korrigieren Sie die Beobachtungsdaten
+    dieser vergangenen Termine.
+</p>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Aktion</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th>Observatorium</th>
+                <th>Poweruser</th>
+                <th>Type</th>
+                <th>Anmerkungen</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for feedback in pending_feedback_orders %}
+            <tr>
+                <td>
+                    <a class="btn btn-sm btn-primary"
+                       href="{{ url_for(
+                           'orders.observation_feedback',
+                           feedback_id=feedback.id
+                       ) }}">
+                        Rückmeldung
+                    </a>
+                </td>
+
+                <td>{{ feedback.status_label }}</td>
+
+                <td>
+                    {{ feedback.request_date.strftime('%d.%m.%Y') }}
+                </td>
+
+                <td>{{ feedback.observatory_name }}</td>
+                <td>{{ feedback.poweruser_name or '-' }}</td>
+                <td>{{ feedback.request_type }}</td>
+                <td>{{ feedback.remark or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 {% if orders|length > 0 %}
 
 <table class="table table-bordered table-striped table-hover">
