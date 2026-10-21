@@ -49,15 +49,16 @@ class LoginForm(FlaskForm):
 
 
 class UpdateAccountForm(FlaskForm):
-    username = StringField('Username',
+    username = StringField('Benutzername',
                            validators=[DataRequired(), Length(min=2, max=20)])
-    firstname = StringField('First Name')
-    surname = StringField('Surname')
+    firstname = StringField('Vorname')
+    surname = StringField('Nachname')
+    ##FIXME: use CSS to remove spinners from IntegerField
     vds_number = IntegerField('VDS Mitgliedsnummer')
-    email = StringField('Email',
+    email = StringField('E-Mail',
                         validators=[DataRequired(), Email()])
-    picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
-    submit = SubmitField('Update')
+    picture = FileField('Profilbild ändern', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Aktualisieren')
 
     def validate_username(self, username):
         if username.data != current_user.name:
@@ -67,7 +68,7 @@ class UpdateAccountForm(FlaskForm):
             ).first()
 
             if user:
-                raise ValidationError('That username is taken. Please choose a different one.')
+                raise ValidationError('Dieser Benutzername wird bereits verwendet, bitte anderen wählen!')
 
     def validate_email(self, email):
         if email.data != current_user.email:
@@ -76,7 +77,7 @@ class UpdateAccountForm(FlaskForm):
                 func.upper(User.email) == email.data.upper()
             ).first()
             if user:
-                raise ValidationError('That email is taken. Please choose a different one.')
+                raise ValidationError('Diese E-Mail-Adresse wird bereits verwendet, bitte andere wählen!')
 
 
 class ChangePasswordForm(FlaskForm):
@@ -89,9 +90,9 @@ class ChangePasswordForm(FlaskForm):
 
 
 class RequestResetForm(FlaskForm):
-    email = StringField('Email',
+    email = StringField('E-Mail',
                         validators=[DataRequired(), Email()])
-    submit = SubmitField('Request Password Reset')
+    submit = SubmitField('Passwort-Rücksetzung anfordern')
 
     def validate_email(self, email):
 #        user = User.query.filter_by(email=email.data).first()
@@ -99,11 +100,11 @@ class RequestResetForm(FlaskForm):
             func.upper(User.email) == email.data.upper()
         ).first()
         if user is None:
-            raise ValidationError('There is no account with that email. You must register first.')
+            raise ValidationError('Es gibt keine Anmeldung mit dieser E-Mail-Adresse, bitte erst registrieren!')
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password',
+    password = PasswordField('Passwort', validators=[DataRequired()])
+    confirm_password = PasswordField('Passwort wiederholen',
                                      validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Reset Password')
+    submit = SubmitField('Passwort zurücksetzen')
