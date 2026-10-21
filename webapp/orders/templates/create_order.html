@@ -20,7 +20,7 @@
             <td class="col-fixed-100">
                 {{ form.request_date(class="form-control", type="hidden") }}
                 <span id="selected_date_display">Kein Datum ausgewählt</span>
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm bg-primary-subtle"
                         hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.request_date.id, display_id='selected_date_display') }}"
                         hx-target="#calendar-container-modal .modal-body"
                         hx-swap="innerHTML"
@@ -45,14 +45,15 @@
     <thead>
         <tr>            
             <th>Wunsch Poweruser</th>
-            <th>Type</th>
+            <th>Typ</th>
             <th>Anmerkungen</th>
         </tr>
     </thead>    
-    <tbody>            
+    <tbody> 
+        <tr>
             <td>{{form.poweruser_name(placeholder="Poweruser wählen oder leer lassen")}}</td>
             <td>{{form.request_type()}}</td>
-            <td>{{form.remark(placeholder="Hier können Mitteilungen oder Anmerkungen eingegeben werden")}}</td>
+            <td>{{form.remark(placeholder="Hier können Mitteilungen oder Anmerkungen eingegeben werden", style="width: 100%")}}</td>
         </tr>
 
     </tbody>
@@ -60,19 +61,17 @@
 
 <br>
 <br>
-  <button type="submit" class="btn btn-success" name="action" value="save_order"
+  <button type="submit" class="btn bg-primary-subtle" name="action" value="save_order"
           onclick="return confirm('Hast Du ein Datum ausgewählt?');">
    Weiter
   </button>
-{# not needed
-<a class="btn btn-warning" style="background-color: #07a0f7; color: white;" href="{{ url_for('orders.show_calendar', picker=False) }}" >Kalender anzeigen</a>
-#}
-   <button type="reset" class="btn btn-secondary">
+
+   <button type="reset" class="btn bg-secondary-subtle">
       Zurücksetzen
   </button>
 
 
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >abbrechen</a>
+<a class="btn bg-warning-subtle" href="{{ url_for('main.home') }}" >Abbrechen</a>
 {% endif %}
 </form>
 
