@@ -11,7 +11,7 @@
         <form method="POST" action="" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Account Info</legend>
+                <legend class="border-bottom mb-4">Benutzerprofil</legend>
                 <div class="form-group">
                     {{ form.username.label(class="form-control-label") }}
 
@@ -95,7 +95,7 @@
                 </div>
             </fieldset>
             <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
+                {{ form.submit(class="btn bg-primary-subtle") }}
             </div>
         </form>
     <!-- Change password form, don't show for admin -->
@@ -127,7 +127,7 @@
                 {% endfor %}
             </fieldset>
             <div class="form-group mt-3">
-                {{ password_form.submit(class="btn btn-outline-info") }}
+                {{ password_form.submit(class="btn bg-primary-subtle") }}
             </div>
         </form>
         {% endif %}
