@@ -1,28 +1,18 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<h2>Meine Teleskopzeiten</h2>
-{% if current_user.is_authenticated %}
-<p>
-    <span style="margin-right:50px;">
-        Antragssteller: {{current_user.firstname}} {{current_user.surname}} ({{current_user.name}})
-    </span>
-        Anzahl bisheriger Beobachtungsanträge: {{orders|length}}
-</p>
-
 {% if pending_feedback_orders %}
 <h3>Statistik offen – Beobachtungsrückmeldungen</h3>
 
 <p>
-    Bitte bestätigen oder korrigieren Sie die Beobachtungsdaten
-    dieser vergangenen Termine.
+    Bitte bestätige oder korrigiere diese Beobachtungsdaten bevor du weitere Anträge abgibst!
 </p>
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover">
         <thead>
             <tr>
-                <th>Aktion</th>
+                <th>Rückmeldung</th>
                 <th>Status</th>
                 <th>Datum</th>
                 <th>Observatorium</th>
@@ -36,13 +26,38 @@
             {% for feedback in pending_feedback_orders %}
             <tr>
                 <td>
-                    <a class="btn btn-sm btn-primary"
-                       href="{{ url_for(
-                           'orders.observation_feedback',
-                           feedback_id=feedback.id
-                       ) }}">
-                        Rückmeldung
-                    </a>
+    <form
+        method="post"
+        action="{{ url_for('orders.observation_feedback', feedback_id=feedback.id) }}"
+        style="display: inline;"
+    >
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+        <input type="hidden" name="action" value="complete">
+        <input type="hidden" name="matches_request" value="yes">
+        <input type="hidden" name="confirm" value="y">
+
+        <button
+            type="submit"
+            class="btn btn-sm btn-success"
+            title="Beobachtung unverändert endgültig bestätigen"
+            aria-label="Beobachtung unverändert endgültig bestätigen"
+        >
+            <i class="bi bi-hand-thumbs-up-fill"></i>
+        </button>
+    </form>
+
+    <a
+        class="btn btn-sm btn-primary"
+        href="{{ url_for('orders.observation_feedback', feedback_id=feedback.id) }}"
+        title="Beobachtungsdaten bearbeiten"
+        aria-label="Beobachtungsdaten bearbeiten"
+    >
+        <i class="bi bi-pencil"></i>
+    </a>
                 </td>
 
                 <td>{{ feedback.status_label }}</td>
@@ -63,6 +78,16 @@
 {% endif %}
 
 {% if orders|length > 0 %}
+
+
+<h2>Meine Teleskopzeiten</h2>
+{% if current_user.is_authenticated %}
+<p>
+    <span style="margin-right:50px;">
+        Antragssteller: {{current_user.firstname}} {{current_user.surname}} ({{current_user.name}})
+    </span>
+        Anzahl bisheriger Beobachtungsanträge: {{orders|length}}
+</p>
 
 <table class="table table-bordered table-striped table-hover">
     <thead>

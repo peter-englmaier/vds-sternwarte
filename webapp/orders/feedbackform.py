@@ -129,7 +129,6 @@ class FeedbackForm(FlaskForm):
             ('yes', 'Ja, gemäß Antrag'),
             ('no', 'Nein, mit Abweichungen'),
         ],
-        validators=[InputRequired()],
     )
 
     name = StringField(
@@ -169,17 +168,27 @@ class FeedbackForm(FlaskForm):
     )
 
     def validate(self, extra_validators=None):
-        if self.matches_request.data == 'yes':
-            names = ['matches_request', 'confirm']
+        # Das Bearbeitungsformular übermittelt keine Auswahl mehr.
+        # In diesem Fall werden die Aufnahmezeilen geprüft und gespeichert.
+        if self.matches_request.data in (None, ''):
+            self.matches_request.data = 'no'
 
-            if 'csrf_token' in self._fields:
-                names.append('csrf_token')
+        names = ['matches_request', 'confirm']
 
-            results = [
-                self._fields[name].validate(self)
-                for name in names
-            ]
+        if 'csrf_token' in self._fields:
+            names.append('csrf_token')
 
-            return all(results)
+        # Der grüne Daumen bestätigt unverändert.
+        # Beim Bearbeiten müssen auch die Aufnahmezeilen gültig sein.
+        if self.matches_request.data != 'yes':
+            names.append('positions')
 
-        return super().validate(extra_validators)
+        results = [
+            self._fields[name].validate(
+                self,
+                (extra_validators or {}).get(name, ()),
+            )
+            for name in names
+        ]
+
+        return all(results)

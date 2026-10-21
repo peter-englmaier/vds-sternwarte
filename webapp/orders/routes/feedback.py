@@ -126,20 +126,7 @@ def build_feedback_form(feedback):
 
 def validate_feedback_changes(form, telescopes, filters):
     valid = True
-
-    if not (form.deviations.data or '').strip():
-        form.deviations.errors.append(
-            'Bitte die Abweichungen beschreiben.'
-        )
-        valid = False
-
-    if form.request_date.data > date.today():
-        form.request_date.errors.append(
-            'Das Beobachtungsdatum darf nicht '
-            'in der Zukunft liegen.'
-        )
-        valid = False
-
+    
     if not form.positions:
         form.confirm.errors.append(
             'Bitte mindestens eine Aufnahmezeile angeben.'
@@ -175,17 +162,7 @@ def validate_feedback_changes(form, telescopes, filters):
 def save_feedback(feedback, form):
     changed = form.matches_request.data == 'no'
 
-    if changed:
-        for name in EDIT_HEAD:
-            value = getattr(form, name).data
-
-            if name == 'request_date':
-                value = datetime.combine(
-                    value,
-                    datetime.min.time(),
-                )
-
-            setattr(feedback, name, value)
+    if changed: 
 
         for index, row in enumerate(form.positions):
             if index < len(feedback.positions):
@@ -212,8 +189,6 @@ def save_feedback(feedback, form):
 
         if len(form.positions) < len(feedback.positions):
             del feedback.positions[len(form.positions):]
-
-        feedback.deviations = form.deviations.data
 
     feedback.matches_request = not changed
     feedback.status = ORDER_STATUS_DOCUMENTED
@@ -288,9 +263,21 @@ def observation_feedback(feedback_id):
         elif action != 'add_position':
             abort(400)
 
+    grouped_rows = {}
+
+    for index, row in enumerate(form.positions):
+        block_no = row.block_no.data or 1
+        grouped_rows.setdefault(block_no, []).append(index)
+
+    blocks = [
+        {'row_indices': indices}
+        for indices in grouped_rows.values()
+    ]
+
     return render_template(
         'observation_feedback.html',
         title='Beobachtungsrückmeldung',
         feedback=feedback,
         form=form,
+        blocks=blocks,
     )
