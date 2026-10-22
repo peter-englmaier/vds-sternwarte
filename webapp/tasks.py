@@ -11,9 +11,3 @@ def expire_reservations_task():
             db.session.delete(reservation)
             db.session.commit()
     return f"{numExpired} reservations expired"
-
-@shared_task
-def copy_due_observation_feedback_task():
-    from webapp.orders.feedbackservice import copy_due_feedback
-
-    return copy_due_feedback()
