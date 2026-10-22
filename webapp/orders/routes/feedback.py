@@ -26,7 +26,9 @@ from webapp.orders.feedbackform import FeedbackForm
 from webapp.orders.feedbackservice import POSITION_COLUMNS
 from webapp.users.utils import role_required
 
+# Anzeige, Prüfung und Abschluss einer Beobachtungsrückmeldung.
 
+# Kopfdaten der Antragsseite 1
 EDIT_HEAD = (
     'name',
     'request_date',
@@ -55,6 +57,8 @@ def feedback_values(feedback):
         for name in EDIT_POSITION:
             value = getattr(position, name)
 
+# Datenbankwerte / Formulardaten als Vorlage
+
             if value is None:
                 if name == 'filterset_id':
                     value = 0
@@ -69,6 +73,8 @@ def feedback_values(feedback):
         values['positions'].append(row_values)
 
     return values
+
+# Formularerstellung
 
 def build_feedback_form(feedback):
     form = FeedbackForm(data=feedback_values(feedback))
@@ -94,6 +100,8 @@ def build_feedback_form(feedback):
         ).all()
     }
 
+# Formularzeilen hinzufügen
+
     if (
         request.method == 'POST'
         and request.form.get('action') == 'add_position'
@@ -108,6 +116,8 @@ def build_feedback_form(feedback):
             'block_no': 1,
             'row_in_block': len(form.positions) + 1,
         })
+
+# Übernahme der Daten
 
     for row in form.positions:
         row.telescope_id.choices = [
@@ -158,7 +168,7 @@ def validate_feedback_changes(form, telescopes, filters):
             valid = False
 
     return valid
-
+# Speichern und Statusanpassung
 def save_feedback(feedback, form):
     changed = form.matches_request.data == 'no'
 
@@ -218,7 +228,7 @@ def observation_feedback(feedback_id):
 
     if feedback is None:
         abort(404)
-
+# Festlegung Benutzerzugriff
     if feedback.user_id != current_user.id:
         abort(403)
 

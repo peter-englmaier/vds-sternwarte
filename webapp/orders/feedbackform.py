@@ -19,6 +19,8 @@ from wtforms.validators import (
     NumberRange,
 )
 
+# Formulare und Eingabeprüfungen für Beobachtungsrückmeldungen.
+# Eingabefelder einer Aufnahmezeile.
 
 class FeedbackPositionForm(Form):
     telescope_id = SelectField(

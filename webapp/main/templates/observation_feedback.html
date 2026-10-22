@@ -1,5 +1,8 @@
 {% extends "layout.html" %}
 
+{# Bearbeitungsseite für eine bereits angelegte Beobachtungsrückmeldung #}
+{# Wiederholung der Nutzung des Formulars #}
+
 {% macro render_field(field) %}
 <div class="col-md-4 mb-3">
     {% if field.type == 'BooleanField' %}
@@ -23,6 +26,8 @@
 {% endmacro %}
 
 {% block content %}
+
+{# Darstellung #}
 
 <style>
     .form-check-input.expert-big {

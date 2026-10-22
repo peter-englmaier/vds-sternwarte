@@ -20,6 +20,8 @@ from webapp.orders.constants import (
     ORDER_STATUS_STATISTICS_OPEN,
 )
 
+# Geeignete vergangene Anträge werden in die Beobachtungsrückmeldung übernommen.
+# Abarbeitung der Anträge
 
 HEAD_COLUMNS = tuple(
     column.name
