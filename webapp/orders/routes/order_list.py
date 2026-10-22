@@ -19,7 +19,6 @@ from webapp.users.utils import role_required
 from webapp.model.feedback import ObservationFeedback
 from webapp.orders.feedbackservice import copy_due_feedback
 from webapp.orders.constants import ORDER_STATUS_STATISTICS_OPEN
-from flask import current_app
 
 
 # --------------------------------------------------------------------
@@ -51,14 +50,12 @@ def show_orders():
         pwuser = User.query.get(order.request_poweruser_id)
         if pwuser:
             order.poweruser_name = pwuser.display_name()
-    pending_feedback_orders = []
+    
+    # Beim Seitenaufruf passende vergangene Anträge einmalig übernehmen.
+    copy_due_feedback(user_id=current_user.id)
 
-    if current_app.config.get(
-        "OBSERVATION_FEEDBACK_ENABLED",
-        False,
-    ):
-        copy_due_feedback(user_id=current_user.id)
-        pending_feedback_orders = get_pending_feedback_orders()
+    # Alle noch offenen Rückmeldungen des angemeldeten Nutzers laden.
+    pending_feedback_orders = get_pending_feedback_orders()
 
     return render_template(
         "orders.html",
