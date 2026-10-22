@@ -45,22 +45,23 @@
                     </form>
                 {% endif %}
 
-                <!-- #92 -->
-                <!-- Wenn Antrag mit Kopierfunktion kopiert wird, Datumsauswahl nicht möglich -->
-                <!-- bis Datumsauswahl möglich, Kopierfunktion in V1 ausblenden -->
-                <!-- Beginn Ausblenden <form method="post" action="{{ url_for('orders.copy_order', order_id=order.id) }}" style="display:inline;">
-                  <button type="submit"  class="btn btn-sm btn-success" title="Copy">
+                <form method="post"
+                    action="{{ url_for('orders.copy_order', order_id=order.id) }}"
+                style="display:inline;">
+                  <input type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}">
+                  <button type="submit"  class="btn btn-sm btn-success" title="Antrag kopieren">
                     <i class="bi bi-files"></i>
                   </button>
-                </form> Ende Ausblenden -->
-                <!-- bis hierhin ausblenden -->
+                </form>
 
             </td>
             <td>{{ order.status_label }}</td>
             {% if order.date_is_reserved %}
             <td>{{ order.date_info }}</td>
             {% else %}
-            <td><s>{{ order.date_info }}</s></td>
+            <td><small class="text-muted">Kopie von </small> {{ order.date_info }}<small class="text-muted"> (Kopie, nicht reserviert)</small></td>
             {% endif %}
             <!-- <td>{{ order.name }}</td> -->
             <td>{{ order.observatory_name }}</td>

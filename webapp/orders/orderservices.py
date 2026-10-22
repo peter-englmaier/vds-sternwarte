@@ -72,41 +72,49 @@ def init_new_orderpos_service():
 # --------------------------------------------------------------------------
 def copy_order_service(order_id):
     orig_order = ObservationRequest.query.get_or_404(order_id)
-    if orig_order:
+    try:
         new_order = ObservationRequest()
         for column in ObservationRequest.__table__.columns:
-            setattr(new_order, column.name, getattr(orig_order, column.name))
+            setattr(
+                new_order,
+                column.name,
+                getattr(orig_order, column.name),
+            )
+
+        new_order.id = None
         new_order.user_id = current_user.id
-        new_order.id = None  # neue ID beim Commit
-        new_order.name += ' Copy'
+        new_order.name = orig_order.name
         new_order.status = ORDER_STATUS_CREATED
         new_order.date_created = datetime.now()
+
         db.session.add(new_order)
-        db.session.flush()  # jetzt ist new_order.id gesetzt
+        db.session.flush()
 
         orig_positions = (
-            ObservationRequestPosition
-            .query
+            ObservationRequestPosition.query
             .filter_by(observation_request_id=order_id)
             .order_by(ObservationRequestPosition.row_no)
             .all()
         )
 
-        if orig_positions:
-            for pos in orig_positions:
-                position_new = ObservationRequestPosition()
-                for column in ObservationRequestPosition.__table__.columns:
-                    setattr(position_new, column.name, getattr(pos, column.name))
-                position_new.id = None
-                position_new.observation_request_id = new_order.id
-                db.session.add(position_new)
+        for pos in orig_positions:
+            position_new = ObservationRequestPosition()
+            for column in ObservationRequestPosition.__table__.columns:
+                setattr(
+                    position_new,
+                    column.name,
+                    getattr(pos, column.name),
+                )
 
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return 1, f'Es ist ein Fehler aufgetreten:\n{e}.\nBitte melden Sie sich beim Systemadministrator.'
-        return 0, "Antrag \nerfolgreich\n kopiert."
+            position_new.id = None
+            position_new.observation_request_id = new_order.id
+            db.session.add(position_new)
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return 1, f'Es ist ein Fehler aufgetreten:\n{e}.\nBitte melden Sie sich beim Systemadministrator.'
+    return 0, "Antrag \nerfolgreich\n kopiert."
 
 
 # --------------------------------------------------------------------------
