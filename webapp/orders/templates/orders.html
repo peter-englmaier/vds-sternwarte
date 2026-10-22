@@ -30,16 +30,16 @@
     {% for order in orders %}
         <tr>
             <td>
-                <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}" class="btn btn-sm bg-secondary-subtle" title="Show">
+                <a href="{{ url_for('orders.show_order_positions', order_id=order.id) }}" class="btn btn-sm btn-secondary" title="Show">
                     <i class="bi bi-eye"></i>
                 </a>
                 {% if order.status == CONSTANTS.ORDER_STATUS_CREATED %}
-                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}" class="btn btn-sm bg-primary-subtle" title="Edit">
+                    <a href="{{ url_for('orders.edit_order_pos', order_id=order.id) }}" class="btn btn-sm btn-primary" title="Edit">
                         <i class="bi bi-pencil"></i>
                     </a>
                     <form method="post" action="{{ url_for('orders.delete_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Echt jetzt?\n wirklich löschen?');">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-sm bg-warning-subtle" title="Löschen">
+                      <button type="submit" class="btn btn-sm btn-warning" title="Löschen">
                       <i class="bi bi-trash"></i>
                       </button>
                     </form>
@@ -78,13 +78,13 @@
 <form method="post" action="{{ url_for('orders.actionhandler') }}">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-<button type="submit" class="btn bg-primary-subtle" name="action" value="create_order">
+<button type="submit" class="btn btn-primary" name="action" value="create_order">
       Neuen Antrag eingeben
 </button>
 {% endif %}
 
-<a class="btn bg-secondary-subtle" href="{{ url_for('main.home') }}" >Zur Startseite</a>
-<a class="btn bg-secondary-subtle" href="{{ url_for('main.user_order_history') }}" >Archiv</a>
+<a class="btn btn-secondary" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+<a class="btn btn-secondary" href="{{ url_for('main.user_order_history') }}" >Archiv</a>
 </form>
 
 {% endblock content %}
