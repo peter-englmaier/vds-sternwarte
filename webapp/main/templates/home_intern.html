@@ -23,9 +23,9 @@
     {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
       {% if page_num %}
         {% if posts.page == page_num %}
-          <a class="btn bg-primary-subtle mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+          <a class="btn btn-primary mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
         {% else %}
-          <a class="btn bg-secondary-subtle mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+          <a class="btn btn-secondary mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
         {% endif %}
       {% else %}
         ...
