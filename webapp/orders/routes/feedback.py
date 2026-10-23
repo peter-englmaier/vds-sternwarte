@@ -291,3 +291,133 @@ def observation_feedback(feedback_id):
         form=form,
         blocks=blocks,
     )
+
+# -------------------------------------------------------------
+# Poweruser Rückmeldung bei negativer Beobachtung
+# -------------------------------------------------------------
+@orders.route(
+    '/feedback/<int:feedback_id>/cancel',
+    methods=['POST'],
+)
+@login_required
+@role_required('poweruser')
+def cancel_observation_feedback(feedback_id):
+    statement = (
+        select(ObservationFeedback)
+        .where(ObservationFeedback.id == feedback_id)
+        .with_for_update()
+    )
+
+    feedback = db.session.execute(
+        statement
+    ).scalar_one_or_none()
+
+    if feedback is None:
+        abort(404)
+
+    # Nur der zugeordnete Poweruser darf den Ausfall melden.
+    if feedback.request_poweruser_id != current_user.id:
+        abort(403)
+
+    if feedback.status != ORDER_STATUS_STATISTICS_OPEN:
+        abort(
+            409,
+            description='Diese Rückmeldung ist bereits abgeschlossen.',
+        )
+
+    reasons = {
+        'weather': 'Schlechtes Wetter',
+        'technical': 'Technische Probleme',
+    }
+
+    reason = request.form.get('reason')
+    confirmed = request.form.get('confirm_cancellation')
+
+    if reason not in reasons or confirmed != 'yes':
+        abort(
+            400,
+            description='Ausfallgrund und Bestätigung fehlen.',
+        )
+
+    if feedback.request_date.date() >= date.today():
+        abort(
+            400,
+            description=(
+                'Ein Ausfall kann erst nach dem Beobachtungstag '
+                'abgeschlossen werden.'
+            ),
+        )
+
+    if not feedback.positions:
+        abort(
+            409,
+            description='Die Rückmeldung enthält keine Aufnahmezeile.',
+        )
+
+    # Den Ausfallgrund im vorhandenen Feld speichern.
+    previous_deviations = (feedback.deviations or '').strip()
+    cancellation_note = f'Beobachtung ausgefallen: {reasons[reason]}.'
+
+    combined_deviations = (
+        f'{previous_deviations}\n{cancellation_note}'
+        if previous_deviations
+        else cancellation_note
+    )
+
+    if len(combined_deviations) > 2000:
+        abort(
+            400,
+            description=(
+                'Der vorhandene Abweichungstext ist zu lang, '
+                'um den Ausfallgrund hinzuzufügen.'
+            ),
+        )
+
+    # Eine kopierte Aufnahmezeile als Ausfalleintrag verwenden.
+    # Der ursprüngliche Antrag bleibt unverändert.
+    position = feedback.positions[0]
+
+    position.target = 'Ausgefallen'
+    position.target_objecttype = None
+    position.target_coordinates = None
+    position.target_coordinates_lock = None
+    position.filterset_id = None
+
+    position.exposure_count = None
+    position.exposure_time = None
+    position.exposure_gain = None
+    position.exposure_offset = None
+    position.exposure_dither = None
+    position.exposure_focus = None
+    position.exposure_starttime = None
+    position.mosaic = False
+
+    position.ra_h = None
+    position.ra_m = None
+    position.ra_s = None
+    position.dec_sign = None
+    position.dec_d = None
+    position.dec_m = None
+    position.dec_s = None
+
+    position.row_no = 1
+    position.block_no = 1
+    position.row_in_block = 1
+
+    # Weitere kopierte Aufnahmezeilen entfernen.
+    del feedback.positions[1:]
+
+    feedback.deviations = combined_deviations
+    feedback.matches_request = False
+    feedback.status = ORDER_STATUS_DOCUMENTED
+    feedback.completed_at = datetime.now(timezone.utc)
+    feedback.completed_by_id = current_user.id
+
+    db.session.commit()
+
+    flash(
+        'Die Beobachtung wurde als ausgefallen abgeschlossen.',
+        'success',
+    )
+
+    return redirect(url_for('orders.show_orders'))
