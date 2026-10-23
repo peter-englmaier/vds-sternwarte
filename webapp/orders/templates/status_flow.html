@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block content %}
+{% set L = CONSTANTS.ORDER_STATUS_LABELS %}
+
+<h2>Ablauf eines Antrags</h2>
+<p>
+    Ein Beobachtungsantrag durchläuft mehrere Stati. Die Farbe der Pfeile zeigt,
+    wer den nächsten Schritt auslöst.
+</p>
+
+{# Diagramm mit draw.io bearbeiten: webapp/static/status_flow.drawio.svg öffnen und speichern #}
+<div class="mb-4" style="max-width: 1003px; overflow-x: auto;">
+    <img src="{{ url_for('static', filename='status_flow.drawio.svg') }}"
+         alt="Ablaufdiagramm der Antragsstati" style="min-width: 680px; width: 100%; height: auto;">
+</div>
+
+<h3>Die Stati im Einzelnen</h3>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Bedeutung</th>
+            <th>Nächster Schritt</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_CREATED] }}</td>
+            <td>Der Antrag ist angelegt, aber noch nicht abgeschickt.</td>
+            <td>Du kannst ihn bearbeiten, löschen oder an den Approver abschicken. Beim Abschicken wird der Termin vorgemerkt.</td>
+        </tr>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_WAITING] }}</td>
+            <td>Der Antrag liegt beim Approver.</td>
+            <td>Der Approver genehmigt oder lehnt ab. Bist du selbst Poweruser, wird dir der Antrag bei Genehmigung direkt zugewiesen.</td>
+        </tr>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_APPROVED] }}</td>
+            <td>Der Antrag ist genehmigt. Die Poweruser melden zurück, ob sie den Termin übernehmen können.</td>
+            <td>Der Approver weist einen Poweruser zu oder lehnt den Antrag doch noch ab.</td>
+        </tr>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_REJECTED] }}</td>
+            <td>Der Approver hat den Antrag abgelehnt. Du erhältst eine Mail mit der Begründung, der Termin wird freigegeben.</td>
+            <td>Du kannst den Antrag überarbeiten und erneut abschicken oder löschen.</td>
+        </tr>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_PU_ASSIGNED] }}</td>
+            <td>Ein Poweruser ist für den Termin eingeteilt, der Termin ist fest gebucht. Du wirst per Mail benachrichtigt.</td>
+            <td>Der Poweruser führt die Beobachtung durch. Der Approver kann einen anderen Poweruser zuweisen.</td>
+        </tr>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_PU_REJECTED] }}</td>
+            <td>Der zugewiesene Poweruser kann den Termin doch nicht wahrnehmen.</td>
+            <td>Der Approver weist einen anderen Poweruser zu, gibt den Antrag erneut zur Rückmeldung frei oder lehnt ihn ab.</td>
+        </tr>
+        <tr>
+            <td>{{ L[CONSTANTS.ORDER_STATUS_PU_ACCEPTED] }}</td>
+            <td>Der zugewiesene Poweruser hat den Antrag ausdrücklich übernommen.</td>
+            <td>-</td>
+        </tr>
+    </tbody>
+</table>
+
+<p><a href="{{ url_for('orders.show_orders') }}">Zurück zu meinen Teleskopzeiten</a></p>
+
+{% endblock content %}
