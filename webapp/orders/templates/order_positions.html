@@ -16,7 +16,7 @@
     </a>
     {% endif %}
 </p>
-<p>Status: {{ order.status_label }}</p>
+<p><a href="{{ url_for('orders.status_flow') }}" title="Ablauf der Antragsstati">Status <i class="bi bi-question-circle"></i></a>: {{ order.status_label }}</p>
 
 <h3>Schritte</h3>
 <table class="table table-bordered table-striped table-hover">
