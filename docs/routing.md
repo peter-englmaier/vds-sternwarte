@@ -34,7 +34,7 @@ werden alle Blueprints registriert:
 
 | Blueprint | Definiert in | Routes in | Inhalt |
 |---|---|---|---|
-| `main` | `webapp/main/__init__.py` | `webapp/main/routes.py` | Startseite, Poweruser-/Approver-Seiten, FAQ, … |
+| `main` | `webapp/main/__init__.py` | `webapp/main/routes/` (Paket) | Startseite, Poweruser-/Approver-Seiten, FAQ, … |
 | `users` | `webapp/users/__init__.py` | `webapp/users/routes.py` | Login, Registrierung, Konto, Passwort |
 | `posts` | `webapp/posts/__init__.py` | `webapp/posts/routes.py` | Beiträge |
 | `orders` | `webapp/orders/__init__.py` | `webapp/orders/routes/` (Paket) | Beobachtungsanträge, Kalender |
@@ -73,7 +73,8 @@ webapp/orders/
 │   ├── approval.py           Approver-/Poweruser-Aktionen ohne eigene Seite
 │   ├── reject_order.py       reject_order.html
 │   ├── calendar.py           calendar.html, _calendar.html
-│   └── obs_request_complete.py  obs_request_complete.html
+│   ├── obs_request_complete.py  obs_request_complete.html
+│   └── status_flow.py        status_flow.html
 ├── mails.py                  Celery-Tasks für Benachrichtigungs-Mails
 ├── orderservices.py          Geschäftslogik (Kopieren, Löschen, Kalender, …)
 ├── orderform.py              WTForms-Formulare
@@ -93,6 +94,30 @@ Routes::
     POST  /orders/<int:order_id>/copy_order    copy_order()    -> redirect to /orders
     POST  /orders/<int:order_id>/delete_order  delete_order()  -> redirect to /orders
 """
+```
+
+### Aufbau von `main`: ein Modul pro Seite
+
+Der Blueprint `main` ist genauso aufgeteilt:
+
+```
+webapp/main/
+├── __init__.py               Blueprint-Objekt "main"
+├── routes/
+│   ├── __init__.py           importiert alle Module → registriert ihre Routes
+│   ├── home.py               home.html, home_intern.html; Debug-Route /status
+│   ├── poweruser.py          poweruser.html, Rückmeldung der Poweruser (HTMX)
+│   ├── poweruser_history.py  poweruser_history.html
+│   ├── approver.py           approver.html (Aktionen in orders/routes/approval.py)
+│   ├── order_history.py      orders_history.html
+│   ├── gast.py               gast.html, Benutzer freischalten
+│   ├── fg_request.py         create_obs_request.html, aufnahme_zeile.html (/add-row)
+│   ├── service_request.py    create_service.html
+│   ├── request_georg.py      create_request_georg.html
+│   ├── faq.py                faq.html
+│   ├── about.py              about.html
+│   └── impressum.py          impressum.html
+└── templates/                Templates des Blueprints
 ```
 
 Es ist egal, auf wie viele Dateien die Routes verteilt sind. Alle hängen am selben
@@ -298,7 +323,7 @@ Neuladen der Seite das Formular nicht ein zweites Mal ab.
    grep -rn "def show_calendar" webapp/
    ```
 
-3. Bei `orders` zeigt die **Header-Tabelle** jedes Moduls in `webapp/orders/routes/`, welche
+3. Bei `orders` und `main` zeigt die **Header-Tabelle** jedes Moduls in `webapp/<blueprint>/routes/`, welche
    URLs dort bearbeitet werden.
 
 Umgekehrt findet `grep -rn "orders.show_calendar" webapp/` alle Stellen, die auf eine Route
@@ -393,7 +418,8 @@ Für einen neuen, eigenständigen Bereich, z. B. `reports`:
 
 - **Ein Modul pro Seite bzw. Template.** Aktionen ohne eigene Seite kommen in das Modul der
   Seite, von der sie aufgerufen werden, oder werden nach Rolle gebündelt (wie `approval.py`).
-- **Kein Modul darf so heißen wie der Blueprint** (z. B. `orders.py` in `orders/routes/`).
+- **Kein Modul darf so heißen wie der Blueprint** (z. B. `orders.py` in `orders/routes/`,
+  `main.py` in `main/routes/`).
   Es würde das Blueprint-Objekt im Paket überdecken, und `register_blueprint()` schlägt fehl.
 - **Routes schlank halten.** Datenbanklogik, die mehr als ein paar Zeilen hat oder an mehreren
   Stellen gebraucht wird, gehört nach `orderservices.py`. Route-Module importieren nicht
