@@ -18,7 +18,7 @@
 </p>
 <p><a href="{{ url_for('orders.status_flow') }}" title="Ablauf der Antragsstati">Status <i class="bi bi-question-circle"></i></a>: {{ order.status_label }}</p>
 
-<h3>Schritte</h3>
+<h3>Objekt- und Belichtungsdaten</h3>
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
@@ -60,6 +60,6 @@
 </table>
 <br>
 
-<button type="button" onclick="history.back();">Zurück</button>
+<button type="button" class="btn btn-primary" onclick="history.back();">Zurück</button>
 
 {% endblock content %}
