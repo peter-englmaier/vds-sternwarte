@@ -10,13 +10,6 @@
   #coord-btn { display: none; }
   #coord-btn.visible { display: inline-block; }
 
-  :root { --primary:#0d6efd; }
-  .border-transparent{ border-color:transparent !important; }
-  .position-block.active {
-    border-color: var(--primary) !important;
-    box-shadow: 0 8px 24px rgba(13,110,253,.18) !important;
-  }
-
   .position-block { cursor: pointer; }
 </style>
 
@@ -418,14 +411,14 @@ function getActiveBlock() {
 }
 function setActive(block) {
   document.querySelectorAll('#positions-root .position-block').forEach(b => {
-    b.classList.remove('active','border-primary','shadow');
+    b.classList.remove('active','border-primary');
     b.classList.add('border-transparent');
     b.setAttribute('aria-selected','false');
     const badge = b.querySelector('.active-badge');
     if (badge) badge.classList.add('d-none');
   });
   if (block) {
-    block.classList.add('active','border-primary','shadow');
+    block.classList.add('active','border-primary');
     block.classList.remove('border-transparent');
     block.setAttribute('aria-selected','true');
     const badge = block.querySelector('.active-badge');
