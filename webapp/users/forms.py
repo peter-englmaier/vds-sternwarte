@@ -12,7 +12,7 @@ from sqlalchemy import func
 class RegistrationForm(FlaskForm):
     username = StringField('Benutzername',
                            validators=[DataRequired(), Length(min=2, max=20)])
-    email = StringField('Email',
+    email = StringField('E-Mail',
                         validators=[DataRequired(), Email()])
     firstname = StringField('Vorname',validators=[DataRequired(), Length(min=2, max=20)])
     surname = StringField('Nachname',validators=[DataRequired(), Length(min=2, max=20)])
@@ -41,7 +41,7 @@ class RegistrationForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email oder Benutzername',
+    email = StringField('E-Mail oder Benutzername',
                         validators=[DataRequired()])
     password = PasswordField('Passwort', validators=[DataRequired()])
     remember = BooleanField('Angemeldet bleiben')
