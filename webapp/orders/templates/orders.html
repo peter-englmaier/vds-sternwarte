@@ -16,7 +16,7 @@
     <thead>
         <tr>
             <th>Aktion</th>
-            <th>Status</th>
+            <th><a href="{{ url_for('orders.status_flow') }}" title="Ablauf der Antragsstati">Status <i class="bi bi-question-circle"></i></a></th>
             <th>Datum</th>
             <!-- <th>Antragsteller</th> -->
             <th>Observatorium</th>
@@ -39,28 +39,29 @@
                     </a>
                     <form method="post" action="{{ url_for('orders.delete_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Echt jetzt?\n wirklich löschen?');">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                      <button type="submit" class="btn btn-sm btn-warning" title="Löschen">
                       <i class="bi bi-trash"></i>
                       </button>
                     </form>
                 {% endif %}
 
-                <!-- #92 -->
-                <!-- Wenn Antrag mit Kopierfunktion kopiert wird, Datumsauswahl nicht möglich -->
-                <!-- bis Datumsauswahl möglich, Kopierfunktion in V1 ausblenden -->
-                <!-- Beginn Ausblenden <form method="post" action="{{ url_for('orders.copy_order', order_id=order.id) }}" style="display:inline;">
-                  <button type="submit"  class="btn btn-sm btn-success" title="Copy">
+                <form method="post"
+                    action="{{ url_for('orders.copy_order', order_id=order.id) }}"
+                style="display:inline;">
+                  <input type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}">
+                  <button type="submit"  class="btn btn-sm btn-success" title="Antrag kopieren">
                     <i class="bi bi-files"></i>
                   </button>
-                </form> Ende Ausblenden -->
-                <!-- bis hierhin ausblenden -->
+                </form>
 
             </td>
             <td>{{ order.status_label }}</td>
             {% if order.date_is_reserved %}
             <td>{{ order.date_info }}</td>
             {% else %}
-            <td><s>{{ order.date_info }}</s></td>
+            <td><small class="text-muted">Kopie von </small> {{ order.date_info }}<small class="text-muted"> (Kopie, nicht reserviert)</small></td>
             {% endif %}
             <!-- <td>{{ order.name }}</td> -->
             <td>{{ order.observatory_name }}</td>
@@ -78,13 +79,13 @@
 <form method="post" action="{{ url_for('orders.actionhandler') }}">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-<button type="submit" class="btn btn-success" name="action" value="create_order">
+<button type="submit" class="btn btn-primary" name="action" value="create_order">
       Neuen Antrag eingeben
 </button>
 {% endif %}
 
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.user_order_history') }}" >Archiv</a>
+<a class="btn btn-secondary" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+<a class="btn btn-secondary" href="{{ url_for('main.user_order_history') }}" >Archiv</a>
 </form>
 
 {% endblock content %}
