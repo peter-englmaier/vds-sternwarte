@@ -112,13 +112,13 @@
                 </div>
             </fieldset>
             <div class="form-group mt-3">
-                {{ form.submit(class="btn btn-outline-info") }}
+                {{ form.submit(class="btn btn-primary") }}
             </div>
         </form>
     </div>
     <div class="border-top pt-3">
         <small class="text-muted">
-            Sie haben schon einen Benutzer? <a class="ml-2" href="{{ url_for('users.login') }}">Anmelden</a>
+            Sie haben schon eine Benutzerkennung? <a class="ml-2" href="{{ url_for('users.login') }}">Hier anmelden</a>
         </small>
     </div>
 {% endblock content %}
