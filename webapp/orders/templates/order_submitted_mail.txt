@@ -1,0 +1,15 @@
+Hallo {{ user_greeting }},
+
+die beantragte Beobachtung #{{ order_id }} für den {{ request_date }} ist eingegangen.
+Der Termin ist im Kalender entsprechend reserviert.
+
+Link zum Antrag: {{ order_url }}
+
+Wie geht es nun weiter?
+- wir prüfen, ob der Antrag angenommen werden kann.
+- du wirst anschliessend entsprechend informiert.
+
+Danke für die Geduld!
+
+Gruss, {{ observatory }}
+{{ ps or "" }}
