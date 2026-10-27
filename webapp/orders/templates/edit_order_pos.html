@@ -320,7 +320,9 @@ function unused() {
     Objekt Koordinaten ergänzen
   </button>
 
-  <a class="btn btn-warning" href="{{ url_for('main.home') }}">Abbrechen</a>
+  <a class="btn btn-warning" href="{{ url_for('orders.show_orders') }}"
+     onclick="return confirm('Willst du wirklich abbrechen? Änderungen gehen verloren!');"
+     >Abbrechen</a>
 
   <div id="flatten-hidden" style="display:none;"></div>
   {% endif %}
