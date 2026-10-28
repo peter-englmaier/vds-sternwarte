@@ -17,4 +17,5 @@ from webapp.orders.routes import (
     calendar,
     obs_request_complete,
     feedback,
+    status_flow,
 )
