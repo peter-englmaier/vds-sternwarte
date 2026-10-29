@@ -60,11 +60,6 @@ site-header .navbar-nav .nav-link,
   margin-bottom: 20px;
 }
 
-a.article-title:hover {
-  color: #428bca;
-  text-decoration: none;
-}
-
 .article-content {
   white-space: pre-line;
 }
