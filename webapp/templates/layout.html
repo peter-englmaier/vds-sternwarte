@@ -35,8 +35,9 @@
         <header class="site-header">
             <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
                 <div class="container">
-                    <a class="navbar-brand d-flex align-items-center" href="/"><img src="/static/images/VdS-Logo_FG-Remote-Sternwarten_weiss-90x60.png" alt="{{ site_title }}" class="me-2 rounded">
-    </a>                    
+                    <a class="navbar-brand d-flex align-items-center" href="/">
+                        <img src="/static/images/VdS-Logo_FG-Remote-Sternwarten_farbig.svg" alt="{{ site_title }}" width="120" height="auto" class="me-2">
+                    </a>                    
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle"
                             aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
@@ -177,7 +178,7 @@
         </main>
         <footer class="text-center mt-5 mb-3">
     <hr>
-    <a href="{{ url_for('main.impressum') }}">Impressum</a>
+    <a href="{{ url_for('main.impressum') }}">Impressum</a> | 
     <a href="https://sternfreunde.de/datenschutzerklaerung/" target="_blank" rel="noopener noreferrer">Datenschutzerklärung der Vereinigung der Sternfreunde e. V.</a>
         </footer>
     </body>
