@@ -53,7 +53,7 @@ function toggleExpertFields() {
     </span>
 
     {# Expertenmodus (aktuell deaktiviert)
-    <div class="form-check p-2 bg-warning rounded d-flex align-items-center ms-3">
+    <div class="form-check p-2 bg-danger rounded d-flex align-items-center ms-3">
       <input class="form-check-input expert-big me-2" type="checkbox" id="expert_switch"
              {% if expert_mode in [True, "True", "true", 1, "1"] %} checked {% endif %}>
       <label class="form-check-label fw-bold" for="expert_switch">erweiterter Modus</label>
@@ -128,7 +128,7 @@ function toggleExpertFields() {
     <button class="btn btn-secondary" id="add-new" type="button" title="Leeren Block hinzufügen">
       <i class="bi bi-plus"></i>
     </button>
-    <button class="btn btn-warning id="delete-active" type="button" title="Aktiven Block löschen">
+    <button class="btn btn-danger id="delete-active" type="button" title="Aktiven Block löschen">
       <i class="bi bi-trash"></i>
     </button>
   </div>
@@ -234,7 +234,7 @@ function toggleExpertFields() {
                       <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
                         <i class="bi bi-files"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-warning" data-row-delete title="Zeile löschen">
+                      <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
                         <i class="bi bi-trash"></i>
                       </button>
                       <button type="button" class="btn btn-sm btn-secondary" data-row-add>+ Zeile</button>
@@ -275,7 +275,7 @@ function toggleExpertFields() {
   <button type="submit" class="btn btn-secondary" name="action" value="save_order">Speichern</button>
 
   {#
-  <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
+  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#checkPopup">
     Überprüfen
   </button>
   #}
@@ -285,8 +285,8 @@ function toggleExpertFields() {
     Objekt Koordinaten ergänzen
   </button>
 
-  <a class="btn btn-warning" href="{{ url_for('orders.show_orders') }}"
-     onclick="return confirm('Willst du wirklich abbrechen? Änderungen gehen verloren!');"
+  <a class="btn btn-secondary" href="{{ url_for('orders.show_orders') }}"
+     onclick="return confirm('Willst du wirklich abbrechen? Nicht gespeicherte Änderungen gehen verloren!');"
      >Abbrechen</a>
 
   <div id="flatten-hidden" style="display:none;"></div>
