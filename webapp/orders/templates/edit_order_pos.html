@@ -34,41 +34,6 @@ function toggleExpertFields() {
             button_coordinates.classList.remove('visible');
         }
 }
-
-function unused() {
-  // Alle Eingaben pruefen
-  const origInputs = row.querySelectorAll('input, select, textarea');
-  const cloneInputs = clone.querySelectorAll('input, select, textarea');
-
-  origInputs.forEach((input, idx) => {
-    const cloneInput = cloneInputs[idx];
-    if (!cloneInput) return;
-
-    if (input.type === "checkbox" || input.type === "radio") {
-      cloneInput.checked = input.checked;
-    } else if (input.tagName.toLowerCase() === "select") {
-      cloneInput.selectedIndex = input.selectedIndex;
-    } else {
-      cloneInput.value = input.value;
-    }
-  });
-
-  // Sichtbarkeitsstatus der expert-field Felder übernehmen
-  const origExpertFields = row.querySelectorAll('.expert-field');
-  const cloneExpertFields = clone.querySelectorAll('.expert-field');
-
-  origExpertFields.forEach((origField, idx) => {
-    const cloneField = cloneExpertFields[idx];
-    if (!cloneField) return;
-
-    // Sichtbarkeitsbereich aktualisieren
-    if (origField.classList.contains('visible')) {
-      cloneField.classList.add('visible');
-    } else {
-      cloneField.classList.remove('visible');
-    }
-  });
-}
 </script>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
@@ -456,7 +421,7 @@ function deepCloneBlock(block) {
   src.forEach((s, i) => {
     const d = dst[i]; if (!d) return;
     if (s.type === 'checkbox' || s.type === 'radio') d.checked = s.checked;
-    else if (s.tagName === 'SELECT') d.selectedIndex = s.selectedIndex;
+    else if (s.tagName.toLowerCase() === 'select') d.selectedIndex = s.selectedIndex;
     else d.value = s.value;
   });
   return clone;
