@@ -3,38 +3,12 @@
 
 <style>
   .form-check-input.expert-big { width: 1.5em; height: 1.5em; }
-
   .expert-field { display: none; }
   .expert-field.visible { display: table-cell; }
-
   #coord-btn { display: none; }
   #coord-btn.visible { display: inline-block; }
-
   .position-block { cursor: pointer; }
 </style>
-
-<script>
-
-
-function toggleExpertFields() {
-
-    const expertSwitch = document.getElementById('expert_switch');
-    const button_coordinates = document.getElementById('coord-btn');
-    const expertFields = document.querySelectorAll('.expert-field');
-    expertFields.forEach(field => {
-        if (expertSwitch.checked) {
-            field.classList.add('visible');
-        } else {
-            field.classList.remove('visible');
-        }
-    });
-        if (expertSwitch.checked) {
-            button_coordinates.classList.add('visible');
-        } else {
-            button_coordinates.classList.remove('visible');
-        }
-}
-</script>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
 
