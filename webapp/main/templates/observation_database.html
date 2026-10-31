@@ -1,0 +1,223 @@
+{% extends "layout.html" %}
+
+{% macro value_or_dash(value) -%}
+    {{ value if value is not none and value != '' else '–' }}
+{%- endmacro %}
+
+{% block content %}
+
+<h2>Beobachtungsdatenbank</h2>
+
+<p>
+    Abgeschlossene Beobachtungsrückmeldungen aller Antragsteller.
+    <br>
+    <strong>{{ selected_month_label }}</strong>:
+    {{ feedbacks | length }} Rückmeldungen
+</p>
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+
+    <div>
+        <form
+            method="get"
+            action="{{ url_for('main.observation_database') }}"
+            class="d-flex flex-wrap align-items-center gap-2 mb-3"
+        >
+            <label for="observation-year">Jahr:</label>
+
+            <select
+                id="observation-year"
+                name="year"
+                class="form-select w-auto"
+            >
+                {% for year in year_choices %}
+                    <option
+                        value="{{ year }}"
+                        {% if year == selected_year %}selected{% endif %}
+                    >
+                        {{ year }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="observation-month" class="ms-2">Monat:</label>
+
+            <select
+                id="observation-month"
+                name="month"
+                class="form-select w-auto"
+            >
+                {% for number, label in month_choices %}
+                    <option
+                        value="{{ number }}"
+                        {% if number == selected_month %}selected{% endif %}
+                    >
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-primary">
+                Anzeigen
+            </button>
+        </form>
+
+        <nav
+            aria-label="Monate der Beobachtungsdatenbank"
+            class="d-flex gap-2"
+        >
+            {% if older_month %}
+                <a
+                    class="btn btn-outline-secondary"
+                    href="{{ url_for('main.observation_database',
+                                     year=older_month[0],
+                                     month=older_month[1]) }}"
+                >
+                    Monat zurück
+                </a>
+            {% endif %}
+
+            {% if newer_month %}
+                <a
+                    class="btn btn-outline-secondary"
+                    href="{{ url_for('main.observation_database',
+                                     year=newer_month[0],
+                                     month=newer_month[1]) }}"
+                >
+                    Monat vor
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <form
+        method="get"
+        action="{{ url_for('main.observation_database') }}"
+        class="d-flex flex-wrap align-items-center gap-2"
+    >
+        <label for="observation-search">
+            Objekt / Status oder Rubrik:
+        </label>
+
+        <input
+            type="search"
+            id="observation-search"
+            name="q"
+            value="{{ request.args.get('q', '') }}"
+            class="form-control w-auto"
+            placeholder="Suchbegriff?"
+            required
+        >
+
+        <button type="submit" class="btn btn-primary">
+            Suchen
+        </button>
+
+        {% if request.args.get('q') %}
+            <a
+                href="{{ url_for('main.observation_database') }}"
+                class="btn btn-outline-secondary"
+            >
+                Suche aufheben
+            </a>
+
+            <span class="text-muted">
+                Suchergebnisse aus allen Jahren und Monaten
+            </span>
+        {% endif %}
+    </form>
+
+</div>
+
+{% if feedbacks %}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th scope="col">Datum</th>
+                <th scope="col">Objekt / Status</th>
+                <th scope="col">Rubrik</th>
+                <th scope="col">Teleskop</th>
+                <th scope="col">
+                    Einzelbelichtung<br>
+                    [Sekunden]
+                </th>
+                <th scope="col">Bildanzahl</th>
+                <th scope="col">Filter</th>
+                <th scope="col">Bildersteller</th>
+                <th scope="col">Observer</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for feedback in feedbacks %}
+                {% for position in feedback.positions %}
+                <tr>
+                    <td>
+                        {{ feedback.request_date.strftime('%d.%m.%Y') }}
+                    </td>
+                    <td>
+                        {{ value_or_dash(position.target) }}
+                    </td>
+                    <td>
+                        {{ value_or_dash(position.target_objecttype) }}
+                    </td>
+                    <td>
+                        {{ telescopes.get(position.telescope_id, '–') }}
+                    </td>
+                    <td>
+                        {{ value_or_dash(position.exposure_time) }}
+                    </td>
+                    <td>
+                        {{ value_or_dash(position.exposure_count) }}
+                    </td>
+                    <td>
+                        {{ filtersets.get(position.filterset_id, '–') }}
+                    </td>
+                    <td>
+                        {{ users.get(feedback.user_id, '–') }}
+                    </td>
+                    <td>
+                        {{ users.get(feedback.request_poweruser_id, '–') }}
+                    </td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td>
+                        {{ feedback.request_date.strftime('%d.%m.%Y') }}
+                    </td>
+                    <td>Keine Aufnahmezeilen vorhanden</td>
+                    <td>–</td>
+                    <td>–</td>
+                    <td>–</td>
+                    <td>–</td>
+                    <td>–</td>
+                    <td>
+                        {{ users.get(feedback.user_id, '–') }}
+                    </td>
+                    <td>
+                        {{ users.get(feedback.request_poweruser_id, '–') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+
+<div class="alert alert-info">
+    {% if search %}
+        Keine passenden Aufnahmezeilen für „{{ search }}“ gefunden.
+    {% else %}
+        Für {{ selected_month_label }} liegen keine abgeschlossenen
+        Beobachtungsrückmeldungen vor.
+    {% endif %}
+</div>
+
+{% endif %}
+
+{% endblock %}

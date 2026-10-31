@@ -16,6 +16,7 @@ ORDER_STATUS_EXECUTED = '10'      # Auftrag ist ausgeführt
 ORDER_STATUS_PICURES_READY = '11' # Die aufgenommenen Bilder sind verfügbar
 ORDER_STATUS_DOCUMENTED = '12'    # Auftrag ist abgeschlossen und dokumentiert
 ORDER_STATUS_ARCHIVED = '13'     # Auftrag ist archiviert
+ORDER_STATUS_STATISTICS_OPEN = '14'  # Beobachtungsrückmeldung offen
 
 ORDER_STATUS_CHOICES = [
     (ORDER_STATUS_CREATED, 'Entwurf'),
@@ -30,6 +31,7 @@ ORDER_STATUS_CHOICES = [
     (ORDER_STATUS_FAILED, 'Fehlerhaft'),
     (ORDER_STATUS_EXECUTED, 'Ausgeführt'),
     (ORDER_STATUS_PICURES_READY, 'Bilder verfügbar'),
+    (ORDER_STATUS_STATISTICS_OPEN, 'Statistik offen'),
     (ORDER_STATUS_DOCUMENTED, 'Dokumentiert'),
     (ORDER_STATUS_ARCHIVED, 'Archiviert')
 ]

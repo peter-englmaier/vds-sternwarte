@@ -1,6 +1,106 @@
 {% extends "layout.html" %}
 {% block content %}
 
+{% if pending_feedback_orders %}
+<h3>offene Beobachtungsrückmeldungen</h3>
+
+<p>
+    Bitte bestätige oder korrigiere diese Beobachtungsdaten bevor du weitere Anträge abgibst!
+</p>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Rückmeldung</th>
+                <th>Status</th>
+                <th>Datum</th>
+                <th>Observatorium</th>
+                <th>Poweruser</th>
+                <th>Type</th>
+                <th>Anmerkungen</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for feedback in pending_feedback_orders %}
+            <tr>
+                <td>
+    <a href="{{ url_for('orders.show_order_positions', order_id=feedback.source_request_id) }}" class="btn btn-sm btn-secondary" title="Show">
+                    <i class="bi bi-eye"></i>
+    </a>                    
+    <form
+        method="post"
+        action="{{ url_for('orders.observation_feedback', feedback_id=feedback.id) }}"
+        style="display: inline;"
+    >
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+        <input type="hidden" name="action" value="complete">
+        <input type="hidden" name="matches_request" value="yes">
+        <input type="hidden" name="confirm" value="y">
+
+        <button
+            type="submit"
+            class="btn btn-sm btn-success"
+            title="Beobachtung unverändert endgültig bestätigen"
+            aria-label="Beobachtung unverändert endgültig bestätigen"
+        >
+            <i class="bi bi-hand-thumbs-up-fill"></i>
+        </button>
+    </form>
+    <a
+        class="btn btn-sm btn-primary"
+        href="{{ url_for('orders.observation_feedback', feedback_id=feedback.id) }}"
+        title="Beobachtungsdaten bearbeiten"
+        aria-label="Beobachtungsdaten bearbeiten"
+    >
+        <i class="bi bi-pencil"></i>
+    </a>
+    </a>
+    {% if current_user.has_role('poweruser')
+      and feedback.request_poweruser_id == current_user.id %}
+    <button
+        type="button"
+        class="btn btn-sm btn-warning"
+        data-bs-toggle="modal"
+        data-bs-target="#cancelObservationModal"
+        data-cancel-url="{{ url_for(
+            'orders.cancel_observation_feedback',
+            feedback_id=feedback.id
+        ) }}"
+        data-observation-date="{{ feedback.request_date.strftime('%d.%m.%Y') }}"
+        title="Beobachtung als ausgefallen melden"
+        aria-label="Beobachtung als ausgefallen melden"
+    >
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    </button>
+{% endif %}
+                </td>
+
+                <td>{{ feedback.status_label }}</td>
+
+                <td>
+                    {{ feedback.request_date.strftime('%d.%m.%Y') }}
+                </td>
+
+                <td>{{ feedback.observatory_name }}</td>
+                <td>{{ feedback.poweruser_name or '-' }}</td>
+                <td>{{ feedback.request_type }}</td>
+                <td>{{ feedback.remark or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if orders|length > 0 %}
+
+
 <h2>Meine Teleskopzeiten</h2>
 {% if current_user.is_authenticated %}
 <p>
@@ -9,8 +109,6 @@
     </span>
         Anzahl bisheriger Beobachtungsanträge: {{orders|length}}
 </p>
-
-{% if orders|length > 0 %}
 
 <table class="table table-bordered table-striped table-hover">
     <thead>
@@ -87,5 +185,290 @@
 <a class="btn btn-secondary" href="{{ url_for('main.home') }}" >Zur Startseite</a>
 <a class="btn btn-secondary" href="{{ url_for('main.user_order_history') }}" >Archiv</a>
 </form>
+
+<!-- Meldungsfenster für Poweruser bei negativer Beobachtungsrückmeldung -->
+<div
+    class="modal fade"
+    id="cancelObservationModal"
+    tabindex="-1"
+    aria-labelledby="cancelObservationTitle"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelObservationTitle">
+                    Beobachtung als ausgefallen melden
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Abbrechen"
+                ></button>
+            </div>
+
+            <div class="modal-body">
+                <p>
+                    Beobachtung vom
+                    <strong id="cancelObservationDate"></strong>
+                </p>
+
+                <label for="cancelObservationReason" class="form-label">
+                    Warum konnte die Beobachtung nicht stattfinden?
+                </label>
+
+                <select
+                    id="cancelObservationReason"
+                    class="form-select"
+                >
+                    <option value="">Bitte auswählen</option>
+                    <option value="weather">Schlechtes Wetter</option>
+                    <option value="technical">Technische Probleme</option>
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Abbrechen
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-warning"
+                    id="cancelObservationNext"
+                    disabled
+                >
+                    Weiter
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Popup 2: endgültig bestätigen -->
+<div
+    class="modal fade"
+    id="confirmCancellationModal"
+    tabindex="-1"
+    aria-labelledby="confirmCancellationTitle"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmCancellationTitle">
+                    Ausfall wirklich bestätigen?
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Abbrechen"
+                ></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i
+                        class="bi bi-exclamation-triangle-fill me-2"
+                        aria-hidden="true"
+                    ></i>
+                    Bitte prüfe deine Angabe.
+                </div>
+
+                <p>
+                    Ist die Beobachtung vom
+                    <strong id="confirmCancellationDate"></strong>
+                    tatsächlich ausgefallen?
+                </p>
+
+                <p>
+                    Grund:
+                    <strong id="confirmCancellationReason"></strong>
+                </p>
+
+                <p>
+                    Die Rückmeldung wird endgültig abgeschlossen.                    
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Abbrechen
+                </button>
+
+                <form
+                    method="post"
+                    id="confirmCancellationForm"
+                >
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="reason"
+                        id="confirmedCancellationReason"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="confirm_cancellation"
+                        value="yes"
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger"
+                        id="confirmCancellationSubmit"
+                        disabled
+                    >
+                        Ja, Ausfall bestätigen
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectionElement = document.getElementById(
+        'cancelObservationModal'
+    );
+    const confirmationElement = document.getElementById(
+        'confirmCancellationModal'
+    );
+
+    const reasonSelect = document.getElementById(
+        'cancelObservationReason'
+    );
+    const nextButton = document.getElementById(
+        'cancelObservationNext'
+    );
+    const confirmationForm = document.getElementById(
+        'confirmCancellationForm'
+    );
+    const confirmedReason = document.getElementById(
+        'confirmedCancellationReason'
+    );
+    const submitButton = document.getElementById(
+        'confirmCancellationSubmit'
+    );
+
+    const reasonLabels = {
+        weather: 'Schlechtes Wetter',
+        technical: 'Technische Probleme'
+    };
+
+    let cancellationUrl = '';
+    let observationDate = '';
+    let proceedToConfirmation = false;
+
+    function clearCancellation() {
+        cancellationUrl = '';
+        observationDate = '';
+        reasonSelect.value = '';
+        confirmedReason.value = '';
+        confirmationForm.removeAttribute('action');
+        nextButton.disabled = true;
+        submitButton.disabled = true;
+    }
+
+    selectionElement.addEventListener('show.bs.modal', function (event) {
+        clearCancellation();
+        proceedToConfirmation = false;
+
+        const trigger = event.relatedTarget;
+
+        if (!trigger) {
+            return;
+        }
+
+        cancellationUrl = trigger.dataset.cancelUrl || '';
+        observationDate = trigger.dataset.observationDate || '';
+
+        document.getElementById(
+            'cancelObservationDate'
+        ).textContent = observationDate;
+    });
+
+    reasonSelect.addEventListener('change', function () {
+        nextButton.disabled = !(
+            cancellationUrl && reasonLabels[reasonSelect.value]
+        );
+    });
+
+    nextButton.addEventListener('click', function () {
+        const reason = reasonSelect.value;
+
+        if (!cancellationUrl || !reasonLabels[reason]) {
+            return;
+        }
+
+        confirmationForm.setAttribute('action', cancellationUrl);
+        confirmedReason.value = reason;
+
+        document.getElementById(
+            'confirmCancellationDate'
+        ).textContent = observationDate;
+
+        document.getElementById(
+            'confirmCancellationReason'
+        ).textContent = reasonLabels[reason];
+
+        submitButton.disabled = false;
+        proceedToConfirmation = true;
+
+        bootstrap.Modal.getOrCreateInstance(selectionElement).hide();
+    });
+
+    selectionElement.addEventListener('hidden.bs.modal', function () {
+        if (proceedToConfirmation) {
+            proceedToConfirmation = false;
+
+            bootstrap.Modal.getOrCreateInstance(
+                confirmationElement
+            ).show();
+        } else {
+            clearCancellation();
+        }
+    });
+
+    confirmationElement.addEventListener('hidden.bs.modal', function () {
+        clearCancellation();
+    });
+
+    confirmationForm.addEventListener('submit', function (event) {
+        if (
+            !confirmationForm.getAttribute('action') ||
+            !reasonLabels[confirmedReason.value] ||
+            submitButton.disabled
+        ) {
+            event.preventDefault();
+            return;
+        }
+
+        submitButton.disabled = true;
+    });
+});
+</script>
 
 {% endblock content %}

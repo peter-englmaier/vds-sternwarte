@@ -12,6 +12,7 @@ from webapp.main.routes import (
     poweruser_history,
     approver,
     order_history,
+    observation_database,
     gast,
     fg_request,
     service_request,

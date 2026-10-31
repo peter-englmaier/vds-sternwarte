@@ -1,0 +1,899 @@
+{% extends "layout.html" %}
+
+{# Bearbeitungsseite für eine bereits angelegte Beobachtungsrückmeldung #}
+{# Wiederholung der Nutzung des Formulars #}
+
+{% macro render_field(field) %}
+<div class="col-md-4 mb-3">
+    {% if field.type == 'BooleanField' %}
+        <div class="form-check">
+            {{ field(class="form-check-input") }}
+            {{ field.label(class="form-check-label") }}
+        </div>
+    {% else %}
+        {{ field.label(class="form-label") }}
+        {{ field(
+            class="form-select"
+            if field.type == "SelectField"
+            else "form-control"
+        ) }}
+    {% endif %}
+
+    {% for error in field.errors %}
+        <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% block content %}
+
+{# Darstellung #}
+
+<style>
+    .form-check-input.expert-big {
+        width: 1.5em;
+        height: 1.5em;
+    }
+
+    .expert-field {
+        display: none;
+    }
+
+    .expert-field.visible {
+        display: table-cell;
+    }
+
+    #coord-btn {
+        display: none;
+    }
+
+    #coord-btn.visible {
+        display: inline-block;
+    }
+
+    :root {
+        --primary: #0d6efd;
+    }
+
+    .border-transparent {
+        border-color: transparent !important;
+    }
+
+    .position-block.active {
+        border-color: var(--primary) !important;
+        box-shadow: 0 8px 24px rgba(13, 110, 253, .18) !important;
+    }
+
+    .position-block {
+        cursor: pointer;
+    }
+</style>
+
+<h2>Beobachtungsrückmeldung – Statistik offen</h2>
+
+<p>
+    Dein Antrag vom {{ feedback.request_date.strftime('%d.%m.%Y') }}
+</p>
+
+<p>
+    <a href="{{ url_for(
+        'orders.show_order_positions',
+        order_id=feedback.source_request_id
+    ) }}">
+        Originalantrag ansehen
+    </a>
+</p>
+
+<form id="edit-pos-form" method="post">
+    {{ form.hidden_tag() }}
+
+    {% if form.csrf_token is defined %}
+        {% for error in form.csrf_token.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Block-Toolbar -->
+  <div class="d-flex justify-content-center gap-2 flex-wrap mb-2">
+    <button class="btn btn-light" id="move-up" type="button" title="Aktiven Block nach oben">
+      <i class="bi bi-arrow-up"></i>
+    </button>
+    <button class="btn btn-light" id="move-down" type="button" title="Aktiven Block nach unten">
+      <i class="bi bi-arrow-down"></i>
+    </button>
+    <div class="vr mx-1"></div>
+    <button class="btn btn-secondary" id="copy-active" type="button" title="Aktiven Block kopieren">
+      <i class="bi bi-files"></i>
+    </button>
+    <button class="btn btn-primary" id="add-new" type="button" title="Leeren Block hinzufügen">
+      <i class="bi bi-plus"></i>
+    </button>
+    <button class="btn btn-danger" id="delete-active" type="button" title="Aktiven Block löschen">
+      <i class="bi bi-trash"></i>
+    </button>
+  </div>
+
+  <!-- Positionen -->
+  <div class="container py-4">
+    <div id="positions-root">
+
+        {% for block in blocks %}
+        {% set header_idx = block.row_indices[0] %}
+        {% set header_form = form.positions[header_idx] %}
+
+        <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
+             data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
+
+          <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
+            Aktiver Block
+          </span>
+
+          <!-- obere Tabelle: Block-Header -->
+          <table class="table table-bordered table-striped table-hover mb-1">
+            <thead>
+              <tr>
+                <th class="text-center">Teleskop</th>
+                <th class="text-center">Objekt oder Koordinaten (Epoche J2000)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-center">
+                  {{ header_form.telescope_id(size=1, class_='telescope_box') }}
+                </td>
+                <td class="text-center">
+
+                  <div class="d-flex align-items-center gap-3 flex-nowrap justify-content-center">
+                    {{ header_form.target(placeholder="Objekt", class_="target_input") }}
+
+                    <div class="form-check">
+                      <input class="form-check-input coord-toggle" type="checkbox">
+                      <label class="form-check-label">Koordinaten eingeben (Epoche J2000)</label>
+                    </div>
+                  </div>
+
+                  <!-- Koordinatenbereich -->
+                  <div class="coord-fields mt-2 d-none d-flex flex-wrap align-items-center gap-3">
+                    <label class="mb-1">Rektaszension (RA):</label>
+                    <input type="number" class="ra-h form-control form-control-sm" placeholder="h" min="0" max="23" style="width:60px;">
+                    <input type="number" class="ra-m form-control form-control-sm" placeholder="m" min="0" max="59" style="width:60px;">
+                    <input type="number" class="ra-s form-control form-control-sm" placeholder="s" step="0.01" min="0" max="59.999" style="width:80px;">
+
+                    <label class="mb-1">Deklination (Dec):</label>
+                    <select class="dec-sign form-control form-control-sm" style="width:60px;">
+                      <option value="+">+</option>
+                      <option value="-">−</option>
+                    </select>
+                    <input type="number" class="dec-d form-control form-control-sm" placeholder="°" min="0" max="90" style="width:60px;">
+                    <input type="number" class="dec-m form-control form-control-sm" placeholder="′" min="0" max="59" style="width:60px;">
+                    <input type="number" class="dec-s form-control form-control-sm" placeholder="″" step="0.01" min="0" max="59.999" style="width:80px;">
+                  </div>
+
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Aufnahmedetails -->
+          <table class="table table-bordered table-striped table-hover mb-0">
+            <thead>
+              <tr>
+                <th class="text-center">Aktionen</th>
+                <th class="text-center">
+                  Filterset
+                  <span data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Die Auswahl von einzelnen oder einer Gruppe Filter.">
+                    <i class="bi bi-question-circle text-info"></i>
+                  </span>
+                </th>
+                <th class="expert-field">Koordinaten RA DEC</th>
+                <th class="expert-field">Sperre</th>
+                <th class="text-center">Anzahl Bilder</th>
+                <th class="text-center">Bel. Zeit</th>
+                <th class="text-center">Mosaik</th>
+                <th class="expert-field">Startzeit</th>
+                <th class="expert-field">Gain</th>
+                <th class="expert-field">Offset</th>
+                <th class="expert-field">Dither</th>
+                <th class="expert-field">Focus</th>
+              </tr>
+            </thead>
+
+            <tbody class="rows-body">
+              {% for global_idx in block.row_indices %}
+                {% set rowform = form.positions[global_idx] %}
+                <tr class="pos-row" data-global-idx="{{ global_idx }}" data-row-in-block="{{ loop.index }}">
+                  <td class="text-center">
+                     {% for name in [
+                        'target_objecttype',
+                        'ra_h',
+                        'ra_m',
+                        'ra_s',
+                        'dec_sign',
+                        'dec_d',
+                        'dec_m',
+                        'dec_s'
+                    ] %}
+                        <input
+                            type="hidden"
+                            name="{{ rowform[name].name }}"
+                            value="{{ rowform[name].data if rowform[name].data is not none else '' }}"
+                        >
+                    {% endfor %}
+                    <div class="btn-group" role="group">
+                      <button type="button" class="btn btn-sm btn-light" data-row-move="up" title="Zeile nach oben">
+                        <i class="bi bi-arrow-up"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-light" data-row-move="down" title="Zeile nach unten">
+                        <i class="bi bi-arrow-down"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
+                        <i class="bi bi-files"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-primary" data-row-add>+ Zeile</button>
+                    </div>
+                  </td>
+
+                  <td class="text-center">{{ rowform.filterset_id(size=1, class_='filterset_box') }}</td>
+                  <td class="expert-field">{{ rowform.target_coordinates }}</td>
+                  <td class="expert-field">{{ rowform.target_coordinates_lock(size=1) }}</td>
+                  <td class="text-center">{{ rowform.exposure_count(size=2) }}</td>
+                  <td class="text-center">{{ rowform.exposure_time(size=2) }}</td>
+                  <td class="text-center">
+                  <div class="form-check d-flex justify-content-center">
+                  {{ rowform.mosaic(class_="form-check-input") }}
+                  </div>
+                  </td>
+                  <td class="expert-field">{{ rowform.exposure_starttime(size=1, placeholder="HH:MM") }}</td>
+                  <td class="expert-field">{{ rowform.exposure_gain(size=1) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_offset(size=1) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_dither(size=1) }}</td>
+                  <td class="expert-field">{{ rowform.exposure_focus(size=1) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+        </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+    <div class="row">
+        {{ render_field(form.confirm) }}
+    </div>
+
+    <button type="submit"
+            class="btn btn-success"
+            name="action"
+            value="complete"
+            formnovalidate>
+        Rückmeldung abschließen
+    </button>
+    <div id="flatten-hidden" style="display:none;"></div>
+</form>
+
+<script>
+/* ===================== Expert Fields (safe + disables hidden required) ===================== */
+function setExpertFieldsEnabled(enabled) {
+  document.querySelectorAll('.expert-field').forEach(cell => {
+    cell.classList.toggle('visible', enabled);
+    cell.querySelectorAll('input, select, textarea').forEach(ctrl => {
+      if (!enabled) {
+        ctrl.disabled = true;
+        ctrl.removeAttribute('required');
+      } else {
+        ctrl.disabled = false;
+      }
+    });
+  });
+}
+function toggleExpertFields() {
+  const expertSwitch = document.getElementById('expert_switch');
+  if (!expertSwitch) {
+    setExpertFieldsEnabled(false);
+    return;
+  }
+  setExpertFieldsEnabled(expertSwitch.checked);
+  const coordBtn = document.getElementById('coord-btn');
+  if (coordBtn) coordBtn.classList.toggle('visible', expertSwitch.checked);
+}
+
+/* =====================  Block-Reihenfolge ===================== */
+function updateBlockMoveButtons() {
+  const blocks = document.querySelectorAll('#positions-root .position-block');
+  const show = blocks.length >= 2;
+
+  const moveUp = document.getElementById('move-up');
+  const moveDown = document.getElementById('move-down');
+  const deleteActive = document.getElementById('delete-active');
+
+  if (moveUp) moveUp.style.display = show ? '' : 'none';
+  if (moveDown) moveDown.style.display = show ? '' : 'none';
+  if (deleteActive) deleteActive.style.display = show ? '' : 'none';
+}
+function renumberAllBlocks() {
+  const blocks = document.querySelectorAll('#positions-root .position-block');
+  blocks.forEach((block, idx) => {
+    block.dataset.index = String(idx); // 0..n (für block_no im Flatten)
+  });
+}
+
+/* ===================== Block active selection ===================== */
+function getActiveBlock() {
+  return document.querySelector('#positions-root .position-block.active')
+      || document.querySelector('#positions-root .position-block');
+}
+function setActive(block) {
+  document.querySelectorAll('#positions-root .position-block').forEach(b => {
+    b.classList.remove('active','border-primary','shadow');
+    b.classList.add('border-transparent');
+    b.setAttribute('aria-selected','false');
+    const badge = b.querySelector('.active-badge');
+    if (badge) badge.classList.add('d-none');
+  });
+  if (block) {
+    block.classList.add('active','border-primary','shadow');
+    block.classList.remove('border-transparent');
+    block.setAttribute('aria-selected','true');
+    const badge = block.querySelector('.active-badge');
+    if (badge) badge.classList.remove('d-none');
+  }
+}
+
+/* ===================== Activate block on click / focus ===================== */
+function registerActiveBlockHandlers() {
+  const root = document.getElementById('positions-root');
+  if (!root) return;
+
+  // Klick irgendwo im Block -> aktiv
+  root.addEventListener('click', (e) => {
+    const block = e.target.closest('.position-block');
+    if (!block) return;
+    setActive(block);
+  });
+
+  // Tastatur-Fokus (tabindex ist schon gesetzt) -> aktiv
+  root.addEventListener('focusin', (e) => {
+    const block = e.target.closest('.position-block');
+    if (!block) return;
+    setActive(block);
+  });
+}
+
+/* ===================== Clone / Clear block ===================== */
+function deepCloneBlock(block) {
+  const clone = block.cloneNode(true);
+  const src = block.querySelectorAll('input, textarea, select');
+  const dst = clone.querySelectorAll('input, textarea, select');
+  src.forEach((s, i) => {
+    const d = dst[i]; if (!d) return;
+    if (s.type === 'checkbox' || s.type === 'radio') d.checked = s.checked;
+    else if (s.tagName === 'SELECT') d.selectedIndex = s.selectedIndex;
+    else d.value = s.value;
+  });
+  return clone;
+}
+function clearBlockInputs(block) {
+  block.querySelectorAll('input, textarea').forEach(i => {
+    if (i.type === 'checkbox' || i.type === 'radio') i.checked = false;
+    else i.value = '';
+  });
+  block.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+}
+
+/* ===================== Move / Copy / Delete ===================== */
+function moveBlockUp(block) {
+  const prev = block.previousElementSibling;
+  if (prev && prev.classList.contains('position-block')) {
+    block.parentNode.insertBefore(block, prev);
+  }
+}
+function moveBlockDown(block) {
+  const next = block.nextElementSibling;
+  if (next && next.classList.contains('position-block')) {
+    block.parentNode.insertBefore(next, block);
+  }
+}
+function deleteBlock(block) {
+  const root = document.getElementById('positions-root');
+  const blocks = root.querySelectorAll('.position-block');
+  if (blocks.length <= 1) return;
+  const next = block.nextElementSibling || block.previousElementSibling;
+  block.remove();
+  if (next && next.classList.contains('position-block')) setActive(next);
+}
+
+/* ===================== Telescope -> Filtersets ===================== */
+function registerTelescopeBoxListeners(context = document) {
+  const selects = context.querySelectorAll('.telescope_box');
+  selects.forEach(select => {
+    if (select._telescopeChangeListener) {
+      select.removeEventListener('change', select._telescopeChangeListener);
+    }
+    const listener = function() {
+      const block = this.closest('.position-block');
+      if (!block) return;
+
+      // Block-weit: wir nehmen alle filterset_box im Block
+      const filtersetSelects = block.querySelectorAll('.filterset_box');
+      if (filtersetSelects.length === 0) return;
+
+      fetch('/orders/get_filtersets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ telescope_id: this.value })
+      })
+      .then(r => r.json())
+      .then(options => {
+        // Wichtig: alle Selects in diesem Block updaten
+        filtersetSelects.forEach(filtersetSelect => {
+          filtersetSelect.innerHTML = '';
+          options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.id;
+            o.textContent = opt.name;
+            filtersetSelect.appendChild(o);
+          });
+        });
+      });
+    };
+    select._telescopeChangeListener = listener;
+    select.addEventListener('change', listener);
+  });
+}
+
+/* ===================== Coord toggle + write target_coordinates ===================== */
+function clampCoordinateValue(input, min, max) {
+  if (!input || input.value === '') return;
+
+  const value = Number(input.value);
+  if (Number.isNaN(value)) {
+    input.value = '';
+    return;
+  }
+
+  if (value < min) input.value = min;
+  if (value > max) input.value = max;
+}
+function pad2(v){ v=String(v??'').trim(); if(v==='') return '00'; return v.padStart(2,'0'); }
+function padSec(v){
+  if(v===''||v==null) return '00.00';
+  const n=Number(v); if(Number.isNaN(n)) return '00.00';
+  return n.toFixed(2).padStart(5,'0');
+}
+
+function updateTargetCoordinates(block) {
+    if (!block) return;
+
+    const toggle = block.querySelector('.coord-toggle');
+    if (!toggle || !toggle.checked) return;
+
+    const values = {
+        ra_h: block.querySelector('.ra-h')?.value ?? '',
+        ra_m: block.querySelector('.ra-m')?.value ?? '',
+        ra_s: block.querySelector('.ra-s')?.value ?? '',
+        dec_sign: block.querySelector('.dec-sign')?.value || '+',
+        dec_d: block.querySelector('.dec-d')?.value ?? '',
+        dec_m: block.querySelector('.dec-m')?.value ?? '',
+        dec_s: block.querySelector('.dec-s')?.value ?? ''
+    };
+
+    const hasCoordinates = [
+        values.ra_h,
+        values.ra_m,
+        values.ra_s,
+        values.dec_d,
+        values.dec_m,
+        values.dec_s
+    ].some(value => value !== '');
+
+    if (!hasCoordinates) return;
+
+    const ra = (
+        `${pad2(values.ra_h)}:` +
+        `${pad2(values.ra_m)}:` +
+        `${padSec(values.ra_s)}`
+    );
+
+    const dec = (
+        `${values.dec_sign}${pad2(values.dec_d)}:` +
+        `${pad2(values.dec_m)}:` +
+        `${padSec(values.dec_s)}`
+    );
+
+    block.querySelectorAll('tbody.rows-body tr.pos-row')
+        .forEach(row => {
+            const coordinates = row.querySelector(
+                '[name$="-target_coordinates"]'
+            );
+
+            if (coordinates) {
+                coordinates.value = `${ra} ${dec}`;
+            }
+
+            Object.entries(values).forEach(([name, value]) => {
+                const field = row.querySelector(
+                    `[name$="-${name}"]`
+                );
+
+                if (field) {
+                    field.value = value;
+                }
+            });
+        });
+}
+
+function parseTargetCoordinates(val) {
+  // erwartet: "HH:MM:SS.ss +DD:MM:SS.ss" (oder -DD...)
+  if (!val) return null;
+  const s = String(val).trim().replace(/\s+/g, ' ');
+  // erlaubt Sekunden mit/ohne Dezimalteil
+  const m = s.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2}(?:\.\d+)?)\s*([+\-])\s*(\d{1,2}):(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/);
+  if (!m) return null;
+
+  return {
+    ra_h: m[1], ra_m: m[2], ra_s: m[3],
+    dec_sign: m[4],
+    dec_d: m[5], dec_m: m[6], dec_s: m[7],
+  };
+}
+
+function initCoordUIFromSaved(block) {
+  if (!block) return;
+
+  // 1) gespeicherten Wert aus dem WTForms-Feld holen (erste Zeile im Block)
+  const firstRow = block.querySelector('tbody.rows-body tr.pos-row');
+  const targetField = firstRow?.querySelector('input[name$="-target_coordinates"]');
+  const saved = targetField?.value?.trim();
+  if (!saved) return; // nichts gespeichert -> nichts initialisieren
+
+  // 2) parsen
+  const p = parseTargetCoordinates(saved);
+  if (!p) return;
+
+  // 3) UI-Felder setzen
+  const setVal = (sel, v) => {
+    const el = block.querySelector(sel);
+    if (el) el.value = v;
+  };
+
+  setVal('.ra-h', p.ra_h);
+  setVal('.ra-m', p.ra_m);
+  setVal('.ra-s', p.ra_s);
+  setVal('.dec-sign', p.dec_sign);
+  setVal('.dec-d', p.dec_d);
+  setVal('.dec-m', p.dec_m);
+  setVal('.dec-s', p.dec_s);
+
+  // 4) Toggle + Sichtbarkeit aktivieren
+  const toggle = block.querySelector('.coord-toggle');
+  const coords = block.querySelector('.coord-fields');
+  if (toggle) toggle.checked = true;
+  if (coords) coords.classList.remove('d-none');
+}
+
+function initAllBlocksCoordUI() {
+  document.querySelectorAll('#positions-root .position-block').forEach(block => {
+    initCoordUIFromSaved(block);
+  });
+}
+
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('coord-toggle')) {
+    const block = e.target.closest('.position-block');
+    const coords = block?.querySelector('.coord-fields');
+    if (coords) coords.classList.toggle('d-none', !e.target.checked);
+  }
+});
+document.addEventListener('input', (e) => {
+  const block = e.target.closest('.position-block');
+  if (!block) return;
+  if (e.target.classList.contains('ra-h')) {
+    clampCoordinateValue(e.target, 0, 23);
+  }
+
+  if (e.target.classList.contains('ra-m')) {
+    clampCoordinateValue(e.target, 0, 59);
+  }
+
+  if (e.target.classList.contains('ra-s')) {
+    clampCoordinateValue(e.target, 0, 59.999);
+  }
+
+  if (e.target.classList.contains('dec-d')) {
+    clampCoordinateValue(e.target, 0, 90);
+  }
+
+  if (e.target.classList.contains('dec-m')) {
+    clampCoordinateValue(e.target, 0, 59);
+  }
+
+  if (e.target.classList.contains('dec-s')) {
+    clampCoordinateValue(e.target, 0, 59.999);
+  }
+  if (
+    e.target.classList.contains('ra-h') ||
+    e.target.classList.contains('ra-m') ||
+    e.target.classList.contains('ra-s') ||
+    e.target.classList.contains('dec-sign') ||
+    e.target.classList.contains('dec-d') ||
+    e.target.classList.contains('dec-m') ||
+    e.target.classList.contains('dec-s')
+  ) {
+    updateTargetCoordinates(block);
+  }
+});
+
+/* ===================== Toolbar buttons ===================== */
+document.getElementById('move-up')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  moveBlockUp(b); setActive(b); renumberAllBlocks();
+});
+document.getElementById('move-down')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  moveBlockDown(b); setActive(b); renumberAllBlocks();
+});
+document.getElementById('copy-active')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  const clone = deepCloneBlock(b);
+  b.after(clone);
+  registerTelescopeBoxListeners(clone);
+  setActive(clone);
+  renumberAllBlocks();
+  renumberRowsInAllBlocks();
+});
+document.getElementById('add-new')?.addEventListener('click', () => {
+  const tmpl = document.querySelector('#positions-root .position-block');
+  if (!tmpl) return;
+  const blank = tmpl.cloneNode(true);
+  const rows = blank.querySelectorAll('tbody.rows-body tr.pos-row');
+
+rows.forEach((row, index) => {
+  if (index > 0) {
+    row.remove();
+  }
+});
+  clearBlockInputs(blank);
+  document.getElementById('positions-root').appendChild(blank);
+  registerTelescopeBoxListeners(blank);
+  const telescopeSelect = blank.querySelector('.telescope_box');
+  if (telescopeSelect) telescopeSelect.dispatchEvent(new Event('change'));
+  setActive(blank);
+  renumberAllBlocks();
+  updateBlockMoveButtons();
+  renumberRowsInAllBlocks();
+});
+document.getElementById('delete-active')?.addEventListener('click', () => {
+  const b = getActiveBlock(); if (!b) return;
+  if (!confirm('Wirklich löschen?')) return;
+  deleteBlock(b);
+  renumberAllBlocks();
+  updateBlockMoveButtons();
+  renumberRowsInAllBlocks();
+});
+
+/* ===================== Init ===================== */
+window.addEventListener('DOMContentLoaded', () => {
+  toggleExpertFields();
+  registerTelescopeBoxListeners();
+
+  // >>> KORREKTUR: Active-Block-Handler registrieren <<<
+  registerActiveBlockHandlers();
+
+  setActive(getActiveBlock());
+  renumberAllBlocks();
+  updateBlockMoveButtons();
+  renumberRowsInAllBlocks();
+
+    // >>> gespeicherte Koordinaten in Felder zurückschreiben <<<
+  initAllBlocksCoordUI();
+
+  // Vor jedem Submit: data-index + rowInBlock sicherstellen
+  document.addEventListener('submit', () => {
+    renumberAllBlocks();
+    renumberRowsInAllBlocks();
+  }, true);
+
+  const expertSwitch = document.getElementById('expert_switch');
+  if (expertSwitch) expertSwitch.addEventListener('change', toggleExpertFields);
+});
+</script>
+
+<script>
+function renumberRowsInAllBlocks() {
+  document.querySelectorAll('#positions-root .position-block').forEach(block => {
+    const rows = block.querySelectorAll('tbody.rows-body tr.pos-row');
+    const show = rows.length >= 2;    
+    rows.forEach((row, i) => {
+      row.dataset.rowInBlock = String(i + 1); // 1..n
+      const moveUp = row.querySelector('[data-row-move="up"]');
+      const moveDown = row.querySelector('[data-row-move="down"]');
+      const deleteRow = row.querySelector('[data-row-delete]');
+
+      if (moveUp) moveUp.style.display = show ? '' : 'none';
+      if (moveDown) moveDown.style.display = show ? '' : 'none';   
+      if (deleteRow) deleteRow.style.display = show ? '' : 'none';   
+    });
+  });
+}
+</script>
+
+<script>
+(function () {
+  function clearRow(row) {
+    row.querySelectorAll('input, select, textarea').forEach(el => {
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+      else if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const isRowBtn =
+      btn.hasAttribute('data-row-add') ||
+      btn.hasAttribute('data-row-copy') ||
+      btn.hasAttribute('data-row-delete') ||
+      btn.hasAttribute('data-row-move');
+
+    if (!isRowBtn) return;
+
+    const row = btn.closest('tr');
+    const tbody = btn.closest('tbody');
+    if (!row || !tbody) return;
+
+    // COPY
+    if (btn.hasAttribute('data-row-copy')) {
+      const clone = row.cloneNode(true);
+      row.after(clone);
+      renumberRowsInAllBlocks();
+      return;
+    }
+
+    // DELETE
+    if (btn.hasAttribute('data-row-delete')) {
+      const rows = tbody.querySelectorAll('tr');
+      if (rows.length <= 1) return;
+      row.remove();
+      renumberRowsInAllBlocks();
+      return;
+    }
+
+    // MOVE
+    const mv = btn.getAttribute('data-row-move');
+    if (mv === 'up') {
+      const prev = row.previousElementSibling;
+      if (prev) tbody.insertBefore(row, prev);
+      renumberRowsInAllBlocks();
+      return;
+    }
+    if (mv === 'down') {
+      const next = row.nextElementSibling;
+      if (next) tbody.insertBefore(next, row);
+      renumberRowsInAllBlocks();
+      return;
+    }
+
+    // ADD
+    if (btn.hasAttribute('data-row-add')) {
+      const last = tbody.querySelector('tr:last-child');
+      if (!last) return;
+      const clone = last.cloneNode(true);
+      clearRow(clone);
+      tbody.appendChild(clone);
+      renumberRowsInAllBlocks();
+      return;
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  function fieldKeyFromName(name) {
+    const m = String(name || '').match(/^positions-\d+-(.+)$/);
+    return m ? m[1] : null;
+  }
+
+  function addHidden(container, name, value) {
+    const inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = name;
+    inp.value = value ?? '';
+    container.appendChild(inp);
+  }
+
+  function readValue(el) {
+    if (!el) return '';
+    if (el.type === 'checkbox') return el.checked ? 'y' : '';
+    return el.value ?? '';
+  }
+
+  function flattenAllBlocksToHidden() {
+    const form = document.getElementById('edit-pos-form');
+    if (!form) return;
+
+    const hidden = document.getElementById('flatten-hidden');
+    if (!hidden) return;
+
+    hidden.innerHTML = '';
+
+    const blocks = document.querySelectorAll('#positions-root .position-block');
+    let globalIdx = 0;
+
+    blocks.forEach((block, blockIdx) => {
+      const telSel = block.querySelector('select.telescope_box');
+      const targetInp = block.querySelector('.target_input') || block.querySelector('input[name$="-target"]');
+
+      const telescopeVal = readValue(telSel);
+      const targetVal = readValue(targetInp);
+
+      // block_no in DB ist INTEGER NOT NULL (Default 1) -> wir schicken 1..n
+      const idx0 = Number(block.dataset.index ?? blockIdx) || 0;
+      const blockNo = idx0 + 1;
+
+      const rows = block.querySelectorAll('tbody.rows-body tr.pos-row');
+
+      rows.forEach((row, rowIdx) => {
+        // row_in_block in DB ist INTEGER NOT NULL (Default 1) -> wir schicken 1..n
+        const rowInBlock = Number(row.dataset.rowInBlock ?? row.dataset.rowInblock ?? (rowIdx + 1)) || (rowIdx + 1);
+
+        const controls = row.querySelectorAll('input[name], select[name], textarea[name]');
+
+        // telescope/target pro Zeile mitschicken
+        addHidden(hidden, `positions-${globalIdx}-telescope_id`, telescopeVal);
+        addHidden(hidden, `positions-${globalIdx}-target`, targetVal);
+
+        // <<< WICHTIG: Block/Row für UI-Rekonstruktion >>>
+        addHidden(hidden, `positions-${globalIdx}-block_no`, String(blockNo));
+        addHidden(hidden, `positions-${globalIdx}-row_in_block`, String(rowInBlock));
+
+        controls.forEach((el) => {
+          const key = fieldKeyFromName(el.name);
+          if (!key) return;
+          if (key === 'telescope_id' || key === 'target') return;
+          if (key === 'block_no' || key === 'row_in_block') return; // doppelt vermeiden (falls irgendwann gerendert)
+          addHidden(hidden, `positions-${globalIdx}-${key}`, readValue(el));
+        });
+
+        globalIdx += 1;
+      });
+    });
+
+    // Original positions-* deaktivieren
+    document.querySelectorAll('#positions-root input[name^="positions-"], #positions-root select[name^="positions-"], #positions-root textarea[name^="positions-"]')
+      .forEach(el => { el.disabled = true; });
+
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('edit-pos-form');
+    if (!form) return;
+
+    form.addEventListener('submit', () => {
+      renumberAllBlocks();
+      renumberRowsInAllBlocks();
+
+      document.querySelectorAll(
+        '#positions-root .position-block'
+      ).forEach(block => {
+        updateTargetCoordinates(block);
+      });
+
+      flattenAllBlocksToHidden();
+    }, true);
+  });
+})();
+</script>
+
+{% endblock %}
