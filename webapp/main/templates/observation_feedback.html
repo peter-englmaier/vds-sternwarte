@@ -51,22 +51,6 @@
         display: inline-block;
     }
 
-    :root {
-        --primary: #0d6efd;
-    }
-
-    .border-transparent {
-        border-color: transparent !important;
-    }
-
-    .position-block.active {
-        border-color: var(--primary) !important;
-        box-shadow: 0 8px 24px rgba(13, 110, 253, .18) !important;
-    }
-
-    .position-block {
-        cursor: pointer;
-    }
 </style>
 
 <h2>Beobachtungsrückmeldung – Statistik offen</h2>
@@ -76,7 +60,7 @@
 </p>
 
 <p>
-    <a href="{{ url_for(
+    <a class="btn btn-secondary" href="{{ url_for(
         'orders.show_order_positions',
         order_id=feedback.source_request_id
     ) }}">
@@ -105,7 +89,7 @@
     <button class="btn btn-secondary" id="copy-active" type="button" title="Aktiven Block kopieren">
       <i class="bi bi-files"></i>
     </button>
-    <button class="btn btn-primary" id="add-new" type="button" title="Leeren Block hinzufügen">
+    <button class="btn btn-secondary" id="add-new" type="button" title="Leeren Block hinzufügen">
       <i class="bi bi-plus"></i>
     </button>
     <button class="btn btn-danger" id="delete-active" type="button" title="Aktiven Block löschen">
@@ -233,7 +217,7 @@
                       <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
                         <i class="bi bi-trash"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-primary" data-row-add>+ Zeile</button>
+                      <button type="button" class="btn btn-sm btn-secondary" data-row-add>+ Zeile</button>
                     </div>
                   </td>
 
@@ -264,11 +248,12 @@
   </div>
 
     <div class="row">
+        <!-- FIXME: "This fields is required" lässt sich nicht einfach eindeutschen -->
         {{ render_field(form.confirm) }}
     </div>
 
     <button type="submit"
-            class="btn btn-success"
+            class="btn btn-primary"
             name="action"
             value="complete"
             formnovalidate>
@@ -330,14 +315,14 @@ function getActiveBlock() {
 }
 function setActive(block) {
   document.querySelectorAll('#positions-root .position-block').forEach(b => {
-    b.classList.remove('active','border-primary','shadow');
+    b.classList.remove('active','border-primary');
     b.classList.add('border-transparent');
     b.setAttribute('aria-selected','false');
     const badge = b.querySelector('.active-badge');
     if (badge) badge.classList.add('d-none');
   });
   if (block) {
-    block.classList.add('active','border-primary','shadow');
+    block.classList.add('active','border-primary');
     block.classList.remove('border-transparent');
     block.setAttribute('aria-selected','true');
     const badge = block.querySelector('.active-badge');

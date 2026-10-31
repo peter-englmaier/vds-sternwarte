@@ -10,7 +10,7 @@
       </span>
      
 {% if pending_users|length == 0 %}
-  <div class="alert alert-info">Keine neuen Registrierungen vorhanden.</div>
+<p>Keine neuen Registrierungen vorhanden.</p>
 {% else %}
   <table class="table table-bordered table-striped table-hover">
     <thead>
@@ -30,7 +30,7 @@
             <form method="POST" action="{{ url_for('main.gast_approve') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="user_id" value="{{ u.id }}">
-            <button class="btn btn-success btn-sm" type="submit">Freischalten</button>
+            <button class="btn btn-primary btn-sm" type="submit">Freischalten</button>
           </form></td>
           <td>{{ u.vds_number }}</td>
           <td>{{ (u.surname or '') }}</td>
@@ -43,7 +43,6 @@
   </table>
 {% endif %} 
 
-    <a class="btn btn-warning" style="background-color:#007bff; color:white;"
-       href="{{ url_for('main.home') }}">Zur Startseite</a>
+    <a class="btn btn-secondary" href="{{ url_for('main.home') }}">Zur Startseite</a>
   {% endif %}
 {% endblock content %}

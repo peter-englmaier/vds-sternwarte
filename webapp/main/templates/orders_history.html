@@ -36,7 +36,7 @@
                     </a>
                     <form method="post" action="{{ url_for('orders.delete_order', order_id=order.id) }}" style="display:inline;" onsubmit="return confirm('Echt jetzt?\n wirklich löschen?');">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-sm btn-warning" title="Delete">
+                      <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                       <i class="bi bi-trash"></i>
                       </button>
                     </form>
