@@ -3,73 +3,12 @@
 
 <style>
   .form-check-input.expert-big { width: 1.5em; height: 1.5em; }
-
   .expert-field { display: none; }
   .expert-field.visible { display: table-cell; }
-
   #coord-btn { display: none; }
   #coord-btn.visible { display: inline-block; }
-
   .position-block { cursor: pointer; }
 </style>
-
-<script>
-
-
-function toggleExpertFields() {
-
-    const expertSwitch = document.getElementById('expert_switch');
-    const button_coordinates = document.getElementById('coord-btn');
-    const expertFields = document.querySelectorAll('.expert-field');
-    expertFields.forEach(field => {
-        if (expertSwitch.checked) {
-            field.classList.add('visible');
-        } else {
-            field.classList.remove('visible');
-        }
-    });
-        if (expertSwitch.checked) {
-            button_coordinates.classList.add('visible');
-        } else {
-            button_coordinates.classList.remove('visible');
-        }
-}
-
-function unused() {
-  // Alle Eingaben pruefen
-  const origInputs = row.querySelectorAll('input, select, textarea');
-  const cloneInputs = clone.querySelectorAll('input, select, textarea');
-
-  origInputs.forEach((input, idx) => {
-    const cloneInput = cloneInputs[idx];
-    if (!cloneInput) return;
-
-    if (input.type === "checkbox" || input.type === "radio") {
-      cloneInput.checked = input.checked;
-    } else if (input.tagName.toLowerCase() === "select") {
-      cloneInput.selectedIndex = input.selectedIndex;
-    } else {
-      cloneInput.value = input.value;
-    }
-  });
-
-  // Sichtbarkeitsstatus der expert-field Felder übernehmen
-  const origExpertFields = row.querySelectorAll('.expert-field');
-  const cloneExpertFields = clone.querySelectorAll('.expert-field');
-
-  origExpertFields.forEach((origField, idx) => {
-    const cloneField = cloneExpertFields[idx];
-    if (!cloneField) return;
-
-    // Sichtbarkeitsbereich aktualisieren
-    if (origField.classList.contains('visible')) {
-      cloneField.classList.add('visible');
-    } else {
-      cloneField.classList.remove('visible');
-    }
-  });
-}
-</script>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
 
@@ -88,7 +27,7 @@ function unused() {
     </span>
 
     {# Expertenmodus (aktuell deaktiviert)
-    <div class="form-check p-2 bg-warning rounded d-flex align-items-center ms-3">
+    <div class="form-check p-2 bg-danger rounded d-flex align-items-center ms-3">
       <input class="form-check-input expert-big me-2" type="checkbox" id="expert_switch"
              {% if expert_mode in [True, "True", "true", 1, "1"] %} checked {% endif %}>
       <label class="form-check-label fw-bold" for="expert_switch">erweiterter Modus</label>
@@ -163,7 +102,7 @@ function unused() {
     <button class="btn btn-secondary" id="add-new" type="button" title="Leeren Block hinzufügen">
       <i class="bi bi-plus"></i>
     </button>
-    <button class="btn btn-warning id="delete-active" type="button" title="Aktiven Block löschen">
+    <button class="btn btn-danger id="delete-active" type="button" title="Aktiven Block löschen">
       <i class="bi bi-trash"></i>
     </button>
   </div>
@@ -269,7 +208,7 @@ function unused() {
                       <button type="button" class="btn btn-sm btn-secondary" data-row-copy title="Zeile kopieren">
                         <i class="bi bi-files"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-warning" data-row-delete title="Zeile löschen">
+                      <button type="button" class="btn btn-sm btn-danger" data-row-delete title="Zeile löschen">
                         <i class="bi bi-trash"></i>
                       </button>
                       <button type="button" class="btn btn-sm btn-secondary" data-row-add>+ Zeile</button>
@@ -310,7 +249,7 @@ function unused() {
   <button type="submit" class="btn btn-secondary" name="action" value="save_order">Speichern</button>
 
   {#
-  <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#checkPopup">
+  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#checkPopup">
     Überprüfen
   </button>
   #}
@@ -320,8 +259,8 @@ function unused() {
     Objekt Koordinaten ergänzen
   </button>
 
-  <a class="btn btn-warning" href="{{ url_for('orders.show_orders') }}"
-     onclick="return confirm('Willst du wirklich abbrechen? Änderungen gehen verloren!');"
+  <a class="btn btn-secondary" href="{{ url_for('orders.show_orders') }}"
+     onclick="return confirm('Willst du wirklich abbrechen? Nicht gespeicherte Änderungen gehen verloren!');"
      >Abbrechen</a>
 
   <div id="flatten-hidden" style="display:none;"></div>
@@ -456,7 +395,7 @@ function deepCloneBlock(block) {
   src.forEach((s, i) => {
     const d = dst[i]; if (!d) return;
     if (s.type === 'checkbox' || s.type === 'radio') d.checked = s.checked;
-    else if (s.tagName === 'SELECT') d.selectedIndex = s.selectedIndex;
+    else if (s.tagName.toLowerCase() === 'select') d.selectedIndex = s.selectedIndex;
     else d.value = s.value;
   });
   return clone;
