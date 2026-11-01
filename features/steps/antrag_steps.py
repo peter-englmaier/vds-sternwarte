@@ -55,6 +55,37 @@ def create_antraege_from_table(context):
             context.last_order_id = int(m.group(1))
 
 
+@when(u'I create an Antrag without a date')
+def create_antrag_without_date(context):
+    obs = Observatory.query.first()
+    assert obs is not None, 'No observatory found — add a "Given the following observatories exist:" step first'
+    context.response = context.client.post('/actionhandler', data={
+        'action': 'save_order',
+        'request_date': '',
+        'observatory_name': str(obs.id),
+        'poweruser_name': '',
+        'request_type': 'B',
+        'remark': 'Antrag ohne Datum',
+    }, follow_redirects=False)
+
+
+@then(u'the Antrag form is shown again with a date hint')
+def antrag_form_shown_with_hint(context):
+    assert context.response.status_code == 200, \
+        f'Expected the form again, got {context.response.status_code}'
+    page = context.response.data.decode()
+    assert 'Teleskopzeit Neu beantragen' in page, 'Antrag form not shown'
+    assert 'alert alert-warning">' in page, 'No flashed date hint on the page'
+    assert 'Antrag ohne Datum' in page, 'Entered remark was not kept'
+
+
+@then(u'no Antrag was created')
+def no_antrag_created(context):
+    from webapp.model.db import ObservationRequest
+    count = ObservationRequest.query.count()
+    assert count == 0, f'Expected no Antrag, found {count}'
+
+
 @then(u'the orders list contains:')
 def orders_list_contains(context):
     response = context.client.get('/orders', follow_redirects=True)
