@@ -7,3 +7,4 @@
 | /feedback/N | orders/routes/feedback.py | main/templates/observation_feedback.html |
 | /orders     | orders/routes/order_list.py | orders/templates/orders.html |
 | /user_order_history | main/routes/order_history.py | main/templates/orders_history.html |
+| /post/N             | posts/routes.py              | posts/templates/post.html          |
