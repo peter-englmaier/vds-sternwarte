@@ -27,30 +27,12 @@
 
 {% block content %}
 
-{# Darstellung #}
-
 <style>
-    .form-check-input.expert-big {
-        width: 1.5em;
-        height: 1.5em;
-    }
-
-    .expert-field {
-        display: none;
-    }
-
-    .expert-field.visible {
-        display: table-cell;
-    }
-
-    #coord-btn {
-        display: none;
-    }
-
-    #coord-btn.visible {
-        display: inline-block;
-    }
-
+    .form-check-input.expert-big { width: 1.5em; height: 1.5em; }
+    .expert-field { display: none; }
+    .expert-field.visible { display: table-cell; }
+    #coord-btn { display: none; }
+    #coord-btn.visible { display: inline-block; }
 </style>
 
 <h2>Beobachtungsrückmeldung – Statistik offen</h2>
@@ -105,7 +87,7 @@
         {% set header_idx = block.row_indices[0] %}
         {% set header_form = form.positions[header_idx] %}
 
-        <div class="position-block position-relative border border-transparent rounded-3 p-3 mb-3"
+        <div class="position-block position-relative border border-primary rounded-3 p-3 mb-3"
              data-index="{{ loop.index0 }}" tabindex="0" aria-selected="false">
 
           <span class="active-badge badge bg-primary position-absolute top-0 end-0 me-2 mt-2 d-none">
@@ -201,7 +183,7 @@
                         <input
                             type="hidden"
                             name="{{ rowform[name].name }}"
-                            value="{{ rowform[name].data if rowform[name].data is not none else '' }}"
+                            value="{{ rowform[name].data if rowform[name].data else '' }}"
                         >
                     {% endfor %}
                     <div class="btn-group" role="group">
@@ -358,7 +340,7 @@ function deepCloneBlock(block) {
   src.forEach((s, i) => {
     const d = dst[i]; if (!d) return;
     if (s.type === 'checkbox' || s.type === 'radio') d.checked = s.checked;
-    else if (s.tagName === 'SELECT') d.selectedIndex = s.selectedIndex;
+    else if (s.tagName.toLowerCase() === 'select') d.selectedIndex = s.selectedIndex;
     else d.value = s.value;
   });
   return clone;
@@ -739,7 +721,7 @@ function renumberRowsInAllBlocks() {
 
     // COPY
     if (btn.hasAttribute('data-row-copy')) {
-      const clone = row.cloneNode(true);
+      const clone = deepCloneBlock(row);
       row.after(clone);
       renumberRowsInAllBlocks();
       return;
@@ -881,4 +863,4 @@ function renumberRowsInAllBlocks() {
 })();
 </script>
 
-{% endblock %}
+{% endblock content %}
