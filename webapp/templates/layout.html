@@ -104,14 +104,14 @@
                         
                         <!-- Navbar Right Side -->
                         <ul class="navbar-nav ms-auto me-2">
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('main.faq') }}">FAQ</a>
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('main.about') }}">About</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.faq') }}">FAQ</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.about') }}">About</a></li>
                             {% if current_user.is_authenticated %}
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('users.account') }}">Profil</a>
-                            <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Abmelden</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.account') }}">Profil</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.logout') }}">Abmelden</a></li>
                             {% else %}
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('users.login') }}">Anmelden</a>
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('users.register') }}">Registrieren</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.login') }}">Anmelden</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.register') }}">Registrieren</a></li>
                             {% endif %}
                         </ul>
                     </div>
