@@ -31,7 +31,8 @@ def actionhandler():
     * ``submit_order``: submit the order ``order_id`` for approval
       (status waiting).
     * ``save_order``: create a new order from the form, reserve the requested
-      date and continue with editing the positions.
+      date and continue with editing the positions. Without a date the form
+      is shown again and no order is created.
 
     :return: rendered ``create_order.html`` or a redirect.
     :raises Forbidden: if ``submit_order`` targets an order of another user.
@@ -61,6 +62,10 @@ def actionhandler():
 
     # Read entries from gui and save as new observation request (no positions so far)
     if action == "save_order":
+        if not form.request_date.data:
+            flash("Bitte wähle über den Button „Kalender“ ein Datum aus.", "warning")
+            return render_template("create_order.html", form=form, order_id=None)
+
         try:
             order_head = ObservationRequest()
             order_head.user_id = current_user.id
