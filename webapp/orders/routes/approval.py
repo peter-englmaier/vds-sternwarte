@@ -10,6 +10,7 @@ Routes::
     GET   /approver/assign_poweruser_form      approver_assign_poweruser_form()  -> HTML fragment (HTMX)
 """
 from flask import url_for, flash, redirect, request, abort
+from markupsafe import escape
 from flask_login import current_user, login_required
 
 from webapp import db
@@ -77,7 +78,8 @@ def approver_assign_poweruser():
     poweruser_user_id = request.form.get("poweruser_user_id", type=int)
 
     if not order_id or not poweruser_user_id:
-        return f'<span id="pu-assign-feedback-{order_id or 0}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
+        safe_order_id = escape(order_id or 0)
+        return f'<span id="pu-assign-feedback-{safe_order_id}" class="text-danger ms-2">Bitte Poweruser wählen</span>'
 
     order = ObservationRequest.query.get_or_404(order_id)
     try:
@@ -109,17 +111,18 @@ def approver_assign_poweruser():
     order_url = url_for('orders.show_order_positions', order_id=order_id, _external=True)
     send_approve_email.delay(order_id, current_user.id, order_url, None)
 
+    safe_order_id = escape(order_id)
     return f"""
 
-<span id="pu-assign-slot-{order_id}">
+<span id="pu-assign-slot-{safe_order_id}">
   <span class="text-success ms-2">
     Poweruser zugewiesen: <strong>{pu_name}</strong>
   </span>
 
   <button type="button"
           class="btn btn-sm btn-link ms-2 p-0 align-baseline"
-          hx-get="{url_for('orders.approver_assign_poweruser_form')}?order_id={order_id}"
-          hx-target="#pu-assign-slot-{order_id}"
+          hx-get="{url_for('orders.approver_assign_poweruser_form')}?order_id={safe_order_id}"
+          hx-target="#pu-assign-slot-{safe_order_id}"
           hx-swap="outerHTML">
     Neu zuweisen?
   </button>
@@ -194,14 +197,15 @@ def approver_assign_poweruser_form():
     if not order_id:
         return '<span class="text-danger">Fehlende order_id</span>', 400
 
+    safe_order_id = escape(order_id)
     return f"""
-    <span id="pu-assign-slot-{order_id}">
-      <button id="pu-assign-btn-{order_id}"
+    <span id="pu-assign-slot-{safe_order_id}">
+      <button id="pu-assign-btn-{safe_order_id}"
               type="button"
               class="btn btn-sm btn-outline-primary mt-1"
               hx-post="{url_for('orders.approver_assign_poweruser')}"
-              hx-include="#pu-select-{order_id} input, #order-id-{order_id}"
-              hx-target="#pu-assign-slot-{order_id}"
+              hx-include="#pu-select-{safe_order_id} input, #order-id-{safe_order_id}"
+              hx-target="#pu-assign-slot-{safe_order_id}"
               hx-swap="outerHTML">
         Poweruser zuweisen
       </button>

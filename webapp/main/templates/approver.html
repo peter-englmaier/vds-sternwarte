@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Approver</h1>
+<h2>Genehmigen</h2>
 <!-- Bearbeitung #84 -->
 {% if current_user.is_authenticated %}
 
@@ -15,7 +15,6 @@
         Genehmiger: {{current_user.firstname}} {{current_user.surname}}
     </span>
 </p>
-    <p><a class="btn btn-primary" href="{{ url_for('posts.new_post') }}">Ankündigung verfassen</a></p>
 <p>
     <span style="margin-right:50px;">
         Insgesamt gibt es {{ orders_waiting|length }} offene Beobachtungsanträge
@@ -34,7 +33,7 @@
 {# -------------------- ACTION REQUIRED -------------------- #}
 {% if orders_action_required|length > 0 %}
 
-<h3 class="text-danger">Action required</h3>
+<h3 class="text-danger">Aktion erforderlich</h3>
 
 <table class="table table-bordered table-striped table-hover">
     <thead>
@@ -145,7 +144,7 @@
 {% endif %}
 
     {# -------------------- ABGESCHICKT -------------------- #}
-    <h3>von FG Mitglied an Approver abgeschickt</h3>
+    <h3>Von FG zur Genehmigung</h3>
     {% if orders_waiting|length > 0 %}
 
 <table class="table table-bordered table-striped table-hover">
@@ -201,7 +200,8 @@
 
     {# -------------------- GENEHMIGT - ZUWEISUNG OFFEN -------------------- #}
     {# wenn genehmigt: Zuweisung noch nicht erfolgt #}
-<h3>Genehmigt – Zuweisung offen <strong>aktuell aktualisiert sich dieser Bereich nicht automatisch, manuell aktualisieren drücken</strong></h3>
+<h3>Genehmigt – Zuweisung offen</h3>
+<p class="text-warning">Aktuell aktualisiert sich dieser Bereich nicht automatisch, ggf. manuell aktualisieren drücken</p>
     {% if orders_approved_open|length > 0 %}
     <table class="table table-bordered table-striped table-hover">
         <thead>
@@ -307,7 +307,8 @@
 
     <br>
     {# -------------------- PU ZUGEWIESEN -------------------- #}
-    <h3>PU zugewiesen</h3>
+    <h3>Poweruser zugewiesen</h3>
+    <p class="text-warning">Aktuell aktualisiert sich dieser Bereich nicht automatisch, ggf. manuell aktualisieren drücken</p>
     {% if orders_pu_assigned|length > 0 %}
     <table class="table table-bordered table-striped table-hover">
         <thead>
@@ -420,7 +421,7 @@
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 {% endif %}
-<a class="btn btn-warning" style="background-color: #007bff; color: white;" href="{{ url_for('main.home') }}" >Zur Startseite</a>
+<a class="btn btn-secondary" href="{{ url_for('main.home') }}" >Zur Startseite</a>
 </form>
 
 {% endblock %}
