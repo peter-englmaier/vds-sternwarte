@@ -104,24 +104,34 @@
                         
                         <!-- Navbar Right Side -->
                         <ul class="navbar-nav ms-auto me-2">
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('main.faq') }}">FAQ</a>
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('main.about') }}">About</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.faq') }}">FAQ</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.about') }}">About</a></li>
                             {% if current_user.is_authenticated %}
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('users.account') }}">Profil</a>
-                            <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Abmelden</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.account') }}">Profil</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.logout') }}">Abmelden</a></li>
                             {% else %}
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('users.login') }}">Anmelden</a>
-                            <li class="nav-item"></li><a class="nav-link" href="{{ url_for('users.register') }}">Registrieren</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.login') }}">Anmelden</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('users.register') }}">Registrieren</a></li>
                             {% endif %}
                         </ul>
                     </div>
 
                     <!-- Darkmode HTML Beginn -->
-                    <ul class="navbar-nav ms-auto d-flex flex-row align-items-center list-unstyled mb-0 btn-group">
+                    <div class="navbar-nav ms-auto d-flex align-items-center mb-0 btn-group">
+                        <button type="button" class="btn btn-outline-secondary me-2 d-flex align-items-center active dropdown-toggle"
+                                id="bd-theme"
+                                aria-expanded="false"
+                                data-bs-toggle="dropdown">
+                            <svg class="theme-icon-active" aria-hidden="true" width="16" height="16" fill="currentColor">
+                                <use href="#circle-half"></use>
+                            </svg>
+                            <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text">
                         <li>
-                            <button type="button" class="btn btn-outline-secondary me-2 d-flex align-items-center active"
+                            <button type="button" class="dropdown-item d-flex align-items-center"
                                     data-bs-theme-value="light" aria-pressed="false">
-                                <svg class="me-2 opacity-50" width="16" height="16" fill="currentColor">
+                                <svg class="me-2" width="16" height="16" fill="currentColor">
                                     <use href="#sun-fill"></use>
                                 </svg>
                                 <div class="d-none d-lg-block">
@@ -130,9 +140,9 @@
                             </button>
                         </li>
                         <li>
-                            <button type="button" class="btn btn-outline-secondary me-2 d-flex align-items-center active"
+                            <button type="button" class="dropdown-item d-flex align-items-center"
                                     data-bs-theme-value="dark" aria-pressed="false">
-                                <svg class="me-2 opacity-50" width="16" height="16" fill="currentColor">
+                                <svg class="me-2" width="16" height="16" fill="currentColor">
                                     <use href="#moon-stars-fill"></use>
                                 </svg>
                                 <div class="d-none d-lg-block">
@@ -141,9 +151,9 @@
                             </button>
                         </li>
                         <li>
-                            <button type="button" class="btn btn-outline-secondary me-2 d-flex align-items-center active"
-                                    data-bs-theme-value="auto" aria-pressed="true">
-                                <svg class="me-2 opacity-50" width="16" height="16" fill="currentColor">
+                            <button type="button" class="dropdown-item d-flex align-items-center"
+                                    data-bs-theme-value="auto" aria-pressed="false">
+                                <svg class="me-2" width="16" height="16" fill="currentColor">
                                     <use href="#circle-half"></use>
                                 </svg>
                                 <div class="d-none d-lg-block">
@@ -151,7 +161,9 @@
                                 </div>
                             </button>
                         </li>
-                    </ul>
+                        </ul>
+                    </div>
+
                     <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
                         <symbol id="circle-half" viewBox="0 0 16 16">
                             <path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
