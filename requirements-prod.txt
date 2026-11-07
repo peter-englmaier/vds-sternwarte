@@ -1,3 +1,4 @@
+alembic=1.18.4
 caldav==3.0.0a1
 celery==5.6.2
 email-validator==2.3.0
@@ -12,10 +13,12 @@ Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 importlib_metadata==8.7.1
 jinja_partials==0.3.1
+kombu=5.6.2
 Paste==3.10.1
 PySocks==1.7.1
 psycopg2==2.9.11
 psycopg2-binary==2.9.11
+pillow=13.0.0
 redis==7.2.1
 sqlalchemy_schemadisplay==2.0
 tzlocal==5.3.1
