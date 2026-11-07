@@ -10,7 +10,7 @@ from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
 from webapp.users.utils import check_password_strength, save_picture, send_reset_email
 from sqlalchemy import func
 from webapp.orders.constants import USER_ROLE_GUEST
-
+from webapp.orders.mails import send_welcome_email
 
 @users.route("/register", methods=["GET", "POST"])
 def register():
@@ -48,7 +48,14 @@ def register():
             flash(f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.", "error")
             return render_template("register.html", title="Register", form=form)
 
-        flash("Ihr Benutzer ist registriert! Sie können sich jetzt anmelden", "success")
+        user = User.query.filter_by(name=user.name).first()
+        if user:
+            send_welcome_email.delay(user.id, url_for('main.gast', _external=True))
+            flash("Ihr Benutzer ist registriert! Sie können sich jetzt anmelden", "success")
+        else:
+            flash("Systemfehler: Benutzer konnte nicht gefunden werden.", "danger")
+            return redirect(url_for("users.register"))
+
         return redirect(url_for("users.login"))
 
     return render_template("register.html", title="Register", form=form)
