@@ -1,0 +1,12 @@
+Hallo Approver,
+
+Dieses E-Mail geht an alle Approver (siehe Verteiler).
+
+Ein neuer Benutzer ist registriert.
+
+Name: {{ username }}
+E-Mail: {{ email }}
+VdS Nummer: {{ vds_number }}
+
+Der Benutzer kann hier freigeschaltet werden:
+{{ approve_url }}

@@ -28,10 +28,16 @@
       <tr>
         <td>
             <form method="POST" action="{{ url_for('main.gast_approve') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="user_id" value="{{ u.id }}">
-            <button class="btn btn-primary btn-sm" type="submit">Freischalten</button>
-          </form></td>
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="user_id" value="{{ u.id }}">
+              <button class="btn btn-primary btn-sm" type="submit">Freischalten</button>
+            </form>
+            <form method="POST" action="{{ url_for('main.gast_delete') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="user_id" value="{{ u.id }}">
+              <button class="btn btn-danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+            </form>
+        </td>
           <td>{{ u.vds_number }}</td>
           <td>{{ (u.surname or '') }}</td>
           <td>{{ (u.firstname or '') }}</td>

@@ -107,3 +107,40 @@ def gast_approve():
 
     flash(f"{user.name} wurde freigeschaltet.", "success")
     return redirect(url_for("main.gast"))
+
+# --------------------------------------------------------------------
+# Benutzer freischalten
+# --------------------------------------------------------------------
+@main.route("/gast/delete", methods=["POST"])
+@login_required
+def gast_delete():
+    """Delete a user: remove user.
+
+    Expects the form field ``user_id``.
+
+    :return: redirect to ``/gast``.
+    :raises Forbidden: if the current user is neither admin nor approver.
+    :raises NotFound: if the user does not exist.
+    """
+
+    if not (
+        current_user.has_role(USER_ROLE_ADMIN)
+        or current_user.has_role(USER_ROLE_APPROVER)
+    ):
+        abort(403)
+
+    user_id = request.form.get("user_id", type=int)
+    if not user_id:
+        flash("Fehlende user_id", "danger")
+        return redirect(url_for("main.gast"))
+
+    user = User.query.get_or_404(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+    except Exception as e:
+        flash("Systemfehler: Benutzer konnte nicht gelöscht werden.", "danger")
+        return redirect(url_for("main.gast"))
+
+    flash(f"{user.name} wurde gelöscht.", "success")
+    return redirect(url_for("main.gast"))

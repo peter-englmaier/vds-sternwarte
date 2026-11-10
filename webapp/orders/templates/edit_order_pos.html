@@ -7,7 +7,6 @@
   .expert-field.visible { display: table-cell; }
   #coord-btn { display: none; }
   #coord-btn.visible { display: inline-block; }
-  .position-block { cursor: pointer; }
 </style>
 
 <h2>Teleskopzeit Zeilen bearbeiten</h2>
@@ -102,7 +101,7 @@
     <button class="btn btn-secondary" id="add-new" type="button" title="Leeren Block hinzufügen">
       <i class="bi bi-plus"></i>
     </button>
-    <button class="btn btn-danger id="delete-active" type="button" title="Aktiven Block löschen">
+    <button class="btn btn-danger" id="delete-active" type="button" title="Aktiven Block löschen">
       <i class="bi bi-trash"></i>
     </button>
   </div>
@@ -254,8 +253,7 @@
   </button>
   #}
 
-  <button id="coord-btn" type="submit" class="btn" name="action" value="resolve_coordinates"
-          style="background-color:#f00000; color:white;">
+  <button id="coord-btn" type="submit" class="btn btn-danger" name="action" value="resolve_coordinates">
     Objekt Koordinaten ergänzen
   </button>
 
@@ -737,7 +735,6 @@ function renumberRowsInAllBlocks() {
 
     // COPY
     if (btn.hasAttribute('data-row-copy')) {
-      // const clone = row.cloneNode(true);
       const clone = deepCloneBlock(row);
       row.after(clone);
       renumberRowsInAllBlocks();
@@ -868,7 +865,6 @@ function renumberRowsInAllBlocks() {
     if (!form) return;
 
     form.addEventListener('submit', () => {
-      // Wichtig: vor Flattening indices stabilisieren
       renumberAllBlocks();
       renumberRowsInAllBlocks();
       flattenAllBlocksToHidden();
@@ -876,6 +872,5 @@ function renumberRowsInAllBlocks() {
   });
 })();
 </script>
-
 
 {% endblock content %}

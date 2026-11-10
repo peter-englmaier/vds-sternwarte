@@ -60,9 +60,12 @@
 </table>
 
 <br>
+<div id="date_required_hint" class="alert alert-warning d-none" role="alert">
+    Bitte wähle über den Button „Kalender“ ein Datum aus.
+</div>
 <br>
   <button type="submit" class="btn btn-primary" name="action" value="save_order"
-          onclick="return confirm('Hast Du ein Datum ausgewählt?');">
+          onclick="return requireDate();">
    Weiter
   </button>
 
@@ -89,5 +92,30 @@
     </div>
   </div>
 </div>
+
+<script>
+  var dateInput = document.getElementById('{{ form.request_date.id }}');
+  var dateDisplay = document.getElementById('selected_date_display');
+  var dateHint = document.getElementById('date_required_hint');
+
+  // Block the form and show the hint as long as no date is selected
+  function requireDate() {
+    dateHint.classList.toggle('d-none', dateInput.value !== '');
+    return dateInput.value !== '';
+  }
+
+  // Remove the hint as soon as a date was selected in the calendar
+  document.getElementById('calendar-container-modal').addEventListener('hidden.bs.modal', function () {
+    if (dateInput.value !== '') {
+      dateHint.classList.add('d-none');
+    }
+  });
+
+  // Reset also clears the hidden date input, so keep the display in sync
+  dateInput.form.addEventListener('reset', function () {
+    dateDisplay.innerText = 'Kein Datum ausgewählt';
+    dateHint.classList.add('d-none');
+  });
+</script>
 
 {% endblock content %}

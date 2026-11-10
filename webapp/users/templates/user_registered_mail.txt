@@ -1,0 +1,14 @@
+Hallo {{ user_greeting }},
+
+du hast dich im Antragsystem der VdS Remotesternwarten registriert.
+
+Wie geht es nun weiter?
+- Wir prüfen deine Angaben und schalten deinen Benutzer dann frei.
+  Die Prüfung kann ein paar Tage dauern.
+- Sobald du freigeschaltet bist, kannst du Anträge einreichen
+- Falls du nichts hörst, melde dich bitte bei der Fachgruppenleitung.
+
+Danke für die Geduld!
+
+Gruss, VdS Remotesternwarten
+{{ ps or "" }}

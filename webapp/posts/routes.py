@@ -16,7 +16,7 @@ def new_post():
         post = Post(title=form.title.data, content=form.content.data, author=current_user)
         db.session.add(post)
         db.session.commit()
-        flash('Dein Eintrag ist jetzt unter Neuigkeiten zu finden', 'success')
+        flash('Dein Eintrag ist jetzt unter Neuigkeiten zu finden.', 'success')
         return redirect(url_for('main.home'))
     return render_template('create_post.html', title='Neuigkeit veröffentlichen',
                            form=form, legend='Neuigkeit veröffentlichen')
@@ -39,7 +39,7 @@ def update_post(post_id):
         post.title = form.title.data
         post.content = form.content.data
         db.session.commit()
-        flash('Dein Eintrag wurde aktualisiert', 'success')
+        flash('Dein Eintrag wurde aktualisiert.', 'success')
         return redirect(url_for('posts.post', post_id=post.id))
     elif request.method == 'GET':
         form.title.data = post.title
