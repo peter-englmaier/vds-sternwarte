@@ -29,29 +29,6 @@
     <a href="{{ url_for('orders.show_order_positions', order_id=feedback.source_request_id) }}" class="btn btn-sm btn-secondary" title="Show">
                     <i class="bi bi-eye"></i>
     </a>                    
-    <form
-        method="post"
-        action="{{ url_for('orders.observation_feedback', feedback_id=feedback.id) }}"
-        style="display: inline;"
-    >
-        <input
-            type="hidden"
-            name="csrf_token"
-            value="{{ csrf_token() }}"
-        >
-        <input type="hidden" name="action" value="complete">
-        <input type="hidden" name="matches_request" value="yes">
-        <input type="hidden" name="confirm" value="y">
-
-        <button
-            type="submit"
-            class="btn btn-sm btn-success"
-            title="Beobachtung unverändert endgültig bestätigen"
-            aria-label="Beobachtung unverändert endgültig bestätigen"
-        >
-            <i class="bi bi-hand-thumbs-up-fill"></i>
-        </button>
-    </form>
     <a
         class="btn btn-sm btn-primary"
         href="{{ url_for('orders.observation_feedback', feedback_id=feedback.id) }}"

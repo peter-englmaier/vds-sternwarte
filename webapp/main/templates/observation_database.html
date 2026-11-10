@@ -135,6 +135,7 @@
     <table class="table table-bordered table-striped table-hover align-middle">
         <thead>
             <tr>
+                <th scope="col">Aktion</th>
                 <th scope="col">Datum</th>
                 <th scope="col">Objekt / Status</th>
                 <th scope="col">Rubrik</th>
@@ -153,7 +154,19 @@
         <tbody>
             {% for feedback in feedbacks %}
                 {% for position in feedback.positions %}
-                <tr>
+                <tr>     
+                    <td>                
+                {% if feedback.user_id == current_user.id %}
+                        <a
+                            href="{{ url_for('orders.edit_observation_feedback', feedback_id=feedback.id) }}"
+                            class="btn btn-sm btn-primary"
+                            title="Rückmeldung korrigieren"
+                            aria-label="Rückmeldung korrigieren"
+                        >
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% endif %}
+                    </td>               
                     <td>
                         {{ feedback.request_date.strftime('%d.%m.%Y') }}
                     </td>
@@ -185,6 +198,18 @@
 
                 {% else %}
                 <tr>
+                    <td>
+                        {% if feedback.user_id == current_user.id %}
+                        <a
+                            href="{{ url_for('orders.edit_observation_feedback', feedback_id=feedback.id) }}"
+                            class="btn btn-sm btn-primary"
+                            title="Rückmeldung korrigieren"
+                            aria-label="Rückmeldung korrigieren"
+                        >
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% endif %}
+                        </td>
                     <td>
                         {{ feedback.request_date.strftime('%d.%m.%Y') }}
                     </td>
