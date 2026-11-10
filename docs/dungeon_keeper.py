@@ -4,6 +4,7 @@
 Aufruf im Projektverzeichnis:  python docs/dungeon_keeper.py > dungeon-map.md
 """
 import ast
+import html
 import inspect
 import os
 import sys
@@ -63,7 +64,8 @@ def main():
             continue  # z.B. Flask-Admin-Views aus site-packages
         methods = ",".join(sorted(rule.methods - {"HEAD", "OPTIONS"}))
         tpls = [template_path(app, rule.endpoint, t) for t in templates_of(func)]
-        rows.append((rule.rule, methods, os.path.relpath(src_file, ROOT),
+        # <token> & Co. escapen, sonst verschluckt der Markdown-Renderer sie als HTML-Tag
+        rows.append((html.escape(rule.rule, quote=False), methods, os.path.relpath(src_file, ROOT),
                      rule.endpoint, "<br>".join(tpls) or "–"))
 
     print("# Map of URLs, routes, and templates\n")
