@@ -292,6 +292,81 @@ def observation_feedback(feedback_id):
         blocks=blocks,
     )
 
+@orders.route(
+    '/feedback/<int:feedback_id>/edit',
+    methods=['GET', 'POST'],
+)
+@login_required
+@role_required('user')
+def edit_observation_feedback(feedback_id):
+    statement = select(ObservationFeedback).where(
+        ObservationFeedback.id == feedback_id
+    )
+
+    if request.method == 'POST':
+        statement = statement.with_for_update()
+
+    feedback = db.session.execute(
+        statement
+    ).scalar_one_or_none()
+
+    if feedback is None:
+        abort(404)
+
+    if feedback.user_id != current_user.id:
+        abort(403)
+
+    if feedback.status != ORDER_STATUS_DOCUMENTED:
+        abort(
+            409,
+            description='Diese Rückmeldung ist noch nicht abgeschlossen.',
+        )
+
+    form, telescopes, filters = build_feedback_form(feedback)
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'complete':
+            # In dieser Route werden die Aufnahmezeilen korrigiert.
+            form.matches_request.data = 'no'
+
+            if form.validate_on_submit():
+                if validate_feedback_changes(form, telescopes, filters):
+                    save_feedback(feedback, form)
+
+                    flash(
+                        'Die Beobachtungsrückmeldung wurde korrigiert '
+                        'und gespeichert.',
+                        'success',
+                    )
+
+                    return redirect(
+                        url_for('main.observation_database')
+                    )
+
+        elif action != 'add_position':
+            abort(400)
+
+    grouped_rows = {}
+
+    for index, row in enumerate(form.positions):
+        block_no = row.block_no.data or 1
+        grouped_rows.setdefault(block_no, []).append(index)
+
+    blocks = [
+        {'row_indices': indices}
+        for indices in grouped_rows.values()
+    ]
+
+    return render_template(
+        'observation_feedback.html',
+        title='Beobachtungsrückmeldung korrigieren',
+        feedback=feedback,
+        form=form,
+        blocks=blocks,
+    )
+
 # -------------------------------------------------------------
 # Poweruser Rückmeldung bei negativer Beobachtung
 # -------------------------------------------------------------
