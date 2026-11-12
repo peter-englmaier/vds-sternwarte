@@ -90,12 +90,6 @@
        hx-target="#calendar-container-modal .modal-body"
        hx-swap="innerHTML">
     Nächstes Jahr »»</a>
-
-    {% if referrer and not picker %}
-        <a href="{{ referrer }}" class="btn btn-secondary">Zurück</a>
-    {% elif not picker %}
-        <button type="button" class="btn btn-secondary" onclick="history.back();">Zurück</button>
-    {% endif %}
 </div>
 </div>
 {% if picker %}
