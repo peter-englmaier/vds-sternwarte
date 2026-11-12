@@ -1,13 +1,7 @@
 <h2>{{month_name[month-1]}} {{year}}</h2>
-{% set open_fg_color="white" %}
-{% set open_bg_color="#02a007" %}
-{% set planned_fg_color="black" %}
-{% set planned_bg_color="#c2b280" %}
-{% set approved_fg_color="white" %}
-{% set approved_bg_color="#a00a02" %}
 <div id="calendar-container">
 
-<table class="calendar-table">
+<table class="table calendar-table">
   <tr>
     <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
   </tr>
@@ -26,18 +20,18 @@
           {% if picker and not is_past and day not in approved_days and day not in planned_days %}
               data-day="{{ day }}" data-month="{{ month }}" data-year="{{ year }}"
               onclick="selectDate(this, '{{ target_id }}', '{{ display_id }}')"
-              style="cursor: pointer; background-color: {{ open_bg_color }}; color: {{ open_fg_color }};"
+              class="table-success"
+              style="cursor: pointer;"
           {% else %}
-              style="
+              style="cursor:not-allowed;"
                 {% if is_past %}
-                  background-color: #d3d3d3; color: #666;
+                  class="table-secondary" 
                 {% else %}
-                  {% if day in approved_days %} background-color: {{ approved_bg_color }}; color: {{ approved_fg_color }};
-                  {% elif day in planned_days %}  background-color: {{ planned_bg_color }}; color: {{ planned_fg_color }};
-                  {% else %} background-color: #02a007; color: white;
+                  {% if day in approved_days %} class="table-danger"
+                  {% elif day in planned_days %}  class="table-warning"
+                  {% else %} class="table-light"
                   {% endif %}
                 {% endif %}
-              "
           {% endif %} >
             <table style="border:none;"><tr style="border:none;"><td style="border:none;">
           {% if day in new_moon_days %}&#x1F311;{% endif %}
@@ -60,17 +54,16 @@
     </tr>
   {% endfor %}
 </table>
-<br/>
-<p>
-<span style="margin-right:50px;">
-    Legende:
-    <span style="padding:5px; color: {{open_fg_color}}; background-color: {{open_bg_color}}"> frei </span>
-    &nbsp;
-    <span style="padding:5px; color: {{planned_fg_color}}; background-color: {{planned_bg_color}}"> geplant </span>
-    &nbsp;
-    <span style="padding:5px; color: {{approved_fg_color}}; background-color: {{approved_bg_color}}"> reserviert </span>
-</span>
-</p>
+
+<table class="table w-auto">
+  <tr>
+    <td>Legende: </td>
+    <td class="table-success">frei</td>
+    <td class="table-warning">geplant</td>
+    <td class="table-danger">reserviert</td>
+  </tr>
+</table>
+
 <div class="mt-3">
     <a class="btn btn-secondary"
        hx-get="{{ url_for('orders.show_calendar', year=year-1, month=month, picker=picker, target_id=target_id, display_id=display_id) }}"
@@ -82,7 +75,7 @@
        hx-target="#calendar-container-modal .modal-body"
        hx-swap="innerHTML">
     « Vorheriger Monat</a>
-    <a class="btn btn-secondary"
+    <a class="btn btn-primary"
        hx-get="{{ url_for('orders.show_calendar', year=datetime.today().year, month=datetime.today().month, picker=picker, target_id=target_id, display_id=display_id) }}"
        hx-target="#calendar-container-modal .modal-body"
        hx-swap="innerHTML">
