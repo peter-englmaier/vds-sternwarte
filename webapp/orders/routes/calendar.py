@@ -56,7 +56,6 @@ def show_calendar():
      new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
      full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days) = calendar_service(year, month)
     today = date.today()
-    referrer = request.referrer
 
     template = "_calendar.html" if request.headers.get("HX-Request") else "calendar.html"
     month_name = [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" ]
@@ -79,7 +78,6 @@ def show_calendar():
         today_day=today.day,
         today_month=today.month,
         today_year=today.year,
-        referrer=referrer,
         picker=picker,
         target_id=target_id,
         display_id=display_id,
