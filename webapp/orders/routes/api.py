@@ -66,6 +66,7 @@ def set_user_preference():
 # Teleskope zum Observatorium
 # --------------------------------------------------------------
 @orders.route('/orders/get_telescopes/<int:observatory_id>')
+@login_required
 def get_telescopes():
     """Return the telescopes of an observatory as JSON.
 
