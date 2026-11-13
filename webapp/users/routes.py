@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, current_app
 from flask_login import login_user, current_user, logout_user, login_required
-from urllib.parse import urlparse
+# from urllib.parse import urlparse
 from webapp import bcrypt, db
 from webapp.model.db import User, Post, Group
 from webapp.users import users
@@ -86,9 +86,11 @@ def login():
                     )
                     return redirect(url_for('users.account'))
 
-            next_page = request.args.get('next', '').replace('\\', '')
-            if next_page and not urlparse(next_page).netloc and not urlparse(next_page).scheme:
-                return redirect(next_page)
+            ## Is this code used in the application at all? Could be a potential attack
+            ## vector, and the usage of urllib.parse.urlparse() sort of deprecated
+            # next_page = request.args.get('next', '').replace('\\', '')
+            # if next_page and not urlparse(next_page).netloc and not urlparse(next_page).scheme:
+            #     return redirect(next_page)
             
             return redirect(url_for('main.home'))
         else:
