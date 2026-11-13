@@ -26,8 +26,9 @@ def user_order_history():
 
     :return: rendered ``orders_history.html``.
     """
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+    ## posts code not used in HTML template!
+    # page = request.args.get('page', 1, type=int)
+    # posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
 
     user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).order_by(ObservationRequest.request_date.desc()).all()
     for order in user_orders:
@@ -39,4 +40,5 @@ def user_order_history():
         if pwuser:
             order.poweruser_name = pwuser.display_name()
 
-    return render_template("orders_history.html", posts=posts, orders=user_orders)
+    # return render_template("orders_history.html", posts=posts, orders=user_orders)
+    return render_template("orders_history.html", orders=user_orders)
