@@ -19,14 +19,19 @@ from webapp.orders.constants import (
     ORDER_STATUS_PU_ASSIGNED,
     ORDER_STATUS_PU_ACCEPTED,
 )
+from webapp.users.utils import role_required
 
 
 # --------------------------------------------------------------------
 # Observation Requests Gesamt
 # --------------------------------------------------------------------
 
+## Obsolete???
+## Should this list really be visible all users, including guests???
+## Let's restrict to power users for the time being
 @orders.route("/obs_requests")
 @login_required
+@role_required("poweruser")
 def obs_request_complete():
     """Show all orders, sorted by request date.
 
@@ -77,18 +82,20 @@ def obs_request_complete():
 
 #Sortierung und Archivierung
 
-@orders.route("/order_history")
-def order_history():
-    """Show the order history.
+## Obsolete? Not working, missing @login_required, @role_required!!!
 
-    .. warning:: ``Post`` and ``USER_ROLE_USER`` are not imported, so the route
-       fails with a :exc:`NameError` (status 500) for logged-in users. It has
-       no ``login_required``, and ``order_history.html`` does not exist.
+# @orders.route("/order_history")
+# def order_history():
+#     """Show the order history.
 
-    :return: rendered ``home.html`` for anonymous users.
-    """
-    if not current_user.is_authenticated or current_user.has_role(USER_ROLE_USER):
-        return render_template("home.html")
-    page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
-    return render_template("order_history.html", posts=posts)
+#     .. warning:: ``Post`` and ``USER_ROLE_USER`` are not imported, so the route
+#        fails with a :exc:`NameError` (status 500) for logged-in users. It has
+#        no ``login_required``, and ``order_history.html`` does not exist.
+
+#     :return: rendered ``home.html`` for anonymous users.
+#     """
+#     if not current_user.is_authenticated or current_user.has_role(USER_ROLE_USER):
+#         return render_template("home.html")
+#     page = request.args.get('page', 1, type=int)
+#     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
+#     return render_template("order_history.html", posts=posts)
