@@ -21,7 +21,7 @@ def observation_database():
     from webapp.model.db import Telescope, Filterset
     from webapp.orders.constants import ORDER_STATUS_DOCUMENTED
 
-    search = request.args.get('q', '').strip()
+    search = request.args.get('q', default='', type=str).strip()
 
     base_query = ObservationFeedback.query.filter(
         ObservationFeedback.status == ORDER_STATUS_DOCUMENTED,
@@ -89,6 +89,7 @@ def observation_database():
             .replace('\\', '\\\\')
             .replace('%', '\\%')
             .replace('_', '\\_')
+            .replace("\n", "")
         )
         pattern = f'%{escaped_search}%'
 
