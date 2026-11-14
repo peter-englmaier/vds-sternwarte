@@ -20,4 +20,5 @@ from webapp.main.routes import (
     faq,
     about,
     impressum,
+    exports,
 )
