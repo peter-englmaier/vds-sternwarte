@@ -5,12 +5,13 @@ from webapp import db
 from webapp.posts import posts
 from webapp.model.db import Post
 from webapp.posts.forms import PostForm
+from webapp.users.utils import role_required
 
 
 
 @posts.route("/post/new", methods=['GET', 'POST'])
 @login_required
-##SECURITY: every user with login can post
+@role_required("user")
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -31,7 +32,7 @@ def post(post_id):
 
 @posts.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
 @login_required
-##SECURITY: every user with login can update own posts
+@role_required("user")
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
@@ -52,7 +53,7 @@ def update_post(post_id):
 
 @posts.route("/post/<int:post_id>/delete", methods=['POST'])
 @login_required
-##SECURITY: every user with login can delete own posts
+@role_required("user")
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
