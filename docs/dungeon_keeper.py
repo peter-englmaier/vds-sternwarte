@@ -17,6 +17,8 @@ from webapp import create_app  # noqa: E402
 
 ROOT = os.path.join(PROJECT_DIR, "webapp")
 SKIP_PREFIXES = ("admin", "static")
+LINK_PREFIX = "../webapp/"
+
 
 
 def templates_of(func):
@@ -52,6 +54,12 @@ def template_path(app, endpoint, name):
     return f"{name} (?)"
 
 
+
+def md_link(file: str) -> str:
+    return f"[{file}]({LINK_PREFIX}{file})"
+
+
+
 def main():
     app = create_app()
     rows = []
@@ -64,9 +72,14 @@ def main():
             continue  # z.B. Flask-Admin-Views aus site-packages
         methods = ",".join(sorted(rule.methods - {"HEAD", "OPTIONS"}))
         tpls = [template_path(app, rule.endpoint, t) for t in templates_of(func)]
+
+        # Create Markdown clickable links, directly opening the source file in VSCode
+        src_link = md_link(os.path.relpath(src_file, ROOT))
+        tpls_link = [ md_link(file) for file in tpls ]
+
         # <token> & Co. escapen, sonst verschluckt der Markdown-Renderer sie als HTML-Tag
-        rows.append((html.escape(rule.rule, quote=False), methods, os.path.relpath(src_file, ROOT),
-                     rule.endpoint, "<br>".join(tpls) or "–"))
+        rows.append((html.escape(rule.rule, quote=False), methods, src_link,
+                     rule.endpoint, "<br>".join(tpls_link) or "–"))
 
     print("# Map of URLs, routes, and templates\n")
     print("<!-- automatisch erzeugt mit docs/dungeon_keeper.py, nicht von Hand bearbeiten -->\n")

@@ -14,6 +14,19 @@ from webapp.orders.orderservices import calendar_service
 from webapp.users.utils import role_required
 
 
+
+class ValidHTMLId(str):
+    """str-like class, but only accepts valid chars"""
+    VALID_SET = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+
+    def __init__(self, id: str=""):
+        if set(id) - self.VALID_SET != set():       # chars not in VALID_SET
+            raise ValueError("illegal id string")
+        super().__init__()
+        self = id
+
+
+
 # --------------------------------------------------------------------
 # Belegungskalender anzeigen
 # --------------------------------------------------------------------
@@ -37,14 +50,12 @@ def show_calendar():
     year = request.args.get("year", default=datetime.now().year, type=int)
     month = request.args.get("month", default=datetime.now().month, type=int)
     picker = request.args.get("picker", default=False, type=bool)
-    target_id = request.args.get("target_id", default="request_date", type=str)
-    display_id = request.args.get("display_id", default="selected_date_display", type=str)
-
+    target_id = request.args.get("target_id", default="request_date", type=ValidHTMLId)
+    display_id = request.args.get("display_id", default="selected_date_display", type=ValidHTMLId)
     (cal, planned_days, approved_days,
      new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
      full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days) = calendar_service(year, month)
     today = date.today()
-    referrer = request.referrer
 
     template = "_calendar.html" if request.headers.get("HX-Request") else "calendar.html"
     month_name = [ "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" ]
@@ -67,7 +78,6 @@ def show_calendar():
         today_day=today.day,
         today_month=today.month,
         today_year=today.year,
-        referrer=referrer,
         picker=picker,
         target_id=target_id,
         display_id=display_id,
