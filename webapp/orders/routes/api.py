@@ -50,6 +50,7 @@ def set_user_preference():
     key = data.get("key")
     value = data.get("value")
     default = data.get("default")  # falls benötigt
+    ##SECURITY: data not sanitized
 
     status, message = set_user_preference_service(current_user.id, key, value, default)
 
@@ -78,6 +79,7 @@ def get_telescopes():
     """
     data = request.get_json()
     observatory_id = data.get('observatory_id')
+    ##SECURITY: data not sanitized
     telescopes = telescope_query(observatory_id)
     return jsonify([{'id': t.id, 'name': t.name} for t in telescopes])
 
@@ -96,5 +98,6 @@ def get_filtersets():
     """
     data = request.get_json()
     telescope_id = data.get("telescope_id")
+    ##SECURITY: data not sanitized
     filtersets = filterset_query(telescope_id)
     return jsonify([{"id": f.id, "name": f.name} for f in filtersets])
