@@ -14,7 +14,6 @@ from webapp.main.routes import (
     order_history,
     observation_database,
     gast,
-    fg_request,
     service_request,
     request_georg,
     faq,
