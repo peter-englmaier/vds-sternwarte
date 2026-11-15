@@ -22,6 +22,25 @@ class ObservationRequest(db.Model):
     request_poweruser_id: Mapped[str] = mapped_column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     remark: Mapped[str] = mapped_column(db.String(2000), nullable=True)
     status: Mapped[str] = mapped_column(db.String(10), nullable=False, default='0')
+        # Nur Rückmeldungskopien verweisen auf ihren Originalantrag.
+    source_request_id: Mapped[Optional[int]] = mapped_column(
+        db.Integer,
+        db.ForeignKey('observation_request.id'),
+        nullable=True,
+        unique=True,
+    )
+    # Rückmeldungsangaben; bei Originalanträgen bleibt leer
+    copied_at = db.Column(db.DateTime(timezone=True))
+    completed_at = db.Column(db.DateTime(timezone=True))
+
+    completed_by_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id'),
+    )
+
+    matches_request = db.Column(db.Boolean)
+    deviations = db.Column(db.String(2000))
+    
     positions = relationship(
         'ObservationRequestPosition',
         backref='observationrequest',

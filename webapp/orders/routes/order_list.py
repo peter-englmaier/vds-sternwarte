@@ -16,10 +16,10 @@ from webapp.orders import orders  # blueprint object
 from webapp.orders.constants import ORDER_STATUS_LABELS, ORDER_STATUS_CREATED, ORDER_STATUS_REJECTED
 from webapp.orders.orderservices import copy_order_service, delete_order_service
 from webapp.users.utils import role_required
-from webapp.model.feedback import ObservationFeedback
 from webapp.orders.feedbackservice import copy_due_feedback
 from webapp.orders.constants import ORDER_STATUS_STATISTICS_OPEN
 
+from webapp import db
 
 # --------------------------------------------------------------------
 # Beobachtungsantrag bearbeiten
@@ -37,7 +37,7 @@ def show_orders():
     :return: rendered ``orders.html``.
     """
     cutoff_date = date.today() - timedelta(days=3)
-    user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).filter(ObservationRequest.request_date >= cutoff_date).order_by(ObservationRequest.request_date.desc()).all()
+    user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).filter(ObservationRequest.source_request_id.is_(None), ObservationRequest.request_date >= cutoff_date).order_by(ObservationRequest.request_date.desc()).all()
     for order in user_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
         reservation = ObservatoryReservation.query.filter_by(observation_request_id=order.id).first();
@@ -116,15 +116,15 @@ def delete_order(order_id):
 
 def get_pending_feedback_orders():
     feedback_orders = (
-        ObservationFeedback.query
+        ObservationRequest.query
         .filter(
-            ObservationFeedback.user_id == current_user.id,
-            ObservationFeedback.status
+            ObservationRequest.user_id == current_user.id,
+            ObservationRequest.status
             == ORDER_STATUS_STATISTICS_OPEN,
         )
         .order_by(
-            ObservationFeedback.request_date.desc(),
-            ObservationFeedback.id.desc(),
+            ObservationRequest.request_date.desc(),
+            ObservationRequest.id.desc(),
         )
         .all()
     )
@@ -135,9 +135,15 @@ def get_pending_feedback_orders():
             "??",
         )
 
+        poweruser = (
+            db.session.get(User, feedback.request_poweruser_id)
+            if feedback.request_poweruser_id is not None
+            else None
+        )
+
         feedback.poweruser_name = (
-            feedback.poweruser.display_name()
-            if feedback.poweruser
+            poweruser.display_name()
+            if poweruser
             else None
         )
 

@@ -4,11 +4,6 @@ Importing this package exposes all models and helper objects.
 """
 from webapp import db, login_manager
 
-from webapp.model.feedback import (
-    ObservationFeedback,
-    ObservationFeedbackPosition,
-)
-
 from webapp.model.db.user import (
     load_user,
     User,
@@ -90,8 +85,6 @@ __all__ = [
     'PoweruserMeldung',
     'ObservatoryReservation',
     'Status',
-    'ObservationFeedback',
-    'ObservationFeedbackPosition',
     'user',
     'post',
     'site',

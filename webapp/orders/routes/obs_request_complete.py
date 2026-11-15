@@ -36,7 +36,9 @@ def obs_request_complete():
 
     :return: rendered ``obs_request_complete.html``.
     """
-    orders = ObservationRequest.query.order_by(ObservationRequest.request_date.asc()).all()
+    orders = ObservationRequest.query.filter(
+        ObservationRequest.source_request_id.is_(None)
+    ).order_by(ObservationRequest.request_date.asc()).all()
 
     for order in orders:
         # Status-Label

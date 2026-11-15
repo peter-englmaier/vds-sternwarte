@@ -30,6 +30,7 @@ def poweruser_order_history():
     all_orders = (
         ObservationRequest.query
         .filter(
+            ObservationRequest.source_request_id.is_(None),
             ObservationRequest.status.in_([
                 ORDER_STATUS_PU_ASSIGNED,
                 ORDER_STATUS_PU_REJECTED,
