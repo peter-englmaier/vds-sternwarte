@@ -10,6 +10,7 @@ from webapp.posts.forms import PostForm
 
 @posts.route("/post/new", methods=['GET', 'POST'])
 @login_required
+##SECURITY: every user with login can post
 def new_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -30,6 +31,7 @@ def post(post_id):
 
 @posts.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
 @login_required
+##SECURITY: every user with login can update own posts
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
@@ -50,6 +52,7 @@ def update_post(post_id):
 
 @posts.route("/post/<int:post_id>/delete", methods=['POST'])
 @login_required
+##SECURITY: every user with login can delete own posts
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
