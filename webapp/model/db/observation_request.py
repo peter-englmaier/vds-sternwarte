@@ -38,7 +38,14 @@ class ObservationRequest(db.Model):
         db.ForeignKey('user.id'),
     )
 
+# Dies zeigt, ob die Rückmeldung hinsichtlich Objekten, Bildanzahl und Filtern mit dem Originalantrag übereinstimmt.
+
+# True = Übereinstimmung, False = Abweichung, None = noch nicht bewertet.
+
     matches_request = db.Column(db.Boolean)
+
+# Dies ist als Kommentarfeld für Abweichungen der tatsächlichen Beobachtung vom Originalantrag, z. B. weniger Aufnahmen oder andere Filter gedacht.
+
     deviations = db.Column(db.String(2000))
     
     positions = relationship(
