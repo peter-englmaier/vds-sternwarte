@@ -9,6 +9,7 @@ from datetime import datetime, date, time
 from webapp.users.utils import role_required
 
 @bp.route('/inout/export', methods=['POST'])
+@login_required
 @role_required('admin')
 def export_data():
     data = {}
@@ -36,6 +37,7 @@ def export_data():
     )
 
 @bp.route('/inout/import', methods=['POST'])
+@login_required
 @role_required('admin')
 def import_data():
     """
