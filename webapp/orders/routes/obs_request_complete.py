@@ -79,23 +79,3 @@ def obs_request_complete():
         ORDER_STATUS_PU_ASSIGNED=ORDER_STATUS_PU_ASSIGNED,
         ORDER_STATUS_PU_ACCEPTED=ORDER_STATUS_PU_ACCEPTED,
     )
-
-#Sortierung und Archivierung
-
-## Obsolete? Not working, missing @login_required, @role_required!!!
-
-# @orders.route("/order_history")
-# def order_history():
-#     """Show the order history.
-
-#     .. warning:: ``Post`` and ``USER_ROLE_USER`` are not imported, so the route
-#        fails with a :exc:`NameError` (status 500) for logged-in users. It has
-#        no ``login_required``, and ``order_history.html`` does not exist.
-
-#     :return: rendered ``home.html`` for anonymous users.
-#     """
-#     if not current_user.is_authenticated or current_user.has_role(USER_ROLE_USER):
-#         return render_template("home.html")
-#     page = request.args.get('page', 1, type=int)
-#     posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
-#     return render_template("order_history.html", posts=posts)
