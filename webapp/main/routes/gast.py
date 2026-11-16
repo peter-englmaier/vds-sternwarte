@@ -11,6 +11,7 @@ from flask_login import current_user, login_required
 from webapp.main import main  # blueprint object
 from webapp.model.db import db, User, Group
 from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_ROLE_USER, USER_ROLE_GUEST
+from webapp.users.utils import role_required
 
 
 # --------------------------------------------------------------------
@@ -18,6 +19,7 @@ from webapp.orders.constants import USER_ROLE_ADMIN, USER_ROLE_APPROVER, USER_RO
 # --------------------------------------------------------------------
 @main.route("/gast", methods=["GET"])
 @login_required
+@role_required("approver")
 def gast():
     """Show all users waiting for activation: members of the guest group and
     users without any group.
@@ -62,6 +64,7 @@ def gast():
 # --------------------------------------------------------------------
 @main.route("/gast/approve", methods=["POST"])
 @login_required
+@role_required("approver")
 def gast_approve():
     """Activate a user: remove them from the guest group and add them to the
     user group.
@@ -113,6 +116,7 @@ def gast_approve():
 # --------------------------------------------------------------------
 @main.route("/gast/delete", methods=["POST"])
 @login_required
+@role_required("approver")
 def gast_delete():
     """Delete a user: remove user.
 
