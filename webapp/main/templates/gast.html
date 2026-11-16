@@ -27,12 +27,12 @@
       {% for u in pending_users %}
       <tr>
         <td>
-            <form method="POST" action="{{ url_for('main.gast_approve') }}">
+            <form method="POST" action="{{ url_for('main.gast_approve') }}" class="d-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="user_id" value="{{ u.id }}">
               <button class="btn btn-primary btn-sm" type="submit">Freischalten</button>
             </form>
-            <form method="POST" action="{{ url_for('main.gast_delete') }}">
+            <form method="POST" action="{{ url_for('main.gast_delete') }}" class="d-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="user_id" value="{{ u.id }}">
               <button class="btn btn-danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
