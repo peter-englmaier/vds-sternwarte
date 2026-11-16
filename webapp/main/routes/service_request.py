@@ -8,6 +8,7 @@ from flask import render_template
 from flask_login import login_required
 
 from webapp.main import main  # blueprint object
+from webapp.users.utils import role_required
 
 
 # --------------------------------------------------------------------
@@ -15,6 +16,7 @@ from webapp.main import main  # blueprint object
 # --------------------------------------------------------------------
 @main.route("/servicerequest")
 @login_required
+@role_required("poweruser")
 def servicerequest():
     """Show the form for a service request.
 
