@@ -28,6 +28,7 @@ from webapp.orders.orderservices import (
     init_new_orderpos_service,
     get_user_preference_service,
 )
+from webapp.users.utils import role_required
 
 
 # --------------------------------------------------------------------
@@ -39,6 +40,7 @@ from webapp.orders.orderservices import (
 # --------------------------------------------------------------------
 @orders.route("/orders/<int:order_id>/edit", methods=["GET", "POST"])
 @login_required
+@role_required("user")
 def edit_order_pos(order_id):
     """Show and process the form to edit an order and its positions.
 
