@@ -35,24 +35,24 @@ def home():
     return render_template("home_intern.html", posts=posts)
 
 
-# --------------------------------------------------------------------
-# Debug: Session des Benutzers ausgeben
-# --------------------------------------------------------------------
-@main.route("/status")
-def status():
-    """Print the session and the role of the current user to stdout, then
-    show the start page.
+# # --------------------------------------------------------------------
+# # Debug: Session des Benutzers ausgeben
+# # --------------------------------------------------------------------
+# @main.route("/status")
+# def status():
+#     """Print the session and the role of the current user to stdout, then
+#     show the start page.
 
-    .. warning:: Debug route without ``login_required``. For anonymous users,
-       ``current_user.name`` raises an :exc:`AttributeError` (status 500). The
-       last ``print`` outputs the literal text ``current_user.groups`` instead
-       of the groups.
+#     .. warning:: Debug route without ``login_required``. For anonymous users,
+#        ``current_user.name`` raises an :exc:`AttributeError` (status 500). The
+#        last ``print`` outputs the literal text ``current_user.groups`` instead
+#        of the groups.
 
-    :return: the response of :func:`home`.
-    """
-    from flask import session
-    print(session)
-    print(f"{current_user.name=}")
-    print(f"Admin User? {current_user.has_role(USER_ROLE_ADMIN)}")
-    print( "Du bist" + f" current_user.groups")
-    return home()
+#     :return: the response of :func:`home`.
+#     """
+#     from flask import session
+#     print(session)
+#     print(f"{current_user.name=}")
+#     print(f"Admin User? {current_user.has_role(USER_ROLE_ADMIN)}")
+#     print( "Du bist" + f" current_user.groups")
+#     return home()
