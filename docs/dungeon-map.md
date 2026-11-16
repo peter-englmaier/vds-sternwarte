@@ -8,7 +8,6 @@
 | /about | GET | [main/routes/about.py](../webapp/main/routes/about.py) | main.about | [main/templates/about.html](../webapp/main/templates/about.html) |
 | /account | GET,POST | [users/routes.py](../webapp/users/routes.py) | users.account | [users/templates/account.html](../webapp/users/templates/account.html) |
 | /actionhandler | POST | [orders/routes/create_order.py](../webapp/orders/routes/create_order.py) | orders.actionhandler | [orders/templates/create_order.html](../webapp/orders/templates/create_order.html) |
-| /add-row | GET | [main/routes/fg_request.py](../webapp/main/routes/fg_request.py) | main.add_row | [main/templates/aufnahme_zeile.html](../webapp/main/templates/aufnahme_zeile.html) |
 | /approver | GET | [main/routes/approver.py](../webapp/main/routes/approver.py) | main.approver | [main/templates/approver.html](../webapp/main/templates/approver.html) |
 | /approver/&lt;int:order_id&gt;/approve | POST | [orders/routes/approval.py](../webapp/orders/routes/approval.py) | orders.approve_order | – |
 | /approver/&lt;int:order_id&gt;/reject | GET,POST | [orders/routes/reject_order.py](../webapp/orders/routes/reject_order.py) | orders.reject_order | [orders/templates/reject_order.html](../webapp/orders/templates/reject_order.html) |
@@ -18,7 +17,6 @@
 | /feedback/&lt;int:feedback_id&gt; | GET,POST | [orders/routes/feedback.py](../webapp/orders/routes/feedback.py) | orders.observation_feedback | [main/templates/observation_feedback.html](../webapp/main/templates/observation_feedback.html) |
 | /feedback/&lt;int:feedback_id&gt;/cancel | POST | [orders/routes/feedback.py](../webapp/orders/routes/feedback.py) | orders.cancel_observation_feedback | – |
 | /feedback/&lt;int:feedback_id&gt;/edit | GET,POST | [orders/routes/feedback.py](../webapp/orders/routes/feedback.py) | orders.edit_observation_feedback | [main/templates/observation_feedback.html](../webapp/main/templates/observation_feedback.html) |
-| /fgrequest | GET | [main/routes/fg_request.py](../webapp/main/routes/fg_request.py) | main.fgrequest | [main/templates/create_obs_request.html](../webapp/main/templates/create_obs_request.html) |
 | /gast | GET | [main/routes/gast.py](../webapp/main/routes/gast.py) | main.gast | [main/templates/gast.html](../webapp/main/templates/gast.html) |
 | /gast/approve | POST | [main/routes/gast.py](../webapp/main/routes/gast.py) | main.gast_approve | – |
 | /gast/delete | POST | [main/routes/gast.py](../webapp/main/routes/gast.py) | main.gast_delete | – |
@@ -55,6 +53,5 @@
 | /reset_password | GET,POST | [users/routes.py](../webapp/users/routes.py) | users.reset_request | [users/templates/reset_request.html](../webapp/users/templates/reset_request.html) |
 | /reset_password/&lt;token&gt; | GET,POST | [users/routes.py](../webapp/users/routes.py) | users.reset_token | [users/templates/reset_token.html](../webapp/users/templates/reset_token.html) |
 | /servicerequest | GET | [main/routes/service_request.py](../webapp/main/routes/service_request.py) | main.servicerequest | [main/templates/create_service.html](../webapp/main/templates/create_service.html) |
-| /status | GET | [main/routes/home.py](../webapp/main/routes/home.py) | main.status | – |
 | /user/&lt;string:username&gt; | GET | [users/routes.py](../webapp/users/routes.py) | users.user_posts | [users/templates/user_posts.html](../webapp/users/templates/user_posts.html) |
 | /user_order_history | GET | [main/routes/order_history.py](../webapp/main/routes/order_history.py) | main.user_order_history | [main/templates/orders_history.html](../webapp/main/templates/orders_history.html) |
