@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from webapp import bcrypt, db
 from webapp.model.db import User, Post, Group
 from webapp.users import users
+from webapp.users.utils import role_required
 from webapp.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    ChangePasswordForm,
                                    RequestResetForm, ResetPasswordForm)
@@ -163,7 +164,10 @@ def password_changed():
     return render_template('password_changed.html', title='Passwort geändert')
 
 
+##FIXME: should be moved to posts/
 @users.route("/user/<string:username>")
+@login_required
+@role_required("user")
 def user_posts(username):
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(name=username).first_or_404()
