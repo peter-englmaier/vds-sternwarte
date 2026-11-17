@@ -7,7 +7,7 @@ Routes::
 """
 from datetime import date, timedelta
 
-from flask import render_template, request
+from flask import render_template, request, abort
 from flask_login import current_user, login_required
 from markupsafe import escape
 from sqlalchemy import select
@@ -69,7 +69,15 @@ def poweruser():
             )
 
         order = ObservationRequest.query.get_or_404(order_id)
-
+        if order.source_request_id is not None:
+            abort(
+                403,
+                description=(
+                    'Verfügbarkeitsmeldungen sind nur '
+                    'für Originalanträge möglich.'
+                ),
+            )
+            
         is_assigned_to_current_user = (
         order.status == ORDER_STATUS_PU_ASSIGNED
         and order.request_poweruser_id == current_user.id
@@ -170,6 +178,7 @@ def poweruser():
             User.id == ObservationRequest.request_poweruser_id,
         )
         .where(
+            ObservationRequest.source_request_id.is_(None),
             ObservationRequest.status.in_([
                 ORDER_STATUS_APPROVED,
                 ORDER_STATUS_PU_ASSIGNED,

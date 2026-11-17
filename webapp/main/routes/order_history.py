@@ -30,7 +30,13 @@ def user_order_history():
     # page = request.args.get('page', 1, type=int)
     # posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=3)
 
-    user_orders = ObservationRequest.query.filter_by(user_id=current_user.id).order_by(ObservationRequest.request_date.desc()).all()
+    user_orders = ObservationRequest.query.filter_by(
+        user_id=current_user.id
+    ).filter(        
+        ObservationRequest.source_request_id.is_(None)
+    ).order_by(
+        ObservationRequest.request_date.desc()
+    ).all()
     for order in user_orders:
         order.status_label = ORDER_STATUS_LABELS.get(order.status, "??")
         reservation = ObservatoryReservation.query.filter_by(observation_request_id=order.id).first();

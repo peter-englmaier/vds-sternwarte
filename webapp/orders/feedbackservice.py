@@ -1,16 +1,15 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
+from sqlalchemy import null
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 
 from webapp import db
 from webapp.model.db import (
     ObservationRequest,
     ObservationRequestPosition,
 )
-from webapp.model.feedback import (
-    ObservationFeedback,
-    ObservationFeedbackPosition,
-)
+
 from webapp.orders.constants import (
     ORDER_STATUS_PU_ASSIGNED,
     ORDER_STATUS_PU_ACCEPTED,
@@ -26,7 +25,16 @@ from webapp.orders.constants import (
 HEAD_COLUMNS = tuple(
     column.name
     for column in ObservationRequest.__table__.columns
-    if column.name not in ('id', 'status')
+    if column.name not in (
+        'id',
+        'status',
+        'source_request_id',
+        'copied_at',
+        'completed_at',
+        'completed_by_id',
+        'matches_request',
+        'deviations',
+    )
 )
 
 POSITION_COLUMNS = tuple(
@@ -37,7 +45,9 @@ POSITION_COLUMNS = tuple(
 
 
 def copy_due_feedback(user_id=None):
+    feedback_copy = aliased(ObservationRequest)
     query = ObservationRequest.query.filter(
+        ObservationRequest.source_request_id.is_(None),
         ObservationRequest.request_date < date.today(),
 
         ObservationRequest.request_type.in_(
@@ -52,9 +62,9 @@ def copy_due_feedback(user_id=None):
             ORDER_STATUS_PICURES_READY,
         ]),
 
-        ~db.session.query(ObservationFeedback.id)
+        ~db.session.query(feedback_copy.id)
         .filter(
-            ObservationFeedback.source_request_id
+            feedback_copy.source_request_id
             == ObservationRequest.id
         )
         .exists(),
@@ -70,22 +80,27 @@ def copy_due_feedback(user_id=None):
     for order in query.order_by(ObservationRequest.id).all():
         try:
             with db.session.begin_nested():
-                feedback = ObservationFeedback(
+                feedback = ObservationRequest(
                     source_request_id=order.id,
                     status=ORDER_STATUS_STATISTICS_OPEN,
+                    copied_at=datetime.now(timezone.utc),
                     **{
                         name: getattr(order, name)
+                        if getattr(order, name) is not None
+                            else null()                        
                         for name in HEAD_COLUMNS
                     },
                 )
 
                 for position in order.positions:
                     feedback.positions.append(
-                        ObservationFeedbackPosition(
-                            source_position_id=position.id,
+                        ObservationRequestPosition(                            
                             **{
                                 name: getattr(position, name)
+                                if getattr(position, name) is not None
+                                    else null()                                
                                 for name in POSITION_COLUMNS
+                                if name != 'observation_request_id'
                             },
                         )
                     )
@@ -96,7 +111,7 @@ def copy_due_feedback(user_id=None):
             copied += 1
 
         except IntegrityError:
-            existing = ObservationFeedback.query.filter_by(
+            existing = ObservationRequest.query.filter_by(
                 source_request_id=order.id
             ).first()
 
