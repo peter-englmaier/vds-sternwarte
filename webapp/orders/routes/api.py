@@ -7,12 +7,13 @@ Routes::
     GET   /orders/get_telescopes/<int:observatory_id>  get_telescopes()       -> JSON
     POST  /orders/get_filtersets                       get_filtersets()       -> JSON
 """
-from flask import request, jsonify
+from flask import request, jsonify, abort
 from flask_login import current_user, login_required
 
 from webapp.orders import orders  # blueprint object
 from webapp.orders.orderform import telescope_query, filterset_query
 from webapp.orders.orderservices import set_user_preference_service, get_user_preference_service
+from webapp.users.utils import role_required
 
 
 # ------------------------------------------------------------------
@@ -20,6 +21,7 @@ from webapp.orders.orderservices import set_user_preference_service, get_user_pr
 # ------------------------------------------------------------------
 @orders.route("/orders/user_preference", methods=["GET"])
 @login_required
+@role_required("user")
 def get_user_preference():
     """Return a preference of the current user as JSON.
 
@@ -29,6 +31,8 @@ def get_user_preference():
         if the preference is not set.
     """
     key = request.args.get("key")
+    ##SECURITY: key data not sanitized
+
     value = get_user_preference_service(current_user.id, key, False)
     return jsonify(success=True, value=value)
 
@@ -38,6 +42,7 @@ def get_user_preference():
 # ------------------------------------------------------------------
 @orders.route("/orders/user_preference", methods=["POST"])
 @login_required
+@role_required("user")
 def set_user_preference():
     """Store a preference of the current user.
 
@@ -50,7 +55,7 @@ def set_user_preference():
     key = data.get("key")
     value = data.get("value")
     default = data.get("default")  # falls benötigt
-    ##SECURITY: data not sanitized
+    ##SECURITY: key data not sanitized
 
     status, message = set_user_preference_service(current_user.id, key, value, default)
 
@@ -68,7 +73,8 @@ def set_user_preference():
 # --------------------------------------------------------------
 @orders.route('/orders/get_telescopes/<int:observatory_id>')
 @login_required
-def get_telescopes():
+@role_required("user")
+def get_telescopes(observatory_id):
     """Return the telescopes of an observatory as JSON.
 
     .. warning:: The route passes ``observatory_id`` from the URL, but the
@@ -77,9 +83,10 @@ def get_telescopes():
 
     :return: JSON list of ``{"id": ..., "name": ...}``.
     """
-    data = request.get_json()
-    observatory_id = data.get('observatory_id')
-    ##SECURITY: data not sanitized
+    # # THIS DIDN'T MATCH THE ROUTE DEFINITION!
+    # data = request.get_json()
+    # observatory_id = data.get('observatory_id')
+
     telescopes = telescope_query(observatory_id)
     return jsonify([{'id': t.id, 'name': t.name} for t in telescopes])
 
@@ -89,6 +96,7 @@ def get_telescopes():
 # --------------------------------------------------------------
 @orders.route("/orders/get_filtersets", methods=["POST"])
 @login_required
+@role_required("user")
 def get_filtersets():
     """Return the filter sets of a telescope as JSON.
 
@@ -97,7 +105,10 @@ def get_filtersets():
     :return: JSON list of ``{"id": ..., "name": ...}``.
     """
     data = request.get_json()
-    telescope_id = data.get("telescope_id")
-    ##SECURITY: data not sanitized
+    try:
+        telescope_id = int(data.get("telescope_id"))
+    except ValueError:
+        abort(500)
+
     filtersets = filterset_query(telescope_id)
     return jsonify([{"id": f.id, "name": f.name} for f in filtersets])
