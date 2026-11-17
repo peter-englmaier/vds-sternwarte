@@ -10,6 +10,7 @@ from flask import render_template
 from flask_login import login_required
 
 from webapp.orders import orders  # blueprint object
+from webapp.users.utils import role_required
 
 
 # --------------------------------------------------------------------
@@ -17,6 +18,7 @@ from webapp.orders import orders  # blueprint object
 # --------------------------------------------------------------------
 @orders.route("/orders/status", methods=["GET"])
 @login_required
+@role_required("user")
 def status_flow():
     """Show the flow diagram and the description of the order statuses.
 
