@@ -16,6 +16,7 @@ from webapp.errors.handlers import error_404
 from webapp.model.db import User, ObservationRequest, ObservationRequestPosition, ObservatoryReservation, Observatory
 from webapp.orders import orders  # blueprint object
 from webapp.orders.constants import ORDER_STATUS_LABELS
+from webapp.users.utils import role_required
 
 
 # --------------------------------------------------------------------
@@ -23,6 +24,7 @@ from webapp.orders.constants import ORDER_STATUS_LABELS
 # --------------------------------------------------------------------
 @orders.route("/orders/<int:order_id>/positions", methods=["GET"])
 @login_required
+@role_required("user")
 def show_order_positions(order_id):
     """Show an order with all its positions, users, observatory and reservation.
 
@@ -47,6 +49,7 @@ def show_order_positions(order_id):
 # --------------------------------------------------------------------
 @orders.route("/orders/<int:order_id>/reservation.ics", methods=["GET"])
 @login_required
+@role_required("user")
 def download_reservation_ical(order_id):
     """Download the reservation of an order as iCalendar file.
 
