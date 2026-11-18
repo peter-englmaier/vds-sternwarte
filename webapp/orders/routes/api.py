@@ -16,6 +16,29 @@ from webapp.orders.orderservices import set_user_preference_service, get_user_pr
 from webapp.users.utils import role_required
 
 
+class ValidUserPrefKey(str):
+    """str-like class, but only accepts valid chars"""
+    VALID_SET = set("abcdefghijklmnopqrstuvwxyz0123456789._-")
+
+    def __init__(self, id: str=""):
+        if set(id.lower()) - self.VALID_SET != set():       # chars not in VALID_SET
+            raise ValueError("illegal id string")
+        super().__init__()
+        self = id
+
+
+class ValidUserPrefValue(str):
+    """str-like class, but only accepts valid chars"""
+    VALID_SET = set("abcdefghijklmnopqrstuvwxyz0123456789 ._-")
+
+    def __init__(self, id: str=""):
+        if set(id.lower()) - self.VALID_SET != set():       # chars not in VALID_SET
+            raise ValueError("illegal id string")
+        super().__init__()
+        self = id
+
+
+
 # ------------------------------------------------------------------
 # User preference laden
 # ------------------------------------------------------------------
@@ -30,8 +53,10 @@ def get_user_preference():
     :return: JSON ``{"success": true, "value": ...}``; ``value`` is ``false``
         if the preference is not set.
     """
-    key = request.args.get("key")
-    ##SECURITY: key data not sanitized
+    try:
+        key = ValidUserPrefKey(request.args.get("key"))
+    except ValueError:
+        abort(500)
 
     value = get_user_preference_service(current_user.id, key, False)
     return jsonify(success=True, value=value)
@@ -52,12 +77,13 @@ def set_user_preference():
         with status 500 if saving failed.
     """
     data = request.get_json()
-    key = data.get("key")
-    value = data.get("value")
-    default = data.get("default")  # falls benötigt
-    ##SECURITY: key data not sanitized
+    try:
+        key = ValidUserPrefKey(data.get("key"))
+        value = ValidUserPrefValue(data.get("value"))
+    except ValueError:
+        abort(500)
 
-    status, message = set_user_preference_service(current_user.id, key, value, default)
+    status, message = set_user_preference_service(current_user.id, key, value)
 
     if status == 1:
         # Fehlerfall
