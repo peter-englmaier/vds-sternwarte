@@ -198,7 +198,7 @@ def get_user_preference_service(user_id, key, default=None):
 # User preference speichern
 # ------------------------------------------------------------------
 
-def set_user_preference_service( user_id, key, value, default=None ):
+def set_user_preference_service(user_id, key, value):
     if not key:
         raise ValueError("Parameter 'key' is required")
     pref = UserPreferences.query.filter_by(user_id=user_id, key=key).first()
