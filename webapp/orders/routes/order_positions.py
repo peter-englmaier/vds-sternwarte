@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from datetime import timezone
 
 from flask import render_template, abort, Response
-from flask_login import login_required
+from flask_login import current_user, login_required
 from icalendar import Calendar, Event
 
 from webapp.errors.handlers import error_404
@@ -17,6 +17,7 @@ from webapp.model.db import User, ObservationRequest, ObservationRequestPosition
 from webapp.orders import orders  # blueprint object
 from webapp.orders.constants import ORDER_STATUS_LABELS
 from webapp.users.utils import role_required
+from webapp.orders.orderservices import can_edit_order
 
 
 # --------------------------------------------------------------------
@@ -29,6 +30,9 @@ def show_order_positions(order_id):
     """Show an order with all its positions, users, observatory and reservation.
 
     :param order_id: id of the order.
+    The page offers an edit button if the current user may edit the order
+    (see :func:`~webapp.orders.orderservices.can_edit_order`).
+
     :return: rendered ``order_positions.html``, or the 404 page if the order
         does not exist.
     """
@@ -42,7 +46,8 @@ def show_order_positions(order_id):
     observatory = Observatory.query.get(user_order.request_observatory_id)
     reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
     return render_template("order_positions.html", order=user_order, order_position=positions,
-                           user=user, pu_user=pu_user, observatory=observatory, reservation=reservation)
+                           user=user, pu_user=pu_user, observatory=observatory, reservation=reservation,
+                           can_edit=can_edit_order(user_order, current_user))
 
 # --------------------------------------------------------------------
 # iCalendar-Download für Anträge

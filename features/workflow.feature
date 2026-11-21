@@ -3,17 +3,17 @@ Feature: Vollständiger Workflow - Antrag erstellen, genehmigen, Poweruser melde
   @db
   Scenario: Joe erstellt und schickt Antrag ab, Approver genehmigt, Poweruser meldet möglich
     Given the following users are registered:
-      | name      | email             | password    | group           |
-      | joe       | joe@test.com      | JoePass1!   | user_group      |
-      | approverA | approver@test.com | ApprPass1!  | approver_group  |
-      | powerA    | power@test.com    | PowerPass1! | poweruser_group |
+      | name      | firstname | surname | email             | password    | group           |
+      | joe       | Joe       | Tester  | joe@test.com      | JoePass1!   | user_group      |
+      | approverA |           |         | approver@test.com | ApprPass1!  | approver_group  |
+      | powerA    |           |         | power@test.com    | PowerPass1! | poweruser_group |
     And the following observatories exist:
       | name              | site         |
       | Testobservatorium | Teststandort |
     When I login as "joe@test.com" with password "JoePass1!"
     And I create the following Antraege:
-      | requester_name | date       | type | remark        |
-      | Joe Tester     | 2026-12-01 | B    | Workflow Test |
+      | date       | type | remark        |
+      | 2026-12-01 | B    | Workflow Test |
     And I submit the last created Antrag
     And I logout
     When I login as "approver@test.com" with password "ApprPass1!"

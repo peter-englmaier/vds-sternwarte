@@ -8,7 +8,6 @@ from .constants import REQUEST_CHOICES
 
 from webapp.model.db import  Telescope, Filterset, Observatory, \
     ObjectTypes, MotivationTypes, User
-from .constants import PU_AKTIV
 
 
 def telescope_query(observatory_id):
@@ -96,12 +95,26 @@ class ObservationRequestHead(FlaskForm):
         ]
 
 
+def int_or_none(value):
+    """Coerce a select value to ``int``; empty values become ``None``.
+
+    Needed for the placeholder option ``("", "Auswählen")``: with plain
+    ``int`` rendering the select raises ``ValueError``.
+
+    :param value: posted or stored value of the select field.
+    :return: the value as ``int`` or ``None``.
+    """
+    if value in ("", None):
+        return None
+    return int(value)
+
+
 # Positionen des Antrags
 class ObservationRequestPositionForm(FlaskForm):
     class Meta:
         csrf = False
-    telescope = SelectField('Teleskop', choices=[],  coerce=int, validators=[DataRequired()])
-    filterset = SelectField('Filterset', choices=[], coerce=int, validators=[DataRequired()])
+    telescope = SelectField('Teleskop', choices=[], coerce=int_or_none, validators=[DataRequired()])
+    filterset = SelectField('Filterset', choices=[], coerce=int_or_none, validators=[DataRequired()])
     target = StringField('Objekt-Name', validators=[DataRequired()])
     target_objecttype = SelectField('Objekttyp', choices=[], validators=[DataRequired()])
     target_coordinates = StringField('Target_coordinates')

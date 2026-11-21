@@ -1,11 +1,15 @@
 from flask_login import current_user
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+import uuid
 from webapp.model.db import Catalogue
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 import re
 from webapp import db
-from .constants import ORDER_STATUS_CREATED, ORDER_STATUS_APPROVED, ORDER_STATUS_WAITING, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_CONFIRMED
-from webapp.model.db import UserPreferences, ObservatoryReservation
+from .constants import ORDER_STATUS_CREATED, ORDER_STATUS_WAITING, USER_ROLE_ADMIN
+from webapp.model.db import UserPreferences, ObservatoryReservation, Observatory
+from webapp.model.db import User
+from .orderform import telescope_query, filterset_query
 
 # --------------------------------------------------------------------------
 #  Umformung von dezimal Koordinaten in die Stunden / Minuten und Winkelgrad
@@ -24,27 +28,6 @@ def deg_to_dms(dec_deg):
     m = int((dec_deg - d) * 60)
     s = (dec_deg - d - m/60) * 3600
     return f"{sign}{d:02d}:{m:02d}:{s:05.2f}"
-
-# --------------------------------------------------------------------------
-# Neuen Antragskopf mit Defaultwerten initialisieren
-# --------------------------------------------------------------------------
-def init_new_order_service():
-    order = ObservationRequest()
-    order.user_id = current_user.id
-    try:
-        order.requester_name = current_user.firstname + ' ' + current_user.surname
-    except Exception as e:
-        order.requester_name = f"Unknown ({order.user_id})"
-    order.positions = []
-    order.date_created = datetime.now()
-    order.request_date = None
-    order.status = ORDER_STATUS_CREATED
-    order.observatory_name = None
-    order.poweruser_name = None
-    order.request_poweruser_id = None
-    order.request_observatory_id = None
-    #order.request_purpose = ''
-    return order
 
 # --------------------------------------------------------------------------
 # Neuen Antrags-Positionssarz mit Defaultwerten initialisieren
@@ -317,3 +300,329 @@ def calendar_service(year, month):
             new_moon_days, phase1_moon_days, phase2_moon_days, phase3_moon_days,
             full_moon_days, phase5_moon_days, phase6_moon_days, phase7_moon_days)
 
+
+
+# --------------------------------------------------------------------------
+# Antragskopf und Positionen aus dem Formular übernehmen.
+# Gemeinsam genutzt von create_order.actionhandler (neuer Antrag) und
+# edit_order_pos.edit_order_pos (bestehender Antrag).
+# --------------------------------------------------------------------------
+def default_positions(observatory_id):
+    """Return a list with one default position matching the observatory.
+
+    :param observatory_id: id of the observatory, may be ``None``.
+    :return: list with one unsaved ``ObservationRequestPosition`` that uses
+        the first telescope and filter set of the observatory.
+    """
+    position_items = init_new_orderpos_service()
+    telescopes = telescope_query(observatory_id)
+    if telescopes:
+        position_items[0].telescope_id = telescopes[0].id
+        filtersets = filterset_query(telescopes[0].id)
+        if filtersets:
+            position_items[0].filterset_id = filtersets[0].id
+    position_items[0].block_no = 1
+    position_items[0].row_in_block = 1
+    return position_items
+
+
+def position_data(position_items):
+    """Convert positions into the data dicts of ``form.positions``.
+
+    :param position_items: iterable of ``ObservationRequestPosition``.
+    :return: list of dicts for ``form.process(data={"positions": ...})``.
+    """
+    return [
+        {
+            "telescope": pos.telescope_id,
+            "target": pos.target,
+            "filterset": pos.filterset_id,
+            "target_objecttype": pos.target_objecttype,
+            "target_coordinates": pos.target_coordinates,
+            "target_coordinates_lock": pos.target_coordinates_lock != "0",
+            "exposure_count": pos.exposure_count,
+            "exposure_time": pos.exposure_time,
+            "mosaic": bool(getattr(pos, "mosaic", False)),
+            "exposure_starttime": pos.exposure_starttime,
+            "exposure_gain": pos.exposure_gain,
+            "exposure_offset": pos.exposure_offset,
+            "exposure_dither": pos.exposure_dither,
+            "exposure_focus": pos.exposure_focus,
+        }
+        for pos in position_items
+    ]
+
+
+def group_blocks(block_numbers):
+    """Build the block structure the template ``edit_order_pos.html`` expects.
+
+    :param block_numbers: block number of each position, in form order.
+    :return: ``[{"block_no": int, "row_indices": [...]}, ...]``; the row
+        indices refer to the global list ``form.positions``.
+    """
+    blocks = []
+    current_block = None
+    for global_idx, bno in enumerate(block_numbers):
+        if current_block is None or current_block["block_no"] != bno:
+            current_block = {"block_no": bno, "row_indices": []}
+            blocks.append(current_block)
+        current_block["row_indices"].append(global_idx)
+    return blocks
+
+
+def _posted_int(form_data, key):
+    """Read an integer from posted form data, ``1`` if missing or invalid."""
+    try:
+        return int(form_data.get(key, "1"))
+    except ValueError:
+        return 1
+
+
+def posted_block_numbers(form_data, count):
+    """Read the block numbers of the posted positions.
+
+    The values come from the hidden inputs ``positions-<idx>-block_no`` that
+    the flattening javascript of ``edit_order_pos.html`` creates.
+
+    :param form_data: posted form data, usually ``request.form``.
+    :param count: number of positions in the form.
+    :return: list of ``count`` block numbers; ``1`` for missing values.
+    """
+    return [_posted_int(form_data, f"positions-{idx}-block_no") for idx in range(count)]
+
+
+def set_position_choices(form, observatory_id):
+    """Set the telescope and filter set choices of all positions.
+
+    :param form: ``ObservationRequestPositionsForm`` with its positions.
+    :param observatory_id: id of the observatory whose telescopes are offered.
+    """
+    tel_choices = [(x.id, x.name) for x in telescope_query(observatory_id)]
+    for pos_form in form.positions:
+        pos_form.telescope.choices = tel_choices
+        selected_telescope_id = pos_form.telescope.data
+        fs_choices = filterset_query(selected_telescope_id) if selected_telescope_id else []
+        if not pos_form.filterset.data:
+            pos_form.filterset.choices = [("", "Auswählen")] + [(x.id, x.name) for x in fs_choices]
+        else:
+            pos_form.filterset.choices = [(x.id, x.name) for x in fs_choices]
+
+
+def apply_head(order_head, head_form):
+    """Copy the editable head fields from the form into the order.
+
+    Sets date, observatory, desired power user, type and remark. The
+    requester name and the reservation are left to the caller.
+
+    :param order_head: ``ObservationRequest`` to update (not committed).
+    :param head_form: the ``head`` subform of ``ObservationRequestPositionsForm``.
+    """
+    order_head.request_date = head_form.request_date.data
+    order_head.request_observatory_id = head_form.observatory_name.data
+    poweruser_index = head_form.poweruser_name.data
+    if poweruser_index:
+        poweruser = next((name for i, name in head_form.poweruser_name.choices if i == poweruser_index), None)
+        # poweruser now holds the display_name, not the name of the power user
+        for pwuser in User.by_role('poweruser'):
+            if pwuser.display_name() == poweruser:
+                order_head.request_poweruser_id = pwuser.id
+                break
+    order_head.request_type = head_form.request_type.data
+    order_head.remark = head_form.remark.data
+
+
+def save_positions_service(form, order_id, form_data):
+    """Replace the positions of an order with the posted ones.
+
+    Adds the new positions to the session but does not commit.
+
+    :param form: ``ObservationRequestPositionsForm`` with the posted positions.
+    :param order_id: id of the order the positions belong to.
+    :param form_data: posted form data, usually ``request.form``; provides
+        ``block_no`` and ``row_in_block`` of each position.
+    """
+    ObservationRequestPosition.query.filter_by(observation_request_id=order_id).delete()
+
+    block_numbers = posted_block_numbers(form_data, len(form.positions))
+    for idx, pos_form in enumerate(form.positions):
+        row_in_block = _posted_int(form_data, f"positions-{idx}-row_in_block")
+
+        # target_coordinates_lock: DB ist VARCHAR(1)
+        # -> konsistent als "0"/"1" speichern, damit GET ( != "0") stimmt
+        lock_val = pos_form.target_coordinates_lock.data
+        if isinstance(lock_val, str):
+            lock_db = lock_val
+        else:
+            lock_db = "1" if lock_val else "0"
+
+        db.session.add(
+            ObservationRequestPosition(
+                row_no=idx + 1,
+                block_no=block_numbers[idx],
+                row_in_block=row_in_block,
+                observation_request_id=order_id,
+                telescope_id=pos_form.telescope.data,
+                target=pos_form.target.data,
+                filterset_id=pos_form.filterset.data,
+                target_objecttype=pos_form.target_objecttype.data,
+                target_coordinates=pos_form.target_coordinates.data,
+                target_coordinates_lock=lock_db,
+                exposure_count=pos_form.exposure_count.data,
+                exposure_time=pos_form.exposure_time.data,
+                mosaic=bool(pos_form.mosaic.data),
+                exposure_starttime=pos_form.exposure_starttime.data,
+                exposure_gain=pos_form.exposure_gain.data,
+                exposure_offset=pos_form.exposure_offset.data,
+                exposure_dither=pos_form.exposure_dither.data,
+                exposure_focus=pos_form.exposure_focus.data,
+            )
+        )
+
+
+def submit_order_service(order_id):
+    """Submit an order for approval and freeze its reservation.
+
+    :param order_id: id of the order to submit.
+    :return: list of ``(message, category)`` tuples for ``flash()``; empty
+        if everything worked.
+    """
+    messages = []
+    order_head = ObservationRequest.query.get(order_id)
+    order_head.status = ORDER_STATUS_WAITING
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        messages.append((
+            f"Es ist ein Fehler aufgetreten: {e}. Bitte melden Sie sich beim Systemadministrator.",
+            "danger",
+        ))
+
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_id).first()
+    if reservation:
+        try:
+            reservation.freeze()
+            db.session.add(reservation)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            messages.append((
+                "Die Reservierung ist bereits abgelaufen und kann nicht mehr aufrechterhalten werden.",
+                "warning",
+            ))
+    return messages
+
+
+def order_form_problems(form):
+    """Check the posted order form for data the database needs.
+
+    The form is not validated with WTForms, so missing values would only show
+    up as database errors when saving.
+
+    :param form: ``ObservationRequestPositionsForm`` with the posted data.
+    :return: list of messages for the user; empty if the order can be saved.
+    """
+    problems = []
+    if not form.head.request_date.data:
+        problems.append("Bitte wähle über den Button „Kalender“ ein Datum aus.")
+    if not form.head.observatory_name.data:
+        problems.append("Bitte wähle ein Observatorium aus.")
+    if any(not pos_form.telescope.data for pos_form in form.positions):
+        problems.append("Bitte wähle in jeder Aufnahmezeile ein Teleskop aus.")
+    return problems
+
+
+DATE_TAKEN_MESSAGE = "Der {date} ist bereits reserviert. Bitte wähle ein anderes Datum."
+SAVE_FAILED_MESSAGE = (
+    "{what} konnte nicht gespeichert werden (Fehler-Referenz {reference}). "
+    "Bitte versuche es erneut oder wende dich mit dieser Referenz an den Administrator."
+)
+
+
+def error_reference():
+    """Return a short id that links a message for the user to its log entry.
+
+    :return: 8 hex characters, e.g. ``"3f9a1c0b"``.
+    """
+    return uuid.uuid4().hex[:8]
+
+
+def save_failed_message(what, reference):
+    """Build the message shown when saving failed for an unexpected reason.
+
+    :param what: what could not be saved, e.g. ``"Der Antrag"``.
+    :param reference: value of :func:`error_reference`, also written to the log.
+    :return: message for ``flash()``.
+    """
+    return SAVE_FAILED_MESSAGE.format(what=what, reference=reference)
+
+
+def reservation_error_message(exc, requested_date, reference):
+    """Explain why committing a reservation failed.
+
+    :param exc: the exception raised by ``db.session.commit()``.
+    :param requested_date: the requested date (``date`` or ``datetime``).
+    :param reference: value of :func:`error_reference`, also written to the log.
+    :return: message for ``flash()``; names the date if it is already taken.
+    """
+    if isinstance(exc, IntegrityError) and "observatory_reservation.date" in str(exc.orig):
+        return DATE_TAKEN_MESSAGE.format(date=requested_date.strftime('%d.%m.%Y'))
+    return save_failed_message("Die Reservierung", reference)
+
+
+def prepare_reservation_service(order_head):
+    """Create or update the reservation of an order for its requested date.
+
+    Each date can be reserved only once (``observatory_reservation.date`` is
+    unique). A reservation of another order for the same date blocks it as
+    long as it is valid; an expired one is deleted, because the calendar
+    already shows its date as free.
+
+    Adds the reservation to the session but does not commit.
+
+    :param order_head: ``ObservationRequest`` with ``id``, ``request_date``
+        and ``request_observatory_id`` set.
+    :return: ``(reservation, message)``; ``reservation`` is ``None`` and
+        ``message`` explains why if the date cannot be reserved.
+    """
+    observatory = Observatory.query.get(order_head.request_observatory_id) \
+        if order_head.request_observatory_id else None
+    if not order_head.request_date or observatory is None:
+        return None, "Bitte wähle Datum und Observatorium aus."
+
+    reservation_date = ObservatoryReservation.date_sanitize(order_head.request_date)
+    # The column is stored as "YYYY-MM-DD 00:00:00.000000"; compare with a
+    # datetime, a plain date would be compared as "YYYY-MM-DD" and never match.
+    day = reservation_date.date() if isinstance(reservation_date, datetime) else reservation_date
+    other = ObservatoryReservation.query.filter(
+        ObservatoryReservation.date == datetime.combine(day, time.min),
+        ObservatoryReservation.observation_request_id != order_head.id,
+    ).first()
+    if other is not None:
+        if not other.is_expired():
+            return None, DATE_TAKEN_MESSAGE.format(date=day.strftime('%d.%m.%Y'))
+        db.session.delete(other)
+        db.session.flush()  # free the unique date before the new row is written
+
+    reservation = ObservatoryReservation.query.filter_by(observation_request_id=order_head.id).first()
+    if reservation is None:
+        reservation = ObservatoryReservation(reservation_date, observatory, order_head)
+    else:
+        reservation.set_observatory(observatory).set_date(reservation_date)
+    db.session.add(reservation)
+    return reservation, None
+
+
+def can_edit_order(order, user):
+    """Tell whether a user may edit an order.
+
+    Only the requester (or an admin) may edit, and only while the order is a
+    draft. A rejected order stays as it is; it can be copied into a new draft.
+
+    :param order: ``ObservationRequest`` to check.
+    :param user: the user, usually ``current_user``.
+    :return: ``True`` if the user may open the edit page of the order.
+    """
+    if order.user_id != user.id and not user.has_role(USER_ROLE_ADMIN):
+        return False
+    return order.status == ORDER_STATUS_CREATED

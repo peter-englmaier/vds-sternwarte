@@ -9,10 +9,14 @@
   #coord-btn.visible { display: inline-block; }
 </style>
 
-<h2>Teleskopzeit Zeilen bearbeiten</h2>
+{# order_id is None for a new order that is not saved yet #}
+{% set is_new = order_id is none %}
+
+<h2>{{ 'Antrag für Teleskopzeit bearbeiten' }}</h2>
 
 <form id="edit-pos-form" method="post"
-      action="{{ url_for('orders.edit_order_pos', order_id=order_id) }}"
+      action="{{ url_for('orders.actionhandler') if is_new else url_for('orders.edit_order_pos', order_id=order_id) }}"
+      data-filtersets-url="{{ url_for('orders.get_filtersets') }}"
 >
   {{ form.hidden_tag() }}
   {{ form.head.requester_name(type="hidden") }}
@@ -22,7 +26,7 @@
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <span>
       Antragssteller: {{ current_user.firstname }} {{ current_user.surname }} ({{ current_user.name }})
-      Status: {{ form.head.status_label.data }}
+      {% if not is_new %}Status: {{ form.head.status_label.data }}{% endif %}
     </span>
 
     {# Expertenmodus (aktuell deaktiviert)
@@ -48,11 +52,15 @@
         <td>
           {{ form.head.request_date(class="form-control", type="hidden") }}
           <span id="selected_date_display">
-            {{ form.head.request_date.data.strftime('%Y-%m-%d') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
+            {{ form.head.request_date.data.strftime('%d.%m.%Y') if form.head.request_date.data else 'Kein Datum ausgewählt' }}
           </span>
           <button type="button"
                   class="btn btn-sm btn-secondary"
+                  {% if form.head.request_date.data %}
                   hx-get="{{ url_for('orders.show_calendar', year=form.head.request_date.data.year, month=form.head.request_date.data.month, picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
+                  {% else %}
+                  hx-get="{{ url_for('orders.show_calendar', picker=True, target_id=form.head.request_date.id, display_id='selected_date_display') }}"
+                  {% endif %}
                   hx-target="#calendar-container-modal .modal-body"
                   hx-swap="innerHTML"
                   hx-validate="true"
@@ -62,7 +70,7 @@
           </button>
         </td>
         <!-- <td>{{ form.head.requester_name() }}</td> -->
-        <td>{{ form.head.observatory_name() }}</td>
+        <td>{{ form.head.observatory_name(id="observatory_select", data_telescopes_url=url_for('orders.get_telescopes', observatory_id=0)) }}</td>
       </tr>
     </tbody>
   </table>
@@ -240,12 +248,18 @@
     </div>
   </div>
 
-  <button type="submit" class="btn btn-primary" name="action" value="submit_order"
-            onclick="return confirm('Willst du wirklich den Antrag abschicken?');">
+  <div id="date_required_hint" class="alert alert-warning d-none" role="alert">
+    Bitte wähle über den Button „Kalender“ ein Datum aus.
+  </div>
+
+  <button type="submit" class="btn btn-primary" name="action"
+          value="{{ 'submit_new_order' if is_new else 'submit_order' }}"
+          onclick="return requireDate() && confirm('Willst du wirklich den Antrag abschicken?');">
     Beantragung abschicken
   </button>
 
-  <button type="submit" class="btn btn-secondary" name="action" value="save_order">Speichern</button>
+  <button type="submit" class="btn btn-secondary" name="action" value="save_order"
+          onclick="return requireDate();">Speichern</button>
 
   {#
   <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#checkPopup">
@@ -253,12 +267,14 @@
   </button>
   #}
 
+  {% if not is_new %}
   <button id="coord-btn" type="submit" class="btn btn-danger" name="action" value="resolve_coordinates">
     Objekt Koordinaten ergänzen
   </button>
+  {% endif %}
 
   <a class="btn btn-secondary" href="{{ url_for('orders.show_orders') }}"
-     onclick="return confirm('Willst du wirklich abbrechen? Nicht gespeicherte Änderungen gehen verloren!');"
+     onclick="return confirmCancel();"
      >Abbrechen</a>
 
   <div id="flatten-hidden" style="display:none;"></div>
@@ -298,6 +314,87 @@
 </div>
 
 <script>
+/* ===================== Warnung bei ungespeicherten Änderungen ===================== */
+// Nach einem POST (z. B. fehlendes Datum) zeigt die Seite ungespeicherte Eingaben.
+let formDirty = {{ 'true' if request.method == 'POST' and request.form.get('action') != 'create_order' else 'false' }};
+(function () {
+  const form = document.getElementById('edit-pos-form');
+  if (!form) return;
+  const dateInput = document.getElementById('{{ form.head.request_date.id }}');
+  const initialDate = dateInput ? dateInput.value : '';
+
+  form.addEventListener('input', () => { formDirty = true; });
+  form.addEventListener('change', () => { formDirty = true; });
+  // Blöcke/Zeilen kopieren, verschieben, löschen, hinzufügen
+  form.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[type="button"]');
+    if (btn && !btn.hasAttribute('data-bs-toggle')) formDirty = true;
+  });
+  // Datum wird vom Kalender ohne Ereignis gesetzt
+  document.getElementById('calendar-container-modal')?.addEventListener('hidden.bs.modal', () => {
+    if (dateInput && dateInput.value !== initialDate) formDirty = true;
+  });
+  // Absenden speichert die Eingaben -> keine Warnung
+  form.addEventListener('submit', () => { formDirty = false; });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (!formDirty) return;
+    e.preventDefault();
+    e.returnValue = '';  // ältere Browser brauchen das für den Dialog
+  });
+})();
+
+// "Abbrechen" fragt selbst nach; danach nicht noch einmal warnen
+function confirmCancel() {
+  if (!confirm('Willst du wirklich abbrechen? Nicht gespeicherte Änderungen gehen verloren!')) return false;
+  formDirty = false;
+  return true;
+}
+
+/* ===================== Datum Pflicht ===================== */
+function requireDate() {
+  const dateInput = document.getElementById('{{ form.head.request_date.id }}');
+  const dateHint = document.getElementById('date_required_hint');
+  const missing = !dateInput || dateInput.value === '';
+  if (dateHint) dateHint.classList.toggle('d-none', !missing);
+  return !missing;
+}
+// Hinweis ausblenden, sobald im Kalender ein Datum gewählt wurde
+document.getElementById('calendar-container-modal')?.addEventListener('hidden.bs.modal', () => {
+  const dateInput = document.getElementById('{{ form.head.request_date.id }}');
+  if (dateInput && dateInput.value !== '') {
+    document.getElementById('date_required_hint')?.classList.add('d-none');
+  }
+});
+
+{% if is_new %}
+/* ===================== Observatorium -> Teleskope (nur neuer Antrag) ===================== */
+document.getElementById('observatory_select')?.addEventListener('change', function () {
+  const selects = document.querySelectorAll('#positions-root select.telescope_box');
+  if (!this.value) {
+    document.querySelectorAll('#positions-root select.telescope_box, #positions-root select.filterset_box')
+      .forEach(s => { s.innerHTML = ''; });
+    return;
+  }
+  // URL mit Platzhalter-Id 0 kommt aus url_for() im data-Attribut
+  fetch(this.dataset.telescopesUrl.replace(/\/0$/, '/' + encodeURIComponent(this.value)))
+    .then(r => r.json())
+    .then(options => {
+      selects.forEach(select => {
+        select.innerHTML = '';
+        options.forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt.id;
+          o.textContent = opt.name;
+          select.appendChild(o);
+        });
+        // Filtersets zum neuen Teleskop laden
+        select.dispatchEvent(new Event('change'));
+      });
+    });
+});
+{% endif %}
+
 /* ===================== Expert Fields (safe + disables hidden required) ===================== */
 function setExpertFieldsEnabled(enabled) {
   document.querySelectorAll('.expert-field').forEach(cell => {
@@ -443,7 +540,7 @@ function registerTelescopeBoxListeners(context = document) {
       const filtersetSelects = block.querySelectorAll('.filterset_box');
       if (filtersetSelects.length === 0) return;
 
-      fetch('/orders/get_filtersets', {
+      fetch(document.getElementById('edit-pos-form').dataset.filtersetsUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

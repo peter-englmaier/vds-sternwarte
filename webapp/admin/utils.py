@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import expose, AdminIndexView
 from flask_admin.menu import MenuLink
-from flask import redirect, request, url_for
+from flask import redirect, url_for
 from flask_login import current_user
 from sqlalchemy.orm.collections import InstrumentedList
 from webapp.orders.constants import USER_ROLE_ADMIN

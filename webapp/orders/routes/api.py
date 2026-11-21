@@ -103,16 +103,9 @@ def set_user_preference():
 def get_telescopes(observatory_id):
     """Return the telescopes of an observatory as JSON.
 
-    .. warning:: The route passes ``observatory_id`` from the URL, but the
-       function takes no parameter and reads the id from a JSON body instead.
-       Calling the route currently raises a :exc:`TypeError` (status 500).
-
+    :param observatory_id: id of the observatory.
     :return: JSON list of ``{"id": ..., "name": ...}``.
     """
-    # # THIS DIDN'T MATCH THE ROUTE DEFINITION!
-    # data = request.get_json()
-    # observatory_id = data.get('observatory_id')
-
     telescopes = telescope_query(observatory_id)
     return jsonify([{'id': t.id, 'name': t.name} for t in telescopes])
 
