@@ -46,7 +46,7 @@
         <tr>
             <td>{{ L[CONSTANTS.ORDER_STATUS_REJECTED] }}</td>
             <td>Der Approver hat den Antrag abgelehnt. Du erhältst eine Mail mit der Begründung, der Termin wird freigegeben.</td>
-            <td>Du kannst den Antrag überarbeiten und erneut abschicken oder löschen.</td>
+            <td>Der Antrag selbst kann nicht mehr bearbeitet werden. Du kannst ihn kopieren, die Kopie überarbeiten und neu abschicken.</td>
         </tr>
         <tr>
             <td>{{ L[CONSTANTS.ORDER_STATUS_PU_ASSIGNED] }}</td>
@@ -76,6 +76,6 @@
     </tbody>
 </table>
 
-<p><a href="{{ url_for('orders.show_orders') }}">Zurück zu meinen Teleskopzeiten</a></p>
+<p><a href="{{ url_for('orders.show_orders') }}">Zurück zur Antragsverwaltung</a></p>
 
 {% endblock content %}

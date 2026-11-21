@@ -1,5 +1,5 @@
 import json
-from flask import render_template, Response, request, flash, redirect, url_for
+from flask import Response, request, flash, redirect, url_for
 from flask_login import login_required
 from sqlalchemy import select
 from webapp.inout import bp

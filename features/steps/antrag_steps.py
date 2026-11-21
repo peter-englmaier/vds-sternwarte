@@ -37,12 +37,11 @@ def create_antraege_from_table(context):
     for row in context.table:
         response = context.client.post('/actionhandler', data={
             'action': 'save_order',
-            'request_date': row['date'],
-            'requester_name': row['requester_name'],
-            'observatory_name': str(obs.id),
-            'poweruser_name': '',
-            'request_type': row['type'],
-            'remark': row.get('remark', ''),
+            'head-request_date': row['date'],
+            'head-observatory_name': str(obs.id),
+            'head-poweruser_name': '',
+            'head-request_type': row['type'],
+            'head-remark': row.get('remark', ''),
         }, follow_redirects=False)
         # save_order redirects to the edit page (302) on success
         assert response.status_code == 302, \
@@ -61,11 +60,11 @@ def create_antrag_without_date(context):
     assert obs is not None, 'No observatory found — add a "Given the following observatories exist:" step first'
     context.response = context.client.post('/actionhandler', data={
         'action': 'save_order',
-        'request_date': '',
-        'observatory_name': str(obs.id),
-        'poweruser_name': '',
-        'request_type': 'B',
-        'remark': 'Antrag ohne Datum',
+        'head-request_date': '',
+        'head-observatory_name': str(obs.id),
+        'head-poweruser_name': '',
+        'head-request_type': 'B',
+        'head-remark': 'Antrag ohne Datum',
     }, follow_redirects=False)
 
 
@@ -74,7 +73,7 @@ def antrag_form_shown_with_hint(context):
     assert context.response.status_code == 200, \
         f'Expected the form again, got {context.response.status_code}'
     page = context.response.data.decode()
-    assert 'Teleskopzeit Neu beantragen' in page, 'Antrag form not shown'
+    assert 'Antrag für Teleskopzeit bearbeiten' in page, 'Antrag form not shown'
     assert 'alert alert-warning">' in page, 'No flashed date hint on the page'
     assert 'Antrag ohne Datum' in page, 'Entered remark was not kept'
 
@@ -109,3 +108,21 @@ def observatory_reservation_contains(context):
         ).first()
         assert reservation is not None, \
             f'No reservation found for date {row["date"]} in observatory_reservation table'
+
+
+@when(u'I open the form for a new Antrag')
+def open_new_antrag_form(context):
+    context.response = context.client.post('/actionhandler', data={
+        'action': 'create_order',
+    }, follow_redirects=False)
+
+
+@then(u'the new Antrag form shows head and positions')
+def new_antrag_form_shows_head_and_positions(context):
+    assert context.response.status_code == 200, \
+        f'Expected the form, got {context.response.status_code}'
+    page = context.response.data.decode()
+    assert 'Antrag für Teleskopzeit bearbeiten' in page, 'New Antrag form not shown'
+    assert 'name="head-request_date"' in page, 'Head fields missing'
+    assert 'positions-0-exposure_count' in page, 'Position fields missing'
+    assert 'value="submit_new_order"' in page, 'Submit button for new orders missing'

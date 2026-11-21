@@ -99,12 +99,12 @@
     var month = cell.getAttribute('data-month');
     var year = cell.getAttribute('data-year');
 
-    // Format date as YYYY-MM-DD
-    var formattedDate = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var dd = String(day).padStart(2, '0');
+    var mm = String(month).padStart(2, '0');
 
-    // Update the hidden input and the display span
-    document.getElementById(targetId).value = formattedDate;
-    document.getElementById(displayId).innerText = formattedDate;
+    // Hidden input: YYYY-MM-DD (format of the DateField); display: DD.MM.YYYY
+    document.getElementById(targetId).value = year + '-' + mm + '-' + dd;
+    document.getElementById(displayId).innerText = dd + '.' + mm + '.' + year;
 
     // Close the modal
     var modal = bootstrap.Modal.getInstance(document.getElementById('calendar-container-modal'));

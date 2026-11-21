@@ -67,7 +67,7 @@ webapp/orders/
 │   ├── __init__.py           importiert alle Module → registriert ihre Routes
 │   ├── api.py                JSON-Endpunkte für das Javascript
 │   ├── order_list.py         orders.html
-│   ├── create_order.py       create_order.html
+│   ├── create_order.py       edit_order_pos.html (neuer Antrag)
 │   ├── edit_order_pos.py     edit_order_pos.html
 │   ├── order_positions.py    order_positions.html, iCalendar-Download
 │   ├── approval.py           Approver-/Poweruser-Aktionen ohne eigene Seite

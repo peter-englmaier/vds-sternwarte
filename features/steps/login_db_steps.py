@@ -19,6 +19,11 @@ def create_users_from_table(context):
     for row in context.table:
         hashed = bcrypt.generate_password_hash(row['password']).decode('utf-8')
         user = User(name=row['name'], email=row['email'], password=hashed)
+        # optional: firstname/surname determine User.display_name()
+        if 'firstname' in context.table.headings:
+            user.firstname = row['firstname']
+        if 'surname' in context.table.headings:
+            user.surname = row['surname']
         if has_group and row['group']:
             group = Group.query.filter_by(name=row['group']).first()
             if group:
