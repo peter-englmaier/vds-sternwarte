@@ -74,6 +74,7 @@ webapp/orders/
 │   ├── reject_order.py       reject_order.html
 │   ├── calendar.py           calendar.html, _calendar.html
 │   ├── obs_request_complete.py  obs_request_complete.html
+│   ├── feedback.py           observation_feedback.html, Rückmeldung zur Beobachtung
 │   └── status_flow.py        status_flow.html
 ├── mails.py                  Celery-Tasks für Benachrichtigungs-Mails
 ├── orderservices.py          Geschäftslogik (Kopieren, Löschen, Kalender, …)
@@ -110,8 +111,8 @@ webapp/main/
 │   ├── poweruser_history.py  poweruser_history.html
 │   ├── approver.py           approver.html (Aktionen in orders/routes/approval.py)
 │   ├── order_history.py      orders_history.html
+│   ├── observation_database.py  observation_database.html
 │   ├── gast.py               gast.html, Benutzer freischalten
-│   ├── fg_request.py         create_obs_request.html, aufnahme_zeile.html (/add-row)
 │   ├── service_request.py    create_service.html
 │   ├── request_georg.py      create_request_georg.html
 │   ├── faq.py                faq.html
@@ -131,7 +132,7 @@ einer `__init__.py`, das weitere Module enthält. Der Importpfad folgt dem Datei
 | | Alte Variante | Neue Variante |
 |---|---|---|
 | Datei(en) | `webapp/orders/routes.py` | `webapp/orders/routes/__init__.py`, `…/order_list.py`, `…/calendar.py`, … |
-| Art | ein Modul | ein Paket mit neun Modulen |
+| Art | ein Modul | ein Paket mit elf Modulen |
 | Importpfad | `webapp.orders.routes` | `webapp.orders.routes` (das Paket) und `webapp.orders.routes.order_list`, … |
 | Inhalt | alle 19 Routes und die 4 Mail-Tasks in einer Datei mit 1200 Zeilen | pro Seite ein Modul mit 60–400 Zeilen; die Mail-Tasks in `webapp/orders/mails.py` |
 
