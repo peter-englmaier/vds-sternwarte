@@ -7,7 +7,7 @@
 | / | GET | [main/routes/home.py](../webapp/main/routes/home.py) | main.home | [main/templates/home_intern.html](../webapp/main/templates/home_intern.html)<br>[main/templates/home.html](../webapp/main/templates/home.html) |
 | /about | GET | [main/routes/about.py](../webapp/main/routes/about.py) | main.about | [main/templates/about.html](../webapp/main/templates/about.html) |
 | /account | GET,POST | [users/routes.py](../webapp/users/routes.py) | users.account | [users/templates/account.html](../webapp/users/templates/account.html) |
-| /actionhandler | POST | [orders/routes/create_order.py](../webapp/orders/routes/create_order.py) | orders.actionhandler | [orders/templates/create_order.html](../webapp/orders/templates/create_order.html) |
+| /actionhandler | POST | [orders/routes/create_order.py](../webapp/orders/routes/create_order.py) | orders.actionhandler | [orders/templates/edit_order_pos.html](../webapp/orders/templates/edit_order_pos.html) |
 | /approver | GET | [main/routes/approver.py](../webapp/main/routes/approver.py) | main.approver | [main/templates/approver.html](../webapp/main/templates/approver.html) |
 | /approver/&lt;int:order_id&gt;/approve | POST | [orders/routes/approval.py](../webapp/orders/routes/approval.py) | orders.approve_order | – |
 | /approver/&lt;int:order_id&gt;/reject | GET,POST | [orders/routes/reject_order.py](../webapp/orders/routes/reject_order.py) | orders.reject_order | [orders/templates/reject_order.html](../webapp/orders/templates/reject_order.html) |
