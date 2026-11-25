@@ -14,25 +14,26 @@ def observation_database():
     from sqlalchemy import extract, or_
     from sqlalchemy.orm import contains_eager, selectinload
 
-    from webapp.model.feedback import (
-        ObservationFeedback,
-        ObservationFeedbackPosition,
+    from webapp.model.db import (
+        ObservationRequest,
+        ObservationRequestPosition,
     )
     from webapp.model.db import Telescope, Filterset
     from webapp.orders.constants import ORDER_STATUS_DOCUMENTED
 
     search = request.args.get('q', default='', type=str).strip()
 
-    base_query = ObservationFeedback.query.filter(
-        ObservationFeedback.status == ORDER_STATUS_DOCUMENTED,
-        ObservationFeedback.completed_at.isnot(None),
+    base_query = ObservationRequest.query.filter(
+        ObservationRequest.source_request_id.isnot(None),
+        ObservationRequest.status == ORDER_STATUS_DOCUMENTED,
+        ObservationRequest.completed_at.isnot(None),
     )
 
     month_rows = (
         base_query
         .with_entities(
-            extract('year', ObservationFeedback.request_date).label('year'),
-            extract('month', ObservationFeedback.request_date).label('month'),
+            extract('year', ObservationRequest.request_date).label('year'),
+            extract('month', ObservationRequest.request_date).label('month'),
         )
         .distinct()
         .all()
@@ -96,26 +97,26 @@ def observation_database():
         # Nur passende Aufnahmezeilen laden.
         feedbacks = (
             base_query
-            .join(ObservationFeedback.positions)
+            .join(ObservationRequest.positions)
             .filter(
                 or_(
-                    ObservationFeedbackPosition.target.ilike(
+                    ObservationRequestPosition.target.ilike(
                         pattern, escape='\\'
                     ),
-                    ObservationFeedbackPosition.target_objecttype.ilike(
+                    ObservationRequestPosition.target_objecttype.ilike(
                         pattern, escape='\\'
                     ),
                 )
             )
             .options(
-                contains_eager(ObservationFeedback.positions),
-                selectinload(ObservationFeedback.observatory_name),
+                contains_eager(ObservationRequest.positions),
+                selectinload(ObservationRequest.observatory_name),
             )
             .populate_existing()
             .order_by(
-                ObservationFeedback.request_date.desc(),
-                ObservationFeedback.id.desc(),
-                ObservationFeedbackPosition.row_no.asc(),
+                ObservationRequest.request_date.desc(),
+                ObservationRequest.id.desc(),
+                ObservationRequestPosition.row_no.asc(),
             )
             .all()
         )
@@ -135,16 +136,16 @@ def observation_database():
         feedbacks = (
             base_query
             .filter(
-                ObservationFeedback.request_date >= month_start,
-                ObservationFeedback.request_date < next_month_start,
+                ObservationRequest.request_date >= month_start,
+                ObservationRequest.request_date < next_month_start,
             )
             .options(
-                selectinload(ObservationFeedback.positions),
-                selectinload(ObservationFeedback.observatory_name),
+                selectinload(ObservationRequest.positions),
+                selectinload(ObservationRequest.observatory_name),
             )
             .order_by(
-                ObservationFeedback.request_date.desc(),
-                ObservationFeedback.id.desc(),
+                ObservationRequest.request_date.desc(),
+                ObservationRequest.id.desc(),
             )
             .all()
         )

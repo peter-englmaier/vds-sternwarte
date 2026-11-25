@@ -70,6 +70,14 @@ def copy_order_service(order_id):
         new_order.status = ORDER_STATUS_CREATED
         new_order.date_created = datetime.now()
 
+        # Eine normale Antragskopie ist keine Rückmeldungskopie.
+        new_order.source_request_id = None
+        new_order.copied_at = None
+        new_order.completed_at = None
+        new_order.completed_by_id = None
+        new_order.matches_request = None
+        new_order.deviations = None        
+
         db.session.add(new_order)
         db.session.flush()
 

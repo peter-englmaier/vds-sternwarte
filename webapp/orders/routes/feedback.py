@@ -10,13 +10,10 @@ from flask import (
 )
 from flask_login import current_user, login_required
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from webapp import db
-from webapp.model.db import Observatory, Telescope, Filterset
-from webapp.model.feedback import (
-    ObservationFeedback,
-    ObservationFeedbackPosition,
-)
+from webapp.model.db import Observatory, Telescope, Filterset, ObservationRequest, ObservationRequestPosition
 from webapp.orders import orders
 from webapp.orders.constants import (
     ORDER_STATUS_STATISTICS_OPEN,
@@ -178,8 +175,8 @@ def save_feedback(feedback, form):
             if index < len(feedback.positions):
                 position = feedback.positions[index]
             else:
-                position = ObservationFeedbackPosition(
-                    observation_request_id=feedback.source_request_id,
+                position = ObservationRequestPosition(
+                    observation_request_id=feedback.id,
                     row_no=index + 1,
                 )
 
@@ -215,9 +212,11 @@ def save_feedback(feedback, form):
 @login_required
 @role_required('user')
 def observation_feedback(feedback_id):
-    statement = select(ObservationFeedback).where(
-        ObservationFeedback.id == feedback_id
-    )
+    statement = (
+        select(ObservationRequest)
+        .options(selectinload(ObservationRequest.positions))
+        .where(ObservationRequest.id == feedback_id)
+        )    
 
     if request.method == 'POST':
         statement = statement.with_for_update()
@@ -228,6 +227,15 @@ def observation_feedback(feedback_id):
 
     if feedback is None:
         abort(404)
+
+#Verhindern das Orginalantrag bearbeitet wird
+
+    if feedback.source_request_id is None:
+        abort(
+            404,
+            description='Dieser Datensatz ist keine Rückmeldungskopie.',
+        )
+         
 # Festlegung Benutzerzugriff
     if feedback.user_id != current_user.id:
         abort(403)
@@ -299,8 +307,10 @@ def observation_feedback(feedback_id):
 @login_required
 @role_required('user')
 def edit_observation_feedback(feedback_id):
-    statement = select(ObservationFeedback).where(
-        ObservationFeedback.id == feedback_id
+    statement = select(ObservationRequest).options(
+        selectinload(ObservationRequest.positions).where(
+            ObservationRequest.id == feedback_id
+        )
     )
 
     if request.method == 'POST':
@@ -313,6 +323,14 @@ def edit_observation_feedback(feedback_id):
     if feedback is None:
         abort(404)
 
+#Verhindern das Orginalantrag bearbeitet wird
+
+    if feedback.source_request_id is None:
+        abort(
+            404,
+            description='Dieser Datensatz ist keine Rückmeldungskopie.',
+        )
+ 
     if feedback.user_id != current_user.id:
         abort(403)
 
@@ -378,8 +396,9 @@ def edit_observation_feedback(feedback_id):
 @role_required('poweruser')
 def cancel_observation_feedback(feedback_id):
     statement = (
-        select(ObservationFeedback)
-        .where(ObservationFeedback.id == feedback_id)
+        select(ObservationRequest)
+        .options(selectinload(ObservationRequest.positions))
+        .where(ObservationRequest.id == feedback_id)
         .with_for_update()
     )
 
@@ -390,6 +409,14 @@ def cancel_observation_feedback(feedback_id):
     if feedback is None:
         abort(404)
 
+#Verhindern das Orginalantrag bearbeitet wird
+
+    if feedback.source_request_id is None:
+        abort(
+            404,
+            description='Dieser Datensatz ist keine Rückmeldungskopie.',
+        )
+    
     # Nur der zugeordnete Poweruser darf den Ausfall melden.
     if feedback.request_poweruser_id != current_user.id:
         abort(403)

@@ -42,6 +42,7 @@ def approver():
 
     all_orders = (
         ObservationRequest.query
+        .filter(ObservationRequest.source_request_id.is_(None))
         .filter(ObservationRequest.status.in_([ORDER_STATUS_WAITING, ORDER_STATUS_APPROVED, ORDER_STATUS_PU_ASSIGNED, ORDER_STATUS_PU_REJECTED, ORDER_STATUS_PU_ACCEPTED]))
         .all()
     )
